@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "functions": {
+    "api/episodes.js": {
+      "runtime": "edge"
+    }
+  },
+  "routes": [
+    { "src": "/api/episodes", "dest": "/api/episodes.js" },
+    { "src": "/episodes", "dest": "/episodes.html" },
+    { "src": "/about", "dest": "/about.html" },
+    { "src": "/totw", "dest": "/totw.html" },
+    { "src": "/merch", "dest": "/merch.html" },
+    { "src": "/(.*)", "dest": "/$1" }
+  ]
+}
