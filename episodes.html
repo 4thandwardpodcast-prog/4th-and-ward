@@ -220,13 +220,13 @@
               ${dur ? `<span class="ep-dur">${dur}</span>` : ''}
             </div>
             <div class="ep-actions">
-              <a href="${SPOTIFY_SHOW}" target="_blank" class="ep-logo-btn" title="Spotify">
+              <a href="${ep.epLink || SPOTIFY_SHOW}" target="_blank" class="ep-logo-btn" title="Listen on Spotify">
                 <img src="spotify-logo.png" alt="Spotify" width="36" height="36" style="border-radius:50%;display:block;">
               </a>
-              <a href="${APPLE_SHOW}" target="_blank" class="ep-logo-btn" title="Apple Podcasts">
+              <a href="${APPLE_SHOW}" target="_blank" class="ep-logo-btn" title="Listen on Apple Podcasts">
                 <img src="apple-logo.png" alt="Apple Podcasts" width="36" height="36" style="border-radius:9px;display:block;">
               </a>
-              <a href="${YOUTUBE_SHOW}" target="_blank" class="ep-logo-btn" title="YouTube">
+              <a href="${YOUTUBE_SHOW}" target="_blank" class="ep-logo-btn" title="Watch on YouTube">
                 <img src="youtube-logo.png" alt="YouTube" width="36" height="36" style="border-radius:6px;display:block;">
               </a>
             </div>
@@ -284,7 +284,11 @@
           const thumb = itunesImg?.getAttribute('href') || itunesImg?.textContent || '';
           const epNumTag = item.getElementsByTagNameNS('http://www.itunes.com/dtds/podcast-1.0.dtd', 'episode')[0]?.textContent;
           const epNum = epNumTag || (items.length - i);
-          const ep = { title, desc: truncDesc, pubDate, rawDate, dur, epNum, thumb };
+          // Get per-episode link from RSS (usually Spotify episode URL)
+          const epLink = item.querySelector('link')?.textContent?.trim()
+            || item.getElementsByTagNameNS('*', 'enclosure')[0]?.getAttribute('url')
+            || SPOTIFY_SHOW;
+          const ep = { title, desc: truncDesc, pubDate, rawDate, dur, epNum, thumb, epLink };
           allEpisodes.push(ep);
           isSidelineStory(title) ? sidelineEps.push(ep) : regularEps.push(ep);
         });
