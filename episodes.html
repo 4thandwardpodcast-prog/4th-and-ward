@@ -26,22 +26,23 @@
     .ep-date { font-size: 11px; color: var(--muted); font-weight: 500; }
     .ep-dur { font-size: 11px; color: var(--muted); font-weight: 500; }
     .ep-dur::before { content: '·'; margin-right: 16px; }
-    .ep-actions { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; }
+    .ep-actions { display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; }
     .ep-listen-label { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
-    .ep-icon-btn { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: opacity 0.2s, transform 0.15s; }
-    .ep-icon-btn:hover { opacity: 0.85; transform: scale(1.08); }
-    .ep-icon-btn svg { width: 18px; height: 18px; }
-    .ep-icon-spotify { background: #1DB954; color: #000; }
-    .ep-icon-apple { background: #FC3C44; color: #fff; }
-    .ep-icon-youtube { background: #FF0000; color: #fff; }
+    .ep-icon-btn { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: opacity 0.2s, transform 0.18s; box-shadow: 0 2px 8px rgba(0,0,0,0.4); flex-shrink: 0; }
+    .ep-icon-btn:hover { opacity: 0.9; transform: scale(1.1); box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
+    .ep-icon-btn svg { width: 24px; height: 24px; display: block; }
+    .ep-icon-spotify { background: #1DB954 !important; color: #000 !important; }
+    .ep-icon-apple { background: #FC3C44 !important; color: #fff !important; }
+    .ep-icon-youtube { background: #FF0000 !important; color: #fff !important; }
+    .ep-icon-spotify svg, .ep-icon-apple svg, .ep-icon-youtube svg { fill: currentColor; }
     .ep-loading { text-align: center; padding: 80px 0; color: var(--muted); font-size: 15px; }
     .ep-loading-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); margin: 0 3px; animation: bounce 1.2s ease-in-out infinite; }
     .ep-loading-dot:nth-child(2) { animation-delay: 0.2s; }
     .ep-loading-dot:nth-child(3) { animation-delay: 0.4s; }
     @keyframes bounce { 0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
     .platform-bar { display: flex; gap: 12px; margin-bottom: 40px; flex-wrap: wrap; }
-    .platform-pill { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; transition: opacity 0.2s; }
-    .platform-pill:hover { opacity: 0.85; }
+    .platform-pill { display: inline-flex; align-items: center; gap: 10px; padding: 10px 20px; border-radius: 10px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; text-decoration: none; transition: opacity 0.2s, transform 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.35); }
+    .platform-pill:hover { opacity: 0.9; transform: translateY(-1px); }
     .filter-tabs { display: flex; gap: 8px; margin-bottom: 28px; flex-wrap: wrap; }
     .filter-btn { background: var(--surface); border: 1px solid var(--border); color: var(--muted); padding: 10px 20px; border-radius: 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; font-family: var(--body); }
     .filter-btn:hover { border-color: var(--gold-dim); color: var(--white); }
