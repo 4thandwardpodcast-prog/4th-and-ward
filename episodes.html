@@ -16,10 +16,9 @@
     .ep-count { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 32px; }
     .ep-count span { color: var(--gold); }
     .ep-list { display: flex; flex-direction: column; gap: 2px; }
-    .ep-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 28px 32px; display: grid; grid-template-columns: 64px 1fr auto; gap: 24px; align-items: center; transition: border-color 0.2s, background 0.2s; cursor: default; }
+    .ep-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 20px 24px; display: grid; grid-template-columns: 80px 1fr auto; gap: 20px; align-items: center; transition: border-color 0.2s, background 0.2s; cursor: default; margin-bottom: 2px; }
     .ep-card:hover { border-color: var(--gold-dim); background: #151515; }
-    .ep-num { font-family: var(--condensed); font-weight: 900; font-size: 32px; color: var(--gold); line-height: 1; text-align: center; }
-    .ep-num-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-align: center; margin-top: 2px; }
+
     .ep-info { min-width: 0; }
     .ep-title-text { font-family: var(--condensed); font-weight: 900; font-size: 22px; text-transform: uppercase; line-height: 1.1; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ep-desc-text { font-size: 13px; color: var(--muted); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 10px; }
@@ -41,10 +40,20 @@
     .platform-bar { display: flex; gap: 12px; margin-bottom: 40px; flex-wrap: wrap; }
     .platform-pill { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; transition: opacity 0.2s; }
     .platform-pill:hover { opacity: 0.85; }
+    .ep-section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; margin-top: 8px; }
+    .ep-badge { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 12px; border-radius: 3px; }
+    .badge-regular { background: rgba(245,197,24,0.12); color: var(--gold); border: 1px solid rgba(245,197,24,0.25); }
+    .badge-sideline { background: rgba(29,185,84,0.12); color: #1DB954; border: 1px solid rgba(29,185,84,0.25); }
+    .ep-section-count { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .ep-thumb-wrap { width: 80px; height: 80px; flex-shrink: 0; border-radius: 6px; overflow: hidden; }
+    .ep-thumb { width: 80px; height: 80px; object-fit: cover; display: block; border-radius: 6px; }
+    .ep-thumb-placeholder { width: 80px; height: 80px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .ep-num-big { font-family: var(--condensed); font-weight: 900; font-size: 28px; color: var(--gold); line-height: 1; }
     @media (max-width: 900px) {
       .page-hero { padding: 100px 24px 48px; }
       .episodes-body { padding: 40px 24px 80px; }
-      .ep-card { grid-template-columns: 48px 1fr; gap: 16px; padding: 20px; }
+      .ep-card { grid-template-columns: 60px 1fr; gap: 12px; padding: 16px; }
+      .ep-thumb-wrap, .ep-thumb, .ep-thumb-placeholder { width: 60px; height: 60px; }
       .ep-actions { grid-column: 1 / -1; justify-content: flex-start; }
       .ep-title-text { font-size: 18px; white-space: normal; }
     }
@@ -143,61 +152,98 @@
       return tmp.textContent || tmp.innerText || '';
     }
 
+    function isSidelineStory(title) {
+      return title.toLowerCase().includes('sideline stor');
+    }
+
+    function renderSection(episodes, label, badgeClass) {
+      if (!episodes.length) return '';
+      return `
+        <div class="ep-section-header">
+          <span class="ep-badge ${badgeClass}">${label}</span>
+          <span class="ep-section-count">${episodes.length} episode${episodes.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="ep-list">
+          ${episodes.map(ep => renderCard(ep)).join('')}
+        </div>`;
+    }
+
+    function renderCard(ep) {
+      const { title, desc, pubDate, dur, epNum, thumb, isSideline } = ep;
+      const thumbHtml = thumb
+        ? `<img src="${thumb}" alt="${title}" class="ep-thumb" onerror="this.style.display='none'">`
+        : `<div class="ep-thumb ep-thumb-placeholder"><div class="ep-num-big">${epNum}</div><div class="ep-num-label">EP</div></div>`;
+
+      return `
+        <div class="ep-card">
+          <div class="ep-thumb-wrap">${thumbHtml}</div>
+          <div class="ep-info">
+            <div class="ep-title-text">${title}</div>
+            <div class="ep-desc-text">${desc}</div>
+            <div class="ep-meta-row">
+              ${pubDate ? `<span class="ep-date">${pubDate}</span>` : ''}
+              ${dur ? `<span class="ep-dur">${dur}</span>` : ''}
+            </div>
+          </div>
+          <div class="ep-actions">
+            <a href="${SPOTIFY_SHOW}" target="_blank" class="ep-btn ep-btn-spotify">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              Spotify
+            </a>
+            <a href="${APPLE_SHOW}" target="_blank" class="ep-btn ep-btn-apple">Apple</a>
+            <a href="${YOUTUBE_SHOW}" target="_blank" class="ep-btn ep-btn-youtube">YouTube</a>
+          </div>
+        </div>`;
+    }
+
     async function loadEpisodes() {
       try {
         const res = await fetch('/api/episodes');
         const text = await res.text();
+        if (!text || !text.includes('<item>')) throw new Error('No episodes');
+
         const parser = new DOMParser();
         const xml = parser.parseFromString(text, 'text/xml');
         const items = Array.from(xml.querySelectorAll('item'));
 
-        if (!items.length) throw new Error('No episodes found');
+        const regular = [];
+        const sideline = [];
 
-        document.getElementById('ep-count').innerHTML =
-          `Showing <span>${items.length}</span> episode${items.length !== 1 ? 's' : ''}`;
-
-        const html = items.map((item, i) => {
+        items.forEach((item, i) => {
           const title = item.querySelector('title')?.textContent || 'Untitled Episode';
           const rawDesc = item.querySelector('description')?.textContent || '';
-          const desc = stripHtml(rawDesc).trim();
-          const truncDesc = desc.length > 200 ? desc.slice(0, 197) + '...' : desc;
+          const desc = stripHtml(rawDesc).trim().replace(/^summaryIn/, 'In').replace(/^summary/, '');
+          const truncDesc = desc.length > 220 ? desc.slice(0, 217) + '...' : desc;
           const pubDate = formatDate(item.querySelector('pubDate')?.textContent || '');
           const dur = formatDuration(item.querySelector('duration')?.textContent || '');
-          const epNum = item.querySelector('episode')?.textContent || (items.length - i);
-          const link = item.querySelector('link')?.textContent || SPOTIFY_SHOW;
 
-          return `
-            <div class="ep-card">
-              <div>
-                <div class="ep-num">${epNum}</div>
-                <div class="ep-num-label">EP</div>
-              </div>
-              <div class="ep-info">
-                <div class="ep-title-text">${title}</div>
-                <div class="ep-desc-text">${truncDesc}</div>
-                <div class="ep-meta-row">
-                  ${pubDate ? `<span class="ep-date">${pubDate}</span>` : ''}
-                  ${dur ? `<span class="ep-dur">${dur}</span>` : ''}
-                </div>
-              </div>
-              <div class="ep-actions">
-                <a href="${SPOTIFY_SHOW}" target="_blank" class="ep-btn ep-btn-spotify">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                  Spotify
-                </a>
-                <a href="${APPLE_SHOW}" target="_blank" class="ep-btn ep-btn-apple">Apple</a>
-                <a href="${YOUTUBE_SHOW}" target="_blank" class="ep-btn ep-btn-youtube">YouTube</a>
-              </div>
-            </div>`;
-        }).join('');
+          // Get thumbnail — try itunes:image first, then enclosure
+          const itunesImg = item.getElementsByTagNameNS('http://www.itunes.com/dtds/podcast-1.0.dtd', 'image')[0];
+          const thumb = itunesImg?.getAttribute('href') || itunesImg?.textContent || '';
+
+          // Episode number — use itunes:episode if available, else position
+          const epNumTag = item.getElementsByTagNameNS('http://www.itunes.com/dtds/podcast-1.0.dtd', 'episode')[0]?.textContent;
+          const epNum = epNumTag || (items.length - i);
+
+          const ep = { title, desc: truncDesc, pubDate, dur, epNum, thumb, isSideline: isSidelineStory(title) };
+          isSidelineStory(title) ? sideline.push(ep) : regular.push(ep);
+        });
+
+        const total = items.length;
+        document.getElementById('ep-count').innerHTML =
+          `Showing <span>${total}</span> episode${total !== 1 ? 's' : ''} &nbsp;·&nbsp; <span>${regular.length}</span> regular &nbsp;·&nbsp; <span>${sideline.length}</span> sideline stories`;
+
+        const html =
+          renderSection(regular, '🏈 Weekly Episodes', 'badge-regular') +
+          (sideline.length ? `<div style="margin-top:48px;"></div>` + renderSection(sideline, '🎙 Sideline Stories', 'badge-sideline') : '');
 
         document.getElementById('ep-list').innerHTML = html;
 
       } catch (e) {
-        document.getElementById('ep-count').innerHTML = 'Could not load episodes';
+        document.getElementById('ep-count').textContent = 'Could not load episodes';
         document.getElementById('ep-list').innerHTML = `
           <div style="text-align:center;padding:60px 0;">
-            <p style="color:var(--muted);margin-bottom:24px;">Listen to all episodes on your favorite platform:</p>
+            <p style="color:var(--muted);margin-bottom:24px;">Listen on your favorite platform:</p>
             <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
               <a href="${SPOTIFY_SHOW}" target="_blank" class="btn-gold">Listen on Spotify</a>
               <a href="${APPLE_SHOW}" target="_blank" class="btn-ghost">Apple Podcasts</a>
@@ -209,4 +255,3 @@
     loadEpisodes();
   </script>
 </body>
-</html>
