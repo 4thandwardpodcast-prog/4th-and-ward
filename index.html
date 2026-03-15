@@ -874,24 +874,21 @@
     <div class="section-inner" style="max-width: 100%;">
       <div class="ep-grid">
         <div class="ep-left">
-          <div class="ep-number">Latest Episode</div>
-          <h2 class="ep-title" id="ep-title">Loading...</h2>
-          <p class="ep-desc" id="ep-desc">Fetching latest episode...</p>
-          <div class="ep-meta">
-            <div class="ep-meta-item">
-              <strong id="ep-num">#—</strong>
-              Episode
-            </div>
-            <div class="ep-meta-item">
-              <strong id="ep-date">—</strong>
-              Released
-            </div>
-            <div class="ep-meta-item">
-              <strong id="ep-duration">—</strong>
-              Runtime
-            </div>
+          <div class="ep-number">Now Playing</div>
+          <h2 class="ep-title">New Episodes<br>Every Week</h2>
+          <p class="ep-desc">
+            Jack and Adam break down the latest in football, argue about takes, 
+            celebrate small-town programs, and go deep on the stories that make 
+            sports worth talking about.
+          </p>
+          <p class="ep-desc" style="margin-top: -8px;">
+            Play the latest episode directly from the player, or subscribe 
+            on your platform of choice so you never miss a drop.
+          </p>
+          <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
+            <a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="btn-gold">Follow on Spotify →</a>
+            <a href="http://podcasts.apple.com/us/podcast/4th-ward/id1803701876" target="_blank" class="btn-ghost">Listen on Apple Podcasts →</a>
           </div>
-          <a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="btn-gold">Listen on Spotify →</a>
         </div>
         <div class="ep-right">
           <!-- LIVE SPOTIFY EMBED — auto-updates with every new episode -->
@@ -1060,70 +1057,5 @@
     </ul>
     <p class="footer-copy">© 2026 4th & Ward Podcast. All rights reserved.</p>
   </footer>
-
-  <script>
-    // Auto-fetch latest episode from RSS feed
-    const RSS_URL = 'https://api.riverside.fm/hosting/ZZKrwzya.rss';
-    const PROXY   = 'https://corsproxy.io/?';
-
-    async function loadLatestEpisode() {
-      try {
-        const res  = await fetch(PROXY + encodeURIComponent(RSS_URL));
-        const text = await res.text();
-        const parser = new DOMParser();
-        const xml  = parser.parseFromString(text, 'text/xml');
-        const items = xml.querySelectorAll('item');
-        if (!items.length) return;
-
-        const latest = items[0];
-
-        // Title
-        const title = latest.querySelector('title')?.textContent || '';
-        document.getElementById('ep-title').textContent = title;
-
-        // Description — strip HTML tags, truncate to 200 chars
-        const rawDesc = latest.querySelector('description')?.textContent || '';
-        const cleanDesc = rawDesc.replace(/<[^>]+>/g, '').trim();
-        document.getElementById('ep-desc').textContent =
-          cleanDesc.length > 200 ? cleanDesc.slice(0, 197) + '...' : cleanDesc;
-
-        // Episode number — try itunes:episode, fallback to position
-        const epNum = latest.querySelector('episode')?.textContent
-          || (items.length - Array.from(items).indexOf(latest));
-        document.getElementById('ep-num').textContent = '#' + epNum;
-
-        // Date
-        const pubDate = latest.querySelector('pubDate')?.textContent || '';
-        if (pubDate) {
-          const d = new Date(pubDate);
-          document.getElementById('ep-date').textContent =
-            d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-        }
-
-        // Duration
-        const dur = latest.querySelector('duration')?.textContent || '';
-        if (dur) {
-          // Handle HH:MM:SS or seconds
-          if (dur.includes(':')) {
-            const parts = dur.split(':');
-            document.getElementById('ep-duration').textContent =
-              parts.length === 3
-                ? parts[0] + 'h ' + parts[1] + 'm'
-                : parts[0] + ' min';
-          } else {
-            const mins = Math.round(parseInt(dur) / 60);
-            document.getElementById('ep-duration').textContent = mins + ' min';
-          }
-        }
-      } catch (e) {
-        // Silently fail — placeholders stay if fetch fails
-        document.getElementById('ep-title').textContent = '4th & Ward Podcast';
-        document.getElementById('ep-desc').textContent =
-          'Football talk, sports culture, and unfiltered commentary. New episodes every week.';
-      }
-    }
-
-    loadLatestEpisode();
-  </script>
 </body>
 </html>
