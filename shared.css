@@ -18,11 +18,13 @@ body::before { content: ''; position: fixed; inset: 0; background-image: url("da
 nav { position: fixed; top: 0; left: 0; right: 0; z-index: 500; display: flex; align-items: center; justify-content: space-between; padding: 0 48px; height: 68px; background: rgba(8,8,8,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
 .nav-logo img { height: 38px; width: auto; display: block; }
 .nav-links { display: flex; list-style: none; gap: 36px; }
-.nav-links a { text-decoration: none; color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; transition: color 0.2s; }
-.nav-links a:hover, .nav-links a.active { color: var(--gold); }
+.nav-links a { text-decoration: none; color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; transition: color 0.2s, background 0.2s; padding: 7px 14px; border-radius: 3px; border: 1px solid transparent; white-space: nowrap; }
+.nav-links a:hover { color: var(--white); border-color: var(--border); }
+.nav-links a.active { color: var(--gold); border-color: rgba(245,197,24,0.3); background: rgba(245,197,24,0.06); }
 .nav-listen { background: var(--gold); color: var(--black) !important; padding: 9px 20px; border-radius: 3px; font-size: 11px !important; font-weight: 700 !important; letter-spacing: 0.14em !important; }
 .nav-listen:hover { background: var(--gold-hover) !important; color: var(--black) !important; }
 .nav-mobile-btn { display: none; background: none; border: none; color: var(--white); font-size: 22px; cursor: pointer; }
+.nav-links-wrap { display: flex; align-items: center; gap: 4px; }
 .page-wrap { padding-top: 68px; }
 .section-inner { max-width: 1200px; margin: 0 auto; }
 .section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
@@ -51,9 +53,8 @@ footer { padding: 48px; border-top: 1px solid var(--border); display: flex; alig
 .fade-up-3 { animation-delay: 0.4s; opacity: 0; }
 .fade-up-4 { animation-delay: 0.55s; opacity: 0; }
 @media (max-width: 900px) {
-  nav { padding: 0 24px; }
-  .nav-links { display: none; flex-direction: column; position: absolute; top: 68px; left: 0; right: 0; background: rgba(8,8,8,0.98); padding: 20px 24px; gap: 20px; border-bottom: 1px solid var(--border); }
-  .nav-links.open { display: flex; }
-  .nav-mobile-btn { display: block; }
+  nav { padding: 0 16px; overflow-x: auto; }
+  .nav-links { gap: 16px; flex-wrap: nowrap; }
+  .nav-links a { font-size: 11px; white-space: nowrap; }
   footer { flex-direction: column; align-items: flex-start; padding: 32px 24px; }
 }
