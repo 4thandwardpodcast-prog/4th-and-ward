@@ -113,7 +113,7 @@
 
   <script>
     const RSS = 'https://api.riverside.fm/hosting/ZZKrwzya.rss';
-    const PROXY = 'https://corsproxy.io/?';
+    const PROXY = 'https://api.allorigins.win/raw?url=';
     const SPOTIFY_SHOW = 'https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS';
     const APPLE_SHOW = 'http://podcasts.apple.com/us/podcast/4th-ward/id1803701876';
     const YOUTUBE_SHOW = 'https://www.youtube.com/playlist?list=PL2MYnWAZNvuRQW0kwX0MA0J5lKMoTx6Qv';
@@ -145,10 +145,26 @@
       return tmp.textContent || tmp.innerText || '';
     }
 
+    const PROXIES = [
+      'https://api.allorigins.win/raw?url=',
+      'https://corsproxy.io/?',
+      'https://proxy.cors.sh/',
+    ];
+
+    async function fetchWithFallback(url) {
+      for (const proxy of PROXIES) {
+        try {
+          const res = await fetch(proxy + encodeURIComponent(url));
+          const text = await res.text();
+          if (text && text.includes('<item>')) return text;
+        } catch(e) { continue; }
+      }
+      throw new Error('All proxies failed');
+    }
+
     async function loadEpisodes() {
       try {
-        const res = await fetch(PROXY + encodeURIComponent(RSS));
-        const text = await res.text();
+        const text = await fetchWithFallback(RSS);
         const parser = new DOMParser();
         const xml = parser.parseFromString(text, 'text/xml');
         const items = Array.from(xml.querySelectorAll('item'));
