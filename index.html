@@ -1064,14 +1064,14 @@
   <script>
     // Auto-fetch latest episode from RSS feed
     const RSS_URL = 'https://api.riverside.fm/hosting/ZZKrwzya.rss';
-    const PROXY   = 'https://api.allorigins.win/get?url=';
+    const PROXY   = 'https://corsproxy.io/?';
 
     async function loadLatestEpisode() {
       try {
         const res  = await fetch(PROXY + encodeURIComponent(RSS_URL));
-        const data = await res.json();
+        const text = await res.text();
         const parser = new DOMParser();
-        const xml  = parser.parseFromString(data.contents, 'text/xml');
+        const xml  = parser.parseFromString(text, 'text/xml');
         const items = xml.querySelectorAll('item');
         if (!items.length) return;
 
