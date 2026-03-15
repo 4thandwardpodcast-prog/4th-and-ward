@@ -1,8 +1,0 @@
-{
-  "rewrites": [
-    { "source": "/episodes", "destination": "/episodes.html" },
-    { "source": "/about", "destination": "/about.html" },
-    { "source": "/totw", "destination": "/totw.html" },
-    { "source": "/merch", "destination": "/merch.html" }
-  ]
-}
