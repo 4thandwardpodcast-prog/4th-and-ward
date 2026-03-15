@@ -7,41 +7,114 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="shared.css">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
-    .page-hero { padding: 120px 48px 80px; border-bottom: 1px solid var(--border); }
+    /* PAGE HERO */
+    .page-hero { padding: 120px 48px 60px; border-bottom: 1px solid var(--border); }
     .page-hero h1 { font-family: var(--condensed); font-weight: 900; font-size: clamp(52px, 8vw, 96px); text-transform: uppercase; line-height: 0.88; }
     .page-hero h1 span { color: var(--gold); }
     .page-hero p { color: var(--muted); font-size: 17px; margin-top: 20px; max-width: 600px; line-height: 1.65; }
-    .totw-body { padding: 80px 48px 100px; }
-    .totw-table-wrap { overflow-x: auto; }
-    .totw-table { width: 100%; border-collapse: collapse; }
-    .totw-table thead tr { border-bottom: 2px solid var(--gold); }
-    .totw-table th { text-align: left; padding: 12px 20px; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); white-space: nowrap; }
-    .totw-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
-    .totw-table tbody tr:hover { background: var(--surface); }
-    .totw-table td { padding: 18px 20px; font-size: 14px; color: var(--white); vertical-align: middle; }
-    .totw-school-name { font-family: var(--condensed); font-weight: 900; font-size: 18px; text-transform: uppercase; line-height: 1; }
-    .totw-ep-badge { background: rgba(245,197,24,0.1); border: 1px solid rgba(245,197,24,0.2); border-radius: 3px; padding: 4px 8px; font-size: 11px; font-weight: 700; color: var(--gold); white-space: nowrap; display: inline-block; }
-    .totw-mascot { font-size: 13px; color: var(--muted); font-weight: 500; }
-    .totw-location { font-size: 13px; color: var(--muted); }
-    .submit-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 40px; margin-top: 60px; display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
-    .submit-box h3 { font-family: var(--condensed); font-weight: 900; font-size: 28px; text-transform: uppercase; margin-bottom: 8px; }
-    .submit-box p { color: var(--muted); font-size: 15px; max-width: 440px; line-height: 1.6; }
+
+    /* TABS */
+    .tab-bar { display: flex; gap: 4px; padding: 32px 48px 0; border-bottom: 1px solid var(--border); background: var(--black); }
+    .tab-btn { padding: 12px 24px; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; background: none; border: none; border-bottom: 3px solid transparent; color: var(--muted); cursor: pointer; font-family: var(--body); transition: color 0.2s, border-color 0.2s; margin-bottom: -1px; }
+    .tab-btn:hover { color: var(--white); }
+    .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+    /* BODY */
+    .totw-body { padding: 48px 48px 100px; max-width: 1100px; margin: 0 auto; }
+
+    /* NOMINATIONS TAB */
+    .nom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+    .nom-form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 36px; }
+    .nom-form-card h2 { font-family: var(--condensed); font-weight: 900; font-size: 28px; text-transform: uppercase; margin-bottom: 6px; }
+    .nom-form-card p { color: var(--muted); font-size: 14px; margin-bottom: 28px; line-height: 1.6; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .form-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; font-size: 15px; color: var(--white); font-family: var(--body); outline: none; transition: border-color 0.2s; box-sizing: border-box; }
+    .form-input:focus { border-color: var(--gold); }
+    .form-row { display: grid; grid-template-columns: 1fr 80px; gap: 10px; }
+    .form-select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; font-size: 15px; color: var(--white); font-family: var(--body); outline: none; cursor: pointer; transition: border-color 0.2s; }
+    .form-select:focus { border-color: var(--gold); }
+    .submit-btn { width: 100%; background: var(--gold); color: var(--black); border: none; border-radius: 6px; padding: 14px; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; font-family: var(--body); transition: background 0.2s, transform 0.15s; margin-top: 8px; }
+    .submit-btn:hover { background: var(--gold-hover); transform: translateY(-1px); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .form-success { background: rgba(29,185,84,0.1); border: 1px solid rgba(29,185,84,0.3); border-radius: 6px; padding: 14px; text-align: center; color: #1DB954; font-size: 14px; font-weight: 600; margin-top: 12px; display: none; }
+
+    /* NOMINEES LIST */
+    .nominees-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 36px; }
+    .nominees-card h2 { font-family: var(--condensed); font-weight: 900; font-size: 28px; text-transform: uppercase; margin-bottom: 24px; }
+    .nominee-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); gap: 12px; }
+    .nominee-row:last-child { border-bottom: none; }
+    .nominee-name { font-size: 14px; font-weight: 600; color: var(--white); }
+    .nominee-loc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .nominee-mascot { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); background: rgba(245,197,24,0.08); border: 1px solid rgba(245,197,24,0.2); border-radius: 3px; padding: 4px 8px; white-space: nowrap; flex-shrink: 0; }
+    .nominees-loading { color: var(--muted); font-size: 14px; text-align: center; padding: 24px 0; }
+
+    /* WINNERS TAB */
+    .winners-table-wrap { overflow-x: auto; }
+    .winners-table { width: 100%; border-collapse: collapse; }
+    .winners-table thead tr { border-bottom: 2px solid var(--gold); }
+    .winners-table th { text-align: left; padding: 12px 20px; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); white-space: nowrap; }
+    .winners-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+    .winners-table tbody tr:hover { background: var(--surface); }
+    .winners-table td { padding: 16px 20px; font-size: 14px; color: var(--white); vertical-align: middle; }
+    .school-name { font-family: var(--condensed); font-weight: 900; font-size: 18px; text-transform: uppercase; }
+    .ep-badge { background: rgba(245,197,24,0.1); border: 1px solid rgba(245,197,24,0.2); border-radius: 3px; padding: 4px 8px; font-size: 11px; font-weight: 700; color: var(--gold); white-space: nowrap; display: inline-block; }
+    .winners-loading { text-align: center; padding: 60px; color: var(--muted); }
+
+    /* WHEEL TAB */
+    .wheel-section { text-align: center; }
+    .wheel-wrap { position: relative; width: 600px; height: 600px; margin: 0 auto 32px; }
+    .wheel-canvas { border-radius: 50%; border: 8px solid var(--gold); box-shadow: 0 0 40px rgba(245,197,24,0.15); display: block; }
+    .wheel-pointer { position: absolute; top: -24px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 22px solid transparent; border-right: 22px solid transparent; border-top: 48px solid var(--gold); z-index: 20; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.8)); }
+    .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 110px; height: 110px; background: var(--black); border-radius: 50%; border: 5px solid var(--gold); z-index: 10; display: flex; align-items: center; justify-content: center; }
+    .wheel-center img { width: 80px; height: 80px; border-radius: 50%; object-fit: contain; }
+    .spin-btn { background: var(--gold); color: var(--black); border: none; border-radius: 8px; padding: 18px 60px; font-size: 22px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; font-family: var(--condensed); transition: background 0.2s, transform 0.15s; box-shadow: 0 6px 20px rgba(245,197,24,0.3); }
+    .spin-btn:hover { background: var(--gold-hover); transform: translateY(-2px); }
+    .spin-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
+    .wheel-status { margin-top: 20px; font-family: var(--condensed); font-size: 24px; font-weight: 900; text-transform: uppercase; color: var(--gold); min-height: 36px; }
+    .wheel-locked { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 40px; text-align: center; margin-bottom: 32px; }
+    .wheel-locked h3 { font-family: var(--condensed); font-size: 24px; text-transform: uppercase; margin-bottom: 8px; }
+    .wheel-locked p { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+    .pin-wrap { display: flex; gap: 10px; max-width: 320px; margin: 0 auto; }
+    .pin-input { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; font-size: 16px; color: var(--white); font-family: var(--body); outline: none; text-align: center; letter-spacing: 0.2em; }
+    .pin-input:focus { border-color: var(--gold); }
+    .pin-btn { background: var(--gold); color: var(--black); border: none; border-radius: 6px; padding: 12px 20px; font-size: 13px; font-weight: 700; text-transform: uppercase; cursor: pointer; font-family: var(--body); }
+    .pin-error { color: #e05555; font-size: 13px; margin-top: 8px; display: none; }
+    .wheel-no-nominees { text-align: center; padding: 60px; color: var(--muted); font-size: 16px; }
+
+    /* WINNER MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+    .modal-overlay.open { display: flex; }
+    .modal-card { background: var(--surface); border: 2px solid var(--gold); border-radius: 12px; padding: 48px 40px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 0 60px rgba(245,197,24,0.2); animation: modalIn 0.3s ease; }
+    @keyframes modalIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+    .modal-trophy { font-size: 56px; margin-bottom: 8px; }
+    .modal-headline { font-family: var(--condensed); font-weight: 900; font-size: 18px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+    .modal-school { font-family: var(--condensed); font-weight: 900; font-size: 44px; text-transform: uppercase; line-height: 1; margin-bottom: 8px; }
+    .modal-meta { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+    .modal-ep { font-family: var(--condensed); font-size: 20px; font-weight: 900; color: var(--gold); margin-bottom: 24px; }
+    .modal-close { background: var(--gold); color: var(--black); border: none; border-radius: 6px; padding: 12px 32px; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; font-family: var(--body); transition: background 0.2s; }
+    .modal-close:hover { background: var(--gold-hover); }
+
     @media (max-width: 900px) {
       .page-hero { padding: 90px 24px 48px; }
-      .totw-body { padding: 40px 24px 80px; }
-      .totw-table th { font-size: 9px; padding: 10px 12px; }
-      .totw-table td { padding: 14px 12px; font-size: 13px; }
-      .totw-school-name { font-size: 16px; }
-      .submit-box { flex-direction: column; padding: 28px 24px; gap: 20px; }
+      .tab-bar { padding: 24px 24px 0; gap: 0; overflow-x: auto; }
+      .tab-btn { padding: 10px 16px; font-size: 11px; white-space: nowrap; }
+      .totw-body { padding: 32px 24px 80px; }
+      .nom-grid { grid-template-columns: 1fr; }
+      .wheel-wrap { width: 320px; height: 320px; }
+      .wheel-center { width: 70px; height: 70px; }
+      .wheel-center img { width: 52px; height: 52px; }
+      .winners-table th, .winners-table td { padding: 12px; }
     }
     @media (max-width: 600px) {
       .page-hero { padding: 80px 16px 36px; }
-      .totw-body { padding: 28px 16px 60px; }
-      .totw-table th:last-child, .totw-table td:last-child { display: none; }
-      .totw-table th, .totw-table td { padding: 10px 10px; }
-      .submit-box { padding: 20px 16px; }
-      .submit-box h3 { font-size: 22px; }
+      .tab-bar { padding: 16px 16px 0; }
+      .totw-body { padding: 24px 16px 60px; }
+      .nom-form-card, .nominees-card { padding: 24px 20px; }
+      .wheel-wrap { width: 280px; height: 280px; }
+      .spin-btn { font-size: 18px; padding: 14px 40px; }
     }
   </style>
 </head>
@@ -61,40 +134,130 @@
   </nav>
 
   <div class="page-hero">
-    <div class="section-inner">
+    <div style="max-width:1100px;margin:0 auto;">
       <div class="section-label">Recurring Segment</div>
       <h1>Team of<br>the <span>Week</span></h1>
-      <p>Every week Jack and Adam spotlight an obscure small-town high school football program with a great story. Small towns. Crazy mascots. Big Friday night traditions. This is the archive.</p>
+      <p>Listeners nominate high school programs. Jack and Adam spin the wheel live on the pod. Every week a new team gets the spotlight.</p>
     </div>
   </div>
 
+  <!-- TABS -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('nominate')">Nominate a Team</button>
+    <button class="tab-btn" onclick="switchTab('winners')">Past Winners</button>
+    <button class="tab-btn" onclick="switchTab('wheel')">🎡 The Wheel</button>
+  </div>
+
   <div class="totw-body">
-    <div class="section-inner">
-      <div class="section-label" style="margin-bottom: 24px;">Full Archive — <span style="color:var(--white);" id="totw-count">loading...</span></div>
-      <div class="totw-table-wrap">
-        <table class="totw-table">
+
+    <!-- ── NOMINATE TAB ── -->
+    <div id="tab-nominate">
+      <div class="nom-grid">
+        <div class="nom-form-card">
+          <h2>Submit Your Team</h2>
+          <p>Know a great high school football program with an awesome tradition, wild mascot, or untold story? Nominate them here — your school goes straight onto the wheel.</p>
+          <div class="form-group">
+            <label class="form-label">School Name *</label>
+            <input type="text" class="form-input" id="nom-school" placeholder="e.g. Lone Pine High School" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mascot *</label>
+            <input type="text" class="form-input" id="nom-mascot" placeholder="e.g. Golden Eagles" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Location *</label>
+            <div class="form-row">
+              <input type="text" class="form-input" id="nom-city" placeholder="City" autocomplete="off">
+              <select class="form-select" id="nom-state">
+                <option value="" disabled selected>ST</option>
+                <option>AL</option><option>AK</option><option>AZ</option><option>AR</option><option>CA</option>
+                <option>CO</option><option>CT</option><option>DE</option><option>FL</option><option>GA</option>
+                <option>HI</option><option>ID</option><option>IL</option><option>IN</option><option>IA</option>
+                <option>KS</option><option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+                <option>MA</option><option>MI</option><option>MN</option><option>MS</option><option>MO</option>
+                <option>MT</option><option>NE</option><option>NV</option><option>NH</option><option>NJ</option>
+                <option>NM</option><option>NY</option><option>NC</option><option>ND</option><option>OH</option>
+                <option>OK</option><option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+                <option>SD</option><option>TN</option><option>TX</option><option>UT</option><option>VT</option>
+                <option>VA</option><option>WA</option><option>WV</option><option>WI</option><option>WY</option>
+              </select>
+            </div>
+          </div>
+          <button class="submit-btn" id="nom-btn" onclick="submitNomination()">Submit to the Wheel</button>
+          <div class="form-success" id="nom-success">🏈 Submitted! Your team is on the wheel.</div>
+        </div>
+
+        <div class="nominees-card">
+          <h2>On the Wheel</h2>
+          <div id="nominees-list"><div class="nominees-loading">Loading nominees...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── WINNERS TAB ── -->
+    <div id="tab-winners" style="display:none;">
+      <div class="section-label" style="margin-bottom:24px;">All-Time Archive — <span style="color:var(--white);" id="winners-count">loading...</span></div>
+      <div class="winners-table-wrap">
+        <table class="winners-table">
           <thead>
             <tr>
               <th>Episode</th>
               <th>School</th>
               <th>Mascot</th>
               <th>Location</th>
-              <th>Fun Fact</th>
             </tr>
           </thead>
-          <tbody id="totw-tbody">
-            <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:40px;">Loading teams...</td></tr>
+          <tbody id="winners-tbody">
+            <tr><td colspan="4" class="winners-loading">Loading winners...</td></tr>
           </tbody>
         </table>
       </div>
+    </div>
 
-      <div class="submit-box">
-        <div>
-          <h3>Know a Team?</h3>
-          <p>Got a school with a wild tradition, an insane mascot, or an untold story from a small town? Hit the pod on social and let us know — it might be the next Team of the Week.</p>
+    <!-- ── WHEEL TAB ── -->
+    <div id="tab-wheel" style="display:none;">
+
+      <!-- HOST LOGIN -->
+      <div id="wheel-locked" class="wheel-locked">
+        <h3>Host Access Required</h3>
+        <p>The wheel is controlled by Jack &amp; Adam during recording. Enter the host PIN to spin.</p>
+        <div class="pin-wrap">
+          <input type="password" class="pin-input" id="pin-input" placeholder="PIN" maxlength="10"
+            onkeypress="if(event.key==='Enter') unlockWheel()">
+          <button class="pin-btn" onclick="unlockWheel()">Enter</button>
         </div>
-        <a href="https://www.tiktok.com/@coachwardlaw" target="_blank" class="btn-gold">Submit a Team →</a>
+        <div class="pin-error" id="pin-error">Incorrect PIN</div>
       </div>
+
+      <!-- WHEEL (hidden until unlocked) -->
+      <div id="wheel-area" class="wheel-section" style="display:none;">
+        <div class="wheel-wrap">
+          <div class="wheel-pointer"></div>
+          <canvas id="wheel-canvas" class="wheel-canvas"></canvas>
+          <div class="wheel-center">
+            <img src="logo.png" alt="4th & Ward">
+          </div>
+        </div>
+        <button class="spin-btn" id="spin-btn" onclick="spinWheel()">Spin the Wheel</button>
+        <div class="wheel-status" id="wheel-status"></div>
+      </div>
+
+      <div id="wheel-no-nominees" class="wheel-no-nominees" style="display:none;">
+        <p>No nominees on the wheel yet. Tell your listeners to submit!</p>
+      </div>
+    </div>
+
+  </div><!-- end totw-body -->
+
+  <!-- WINNER MODAL -->
+  <div class="modal-overlay" id="winner-modal">
+    <div class="modal-card">
+      <div class="modal-trophy">🏈</div>
+      <div class="modal-headline">Team of the Week</div>
+      <div class="modal-school" id="modal-school">—</div>
+      <div class="modal-meta" id="modal-meta">—</div>
+      <div class="modal-ep" id="modal-ep">—</div>
+      <button class="modal-close" onclick="closeModal()">Done</button>
     </div>
   </div>
 
@@ -111,35 +274,287 @@
   </footer>
 
   <script>
-    // Known Team of the Week archive — add new entries here each week
-    // Format: { ep, school, mascot, city, state, fact }
-    const TEAMS = [
-      { ep: 1,  school: "Ninety-Six Wildcats",        mascot: "Wildcats",       city: "Ninety-Six",      state: "SC", fact: "The town is literally named Ninety-Six — one of the most unique school names in America." },
-      { ep: 2,  school: "Bridge Creek Bobcats",        mascot: "Bobcats",        city: "Blanchard",       state: "OK", fact: "Perennial Oklahoma powerhouse known for developing college talent out of a small rural community." },
-      { ep: 3,  school: "Valdosta Wildcats",           mascot: "Wildcats",       city: "Valdosta",        state: "GA", fact: "6-time national champions with over 900 all-time wins — the most storied small-city program in America." },
-      { ep: 4,  school: "Lone Pine Golden Eagles",     mascot: "Golden Eagles",  city: "Lone Pine",       state: "CA", fact: "Tiny school in the Eastern Sierras playing 6-man football in the shadow of Mt. Whitney." },
-    ];
+    // ── CONFIG ──────────────────────────────────────────────
+    const TOTW_URL = 'https://script.google.com/macros/s/AKfycbzxVFSLguJuRZlAEdpvjiDl-fVbeOT1egHA2qO-KjS58UxufYN9ldJjvtWI9m0vHAW3Uw/exec';
+    const HOST_PIN = '4WARD';
+    // ────────────────────────────────────────────────────────
 
-    function renderTeams() {
-      const tbody = document.getElementById('totw-tbody');
-      if (!TEAMS.length) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:40px;">Archive coming soon — check back each week.</td></tr>';
-        document.getElementById('totw-count').textContent = '0 teams';
-        return;
-      }
-      const sorted = [...TEAMS].sort((a, b) => b.ep - a.ep);
-      tbody.innerHTML = sorted.map(t => `
-        <tr>
-          <td><span class="totw-ep-badge">Ep. ${t.ep}</span></td>
-          <td><div class="totw-school-name">${t.school}</div></td>
-          <td><span class="totw-mascot">${t.mascot}</span></td>
-          <td><span class="totw-location">${t.city}, ${t.state}</span></td>
-          <td style="color:var(--muted);font-size:13px;line-height:1.5;max-width:300px;">${t.fact}</td>
-        </tr>`).join('');
-      document.getElementById('totw-count').textContent = `${TEAMS.length} team${TEAMS.length !== 1 ? 's' : ''} featured`;
+    let nominees = [];
+    let winners = [];
+    let nextEpisode = '';
+    let currentRotation = 0;
+    let isSpinning = false;
+    let isHost = false;
+    let lastSliceIndex = -1;
+    let audioCtx = null;
+
+    // ── TAB SWITCHING ──
+    function switchTab(tab) {
+      ['nominate','winners','wheel'].forEach(t => {
+        document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
+        document.querySelectorAll('.tab-btn')[['nominate','winners','wheel'].indexOf(t)]
+          .classList.toggle('active', t === tab);
+      });
+      if (tab === 'winners' && winners.length === 0) loadData();
+      if (tab === 'wheel' && nominees.length === 0) loadData();
     }
 
-    renderTeams();
+    // ── FETCH DATA ──
+    function callTOTW(fn, param) {
+      const url = TOTW_URL + '?fn=' + fn + (param !== undefined ? '&param=' + encodeURIComponent(JSON.stringify(param)) : '');
+      return fetch(url).then(r => r.json());
+    }
+
+    async function loadData() {
+      try {
+        const data = await callTOTW('getTeamsData');
+        nominees = data.nominees || [];
+        winners = data.winners || [];
+        nextEpisode = data.nextEpisode || '';
+        renderNominees();
+        renderWinners();
+        if (isHost) drawWheel();
+      } catch(e) {
+        console.error('Failed to load TOTW data', e);
+      }
+    }
+
+    // ── NOMINEES ──
+    function renderNominees() {
+      const el = document.getElementById('nominees-list');
+      if (!nominees.length) {
+        el.innerHTML = '<div class="nominees-loading">No nominees yet — be the first!</div>';
+        return;
+      }
+      el.innerHTML = nominees.map(n => `
+        <div class="nominee-row">
+          <div>
+            <div class="nominee-name">${n.text}</div>
+            <div class="nominee-loc">${n.location || ''}</div>
+          </div>
+          <span class="nominee-mascot">${n.mascot || '—'}</span>
+        </div>`).join('');
+    }
+
+    // ── WINNERS ──
+    function renderWinners() {
+      const tbody = document.getElementById('winners-tbody');
+      document.getElementById('winners-count').textContent =
+        winners.length + ' team' + (winners.length !== 1 ? 's' : '') + ' featured';
+      if (!winners.length) {
+        tbody.innerHTML = '<tr><td colspan="4" class="winners-loading">No winners yet.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = winners.map(w => `
+        <tr>
+          <td><span class="ep-badge">Ep. ${w.episode}</span></td>
+          <td><div class="school-name">${w.team}</div></td>
+          <td style="color:var(--muted);font-size:13px;">${w.mascot || '—'}</td>
+          <td style="color:var(--muted);font-size:13px;">${w.location || '—'}</td>
+        </tr>`).join('');
+    }
+
+    // ── NOMINATION SUBMIT ──
+    async function submitNomination() {
+      const school = document.getElementById('nom-school').value.trim();
+      const mascot = document.getElementById('nom-mascot').value.trim();
+      const city = document.getElementById('nom-city').value.trim();
+      const state = document.getElementById('nom-state').value;
+      if (!school || !mascot || !city || !state) {
+        alert('Please fill in all fields.');
+        return;
+      }
+      const btn = document.getElementById('nom-btn');
+      btn.textContent = 'Submitting...';
+      btn.disabled = true;
+      try {
+        await callTOTW('submitNomination', { teamName: school, mascot, location: city + ', ' + state });
+        document.getElementById('nom-school').value = '';
+        document.getElementById('nom-mascot').value = '';
+        document.getElementById('nom-city').value = '';
+        document.getElementById('nom-state').value = '';
+        document.getElementById('nom-success').style.display = 'block';
+        setTimeout(() => document.getElementById('nom-success').style.display = 'none', 4000);
+        await loadData();
+      } catch(e) {
+        alert('Submission failed. Please try again.');
+      }
+      btn.textContent = 'Submit to the Wheel';
+      btn.disabled = false;
+    }
+
+    // ── HOST PIN ──
+    function unlockWheel() {
+      const pin = document.getElementById('pin-input').value.trim().toUpperCase();
+      if (pin === HOST_PIN) {
+        isHost = true;
+        document.getElementById('wheel-locked').style.display = 'none';
+        document.getElementById('wheel-area').style.display = 'block';
+        loadData().then(() => {
+          if (nominees.length === 0) {
+            document.getElementById('wheel-area').style.display = 'none';
+            document.getElementById('wheel-no-nominees').style.display = 'block';
+          } else {
+            drawWheel();
+          }
+        });
+      } else {
+        document.getElementById('pin-error').style.display = 'block';
+        setTimeout(() => document.getElementById('pin-error').style.display = 'none', 2000);
+      }
+    }
+
+    // ── WHEEL DRAWING ──
+    function drawWheel() {
+      const canvas = document.getElementById('wheel-canvas');
+      const size = canvas.parentElement.offsetWidth;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const cx = size / 2, cy = size / 2, radius = size / 2 - 4;
+
+      ctx.clearRect(0, 0, size, size);
+
+      if (!nominees.length) return;
+
+      const arc = (Math.PI * 2) / nominees.length;
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(currentRotation);
+
+      for (let i = 0; i < nominees.length; i++) {
+        const angle = i * arc;
+        ctx.save();
+        ctx.rotate(angle);
+
+        // Slice fill
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, radius, 0, arc);
+        ctx.fillStyle = i % 2 === 0 ? '#1a1a1a' : '#F5C518';
+        ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Text
+        ctx.clip();
+        ctx.fillStyle = i % 2 === 0 ? '#F5C518' : '#000';
+        const fontSize = Math.max(9, Math.min(14, radius * arc * 0.5));
+        ctx.font = `800 ${fontSize}px Barlow Condensed, sans-serif`;
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.rotate(arc / 2);
+        let text = nominees[i].text;
+        const maxW = radius - 80;
+        while (ctx.measureText(text).width > maxW && text.length > 1) {
+          text = text.slice(0, -1);
+        }
+        if (text !== nominees[i].text) text += '…';
+        ctx.fillText(text, radius - 12, 0);
+        ctx.restore();
+      }
+      ctx.restore();
+    }
+
+    // ── SPINNING ──
+    function playTick() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.04);
+      } catch(e) {}
+    }
+
+    function spinWheel() {
+      if (isSpinning || !nominees.length || !isHost) return;
+      isSpinning = true;
+      document.getElementById('spin-btn').disabled = true;
+      document.getElementById('wheel-status').textContent = '';
+
+      const spinSpeed = Math.random() * 8 + 18;
+      const spinDuration = Math.random() * 3000 + 5000;
+      let elapsed = 0;
+      const arcDeg = 360 / nominees.length;
+
+      function frame() {
+        elapsed += 16;
+        if (elapsed >= spinDuration) { stopSpin(); return; }
+        const t = elapsed / spinDuration;
+        const eased = 1 - Math.pow(1 - t, 3);
+        const speed = spinSpeed * (1 - eased);
+        currentRotation += speed * Math.PI / 180;
+
+        const deg = ((currentRotation * 180 / Math.PI) % 360 + 360) % 360;
+        const idx = Math.floor((360 - deg + 270) % 360 / arcDeg) % nominees.length;
+        if (idx !== lastSliceIndex) { playTick(); lastSliceIndex = idx; }
+
+        drawWheel();
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    }
+
+    async function stopSpin() {
+      isSpinning = false;
+      const arcDeg = 360 / nominees.length;
+      const deg = ((currentRotation * 180 / Math.PI) % 360 + 360) % 360;
+      const idx = Math.floor((360 - deg + 270) % 360 / arcDeg) % nominees.length;
+      const winner = nominees[idx];
+
+      document.getElementById('wheel-status').textContent = winner.text + ' 🏈';
+      triggerConfetti();
+
+      // Save to sheet
+      try {
+        await callTOTW('saveWinner', { row: winner.row, episodeName: nextEpisode, pin: HOST_PIN });
+        // Remove winner from nominees locally
+        nominees = nominees.filter((_, i) => i !== idx);
+        drawWheel();
+        if (nominees.length === 0) {
+          document.getElementById('wheel-area').style.display = 'none';
+          document.getElementById('wheel-no-nominees').style.display = 'block';
+        }
+        // Reload to get fresh next episode number
+        await loadData();
+      } catch(e) {
+        console.error('Failed to save winner', e);
+      }
+
+      // Show modal
+      document.getElementById('modal-school').textContent = winner.fullName || winner.text;
+      document.getElementById('modal-meta').textContent = winner.location || '';
+      document.getElementById('modal-ep').textContent = nextEpisode + ' — Team of the Week';
+      document.getElementById('winner-modal').classList.add('open');
+      document.getElementById('spin-btn').disabled = false;
+    }
+
+    function closeModal() {
+      document.getElementById('winner-modal').classList.remove('open');
+    }
+
+    function triggerConfetti() {
+      const end = Date.now() + 3500;
+      const colors = ['#F5C518', '#ffffff', '#000000'];
+      (function fire() {
+        if (Date.now() > end) return;
+        confetti({ particleCount: 40, spread: 60, origin: { x: 0.2, y: 0.5 }, colors });
+        confetti({ particleCount: 40, spread: 60, origin: { x: 0.8, y: 0.5 }, colors });
+        setTimeout(fire, 200);
+      })();
+    }
+
+    // ── INIT ──
+    window.addEventListener('resize', () => { if (isHost) drawWheel(); });
+    loadData();
   </script>
 </body>
 </html>
