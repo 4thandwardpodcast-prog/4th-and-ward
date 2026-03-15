@@ -417,6 +417,38 @@
       color: var(--muted);
     }
 
+    .countdown-bar {
+      margin-top: 20px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .countdown-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .countdown-time {
+      font-family: var(--condensed);
+      font-weight: 900;
+      font-size: 32px;
+      color: var(--gold);
+      letter-spacing: 0.04em;
+      line-height: 1;
+    }
+    .countdown-next {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+    }
     @media (max-width: 900px) {
       .wardle-hero { padding: 90px 24px 0; }
       .wardle-hero-inner { padding: 48px 0 36px; }
@@ -627,15 +659,23 @@
       try {
         const count = await callScript('getPreviousPuzzleCount');
         const select = document.getElementById('puzzleSelect');
-        const startDate = new Date('2026-03-14');
-        for (let i = 1; i <= count; i++) {
+        const startDate = new Date('2026-03-13T00:00:00');
+        // Add puzzles newest first (today at top)
+        for (let i = count; i >= 1; i--) {
           const d = new Date(startDate);
           d.setDate(d.getDate() + (i - 1));
           const opt = document.createElement('option');
           opt.value = i;
-          opt.textContent = `Puzzle #${i} — ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+          const isToday = i === count;
+          const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          opt.textContent = isToday
+            ? `Puzzle #${i} — Today (${dateStr})`
+            : `Puzzle #${i} — ${dateStr}`;
+          if (isToday) opt.selected = true;
           select.appendChild(opt);
         }
+        // Update next puzzle number in countdown
+        document.getElementById('next-puzzle-num').textContent = count + 1;
       } catch(e) {}
     }
 
@@ -660,6 +700,7 @@
     }
 
     function resetGame() {
+      if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
       attempts = 6;
       clueIndex = 0;
       score = 100;
@@ -777,8 +818,16 @@
           <button class="btn-gold" onclick="resetAndLoadNew()" style="cursor:pointer;border:none;">Play Again</button>
           <a href="episodes.html" class="btn-ghost">Listen to the Pod</a>
         </div>
+        <div class="countdown-bar" style="margin-top:24px;">
+          <div>
+            <div class="countdown-label">Next Puzzle In</div>
+            <div class="countdown-next" id="countdown-next-puzzle">Puzzle #<span id="next-puzzle-num">—</span></div>
+          </div>
+          <div class="countdown-time" id="countdown-timer">--:--:--</div>
+        </div>
       `;
       document.querySelector('.game-card').appendChild(card);
+      startCountdown();
     }
 
     async function resetAndLoadNew() {
@@ -799,6 +848,33 @@
           document.getElementById('stat-alltime').textContent = s.allTimeAvg ?? '—';
         }
       } catch(e) {}
+    }
+
+    // ── COUNTDOWN TIMER ──
+    function updateCountdown() {
+      const now = new Date();
+      // Midnight Central Time
+      const midnight = new Date();
+      midnight.setHours(24, 0, 0, 0); // next midnight local
+      // Adjust for Central Time offset (UTC-6 standard, UTC-5 daylight)
+      // We'll just use local midnight as approximation
+      const diff = midnight - now;
+      if (diff <= 0) {
+        document.getElementById('countdown-timer').textContent = 'Now!';
+        return;
+      }
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      const pad = n => String(n).padStart(2, '0');
+      document.getElementById('countdown-timer').textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+    }
+
+    // Start countdown after game ends
+    let countdownInterval = null;
+    function startCountdown() {
+      updateCountdown();
+      countdownInterval = setInterval(updateCountdown, 1000);
     }
 
     // Enter key support
