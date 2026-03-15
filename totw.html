@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team of the Week — 4th & Ward Podcast</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .page-hero { padding: 120px 48px 80px; border-bottom: 1px solid var(--border); }
+    .page-hero h1 { font-family: var(--condensed); font-weight: 900; font-size: clamp(52px, 8vw, 96px); text-transform: uppercase; line-height: 0.88; }
+    .page-hero h1 span { color: var(--gold); }
+    .page-hero p { color: var(--muted); font-size: 17px; margin-top: 20px; max-width: 560px; line-height: 1.65; }
+    .totw-body { padding: 80px 48px 100px; }
+    .totw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .totw-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
+    .totw-card:hover { border-color: var(--gold-dim); transform: translateY(-3px); }
+    .totw-header { background: var(--black); padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .totw-week { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+    .totw-school { font-family: var(--condensed); font-weight: 900; font-size: 22px; text-transform: uppercase; line-height: 1; }
+    .totw-mascot-badge { background: rgba(245,197,24,0.1); border: 1px solid rgba(245,197,24,0.2); border-radius: 4px; padding: 6px 10px; font-size: 11px; font-weight: 700; color: var(--gold); white-space: nowrap; flex-shrink: 0; }
+    .totw-body-inner { padding: 20px 24px; }
+    .totw-location { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px; }
+    .totw-fact { font-size: 14px; color: var(--white); line-height: 1.6; }
+    @media (max-width: 900px) {
+      .page-hero { padding: 100px 24px 60px; }
+      .totw-body { padding: 48px 24px 80px; }
+      .totw-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo"><img src="logo.png" alt="4th & Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="totw.html" class="active">Team of the Week</a></li>
+      <li><a href="https://www.tiktok.com/@coachwardlaw" target="_blank" rel="noopener">TikTok</a></li>
+      <li><a href="merch.html">Merch</a></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+    <button class="nav-mobile-btn" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+  </nav>
+
+  <div class="page-hero">
+    <div class="section-inner">
+      <div class="section-label">Recurring Segment</div>
+      <h1>Team of<br>the <span>Week</span></h1>
+      <p>Every week Jack and Adam spotlight an obscure small-town program with a great story. Small towns. Big traditions. Ridiculous mascots.</p>
+    </div>
+  </div>
+
+  <div class="totw-body">
+    <div class="section-inner">
+      <div class="totw-grid">
+        <div class="totw-card">
+          <div class="totw-header">
+            <div><div class="totw-week">Featured</div><div class="totw-school">Valdosta Wildcats</div></div>
+            <span class="totw-mascot-badge">Wildcats</span>
+          </div>
+          <div class="totw-body-inner">
+            <div class="totw-location">Valdosta, Georgia</div>
+            <p class="totw-fact">6-time national champions with over 900 all-time wins. The most storied small-city program in American football history.</p>
+          </div>
+        </div>
+        <div class="totw-card">
+          <div class="totw-header">
+            <div><div class="totw-week">Coming Soon</div><div class="totw-school">Next Team Up</div></div>
+            <span class="totw-mascot-badge">TBA</span>
+          </div>
+          <div class="totw-body-inner">
+            <div class="totw-location">Somewhere, USA</div>
+            <p class="totw-fact">Tune in each week to find out which small-town program Jack and Adam are putting on the map next.</p>
+          </div>
+        </div>
+        <div class="totw-card">
+          <div class="totw-header">
+            <div><div class="totw-week">Submit a Team</div><div class="totw-school">Know a Program?</div></div>
+            <span class="totw-mascot-badge">DM Us →</span>
+          </div>
+          <div class="totw-body-inner">
+            <div class="totw-location">Your Town Here</div>
+            <p class="totw-fact">Got a team with a wild tradition, an insane mascot, or an untold story? Hit the pod on social and let us know.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.png" alt="4th & Ward Podcast"></div>
+    <ul class="footer-links">
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="totw.html">TOTW</a></li>
+      <li><a href="merch.html">Merch</a></li>
+    </ul>
+    <p class="footer-copy">© 2026 4th & Ward Podcast. All rights reserved.</p>
+  </footer>
+</body>
+</html>

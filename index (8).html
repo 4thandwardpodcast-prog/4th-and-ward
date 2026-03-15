@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4th & Ward Podcast</title>
+  <meta name="description" content="Hosted by coaching brothers Adam & Jack Wardlaw. Hilarious football stories, locker room moments, and a front-row seat to the funniest tales from the field.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .hero { min-height: 100vh; display: flex; align-items: center; padding: 68px 48px 0; position: relative; overflow: hidden; }
+    .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 60% 70% at 70% 50%, rgba(245,197,24,0.06) 0%, transparent 70%), radial-gradient(ellipse 40% 50% at 20% 80%, rgba(245,197,24,0.03) 0%, transparent 60%); }
+    .hero-bg-lines { position: absolute; inset: 0; background-image: repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(245,197,24,0.03) 79px, rgba(245,197,24,0.03) 80px); }
+    .hero-inner { position: relative; z-index: 2; display: grid; grid-template-columns: 1fr 420px; gap: 80px; align-items: center; max-width: 1200px; margin: 0 auto; width: 100%; padding: 80px 0; }
+    .hero-tag { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 24px; }
+    .hero-tag::before { content: ''; display: block; width: 24px; height: 2px; background: var(--gold); }
+    .hero h1 { font-family: var(--condensed); font-weight: 900; font-size: clamp(64px, 9vw, 108px); line-height: 0.88; text-transform: uppercase; letter-spacing: -0.01em; margin-bottom: 28px; }
+    .hero h1 .gold { color: var(--gold); }
+    .hero-desc { font-size: 17px; color: var(--muted); line-height: 1.65; max-width: 480px; margin-bottom: 40px; }
+    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+    .hero-cover { position: relative; }
+    .hero-cover-img { width: 100%; aspect-ratio: 1; border-radius: 8px; display: block; box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(245,197,24,0.1); }
+    .hero-cover-badge { position: absolute; bottom: -16px; left: -16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; }
+    .badge-dot { width: 8px; height: 8px; border-radius: 50%; background: #1DB954; box-shadow: 0 0 0 3px rgba(29,185,84,0.2); animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 3px rgba(29,185,84,0.2); } 50% { box-shadow: 0 0 0 6px rgba(29,185,84,0.1); } }
+    .badge-text { font-size: 12px; font-weight: 600; color: var(--white); }
+    .badge-sub { font-size: 11px; color: var(--muted); }
+    .listen-strip { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 20px 48px; display: flex; align-items: center; gap: 40px; }
+    .listen-label { font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+    .listen-platforms { display: flex; gap: 24px; flex-wrap: wrap; }
+    .platform-link { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--muted); font-size: 13px; font-weight: 600; transition: color 0.2s; padding: 6px 0; }
+    .platform-link:hover { color: var(--white); }
+    .ep-section { background: var(--surface); }
+    .ep-grid { display: grid; grid-template-columns: 1fr 1fr; }
+    .ep-left { padding: 60px; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; }
+    .ep-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 20px; }
+    .ep-headline { font-family: var(--condensed); font-weight: 900; font-size: clamp(32px, 4vw, 52px); text-transform: uppercase; line-height: 0.95; margin-bottom: 24px; }
+    .ep-body { color: var(--muted); font-size: 15px; line-height: 1.7; margin-bottom: 32px; }
+    .ep-right { padding: 40px; display: flex; flex-direction: column; justify-content: center; }
+    @media (max-width: 900px) {
+      .hero { padding: 68px 24px 0; }
+      .hero-inner { grid-template-columns: 1fr; gap: 40px; padding: 60px 0; }
+      .listen-strip { padding: 20px 24px; }
+      .ep-grid { grid-template-columns: 1fr; }
+      .ep-left { border-right: none; border-bottom: 1px solid var(--border); padding: 40px 24px; }
+      .ep-right { padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo"><img src="logo.png" alt="4th & Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="totw.html">Team of the Week</a></li>
+      <li><a href="https://www.tiktok.com/@coachwardlaw" target="_blank" rel="noopener">TikTok</a></li>
+      <li><a href="merch.html">Merch</a></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+    <button class="nav-mobile-btn" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-bg-lines"></div>
+    <div class="hero-inner">
+      <div>
+        <div class="hero-tag fade-up fade-up-1">Sports &amp; Culture Podcast</div>
+        <h1 class="fade-up fade-up-2">Two<br>Coaches.<br><span class="gold">One Mic.</span></h1>
+        <p class="hero-desc fade-up fade-up-3">Hosted by coaching brothers Adam &amp; Jack Wardlaw — hilarious stories, locker room moments, and a front-row seat to the funniest tales from the field.</p>
+        <div class="hero-actions fade-up fade-up-4">
+          <a href="episodes.html" class="btn-gold"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Latest Episodes</a>
+          <a href="about.html" class="btn-ghost">About the Show</a>
+        </div>
+      </div>
+      <div class="hero-cover fade-up fade-up-3">
+        <img src="logo.png" alt="4th & Ward Podcast" class="hero-cover-img">
+        <div class="hero-cover-badge">
+          <div class="badge-dot"></div>
+          <div><div class="badge-text">New Episode</div><div class="badge-sub">Available now</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="listen-strip">
+    <span class="listen-label">Listen On</span>
+    <div class="listen-platforms">
+      <a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" rel="noopener" class="platform-link"><span class="platform-icon platform-spotify"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg></span>Spotify</a>
+      <a href="http://podcasts.apple.com/us/podcast/4th-ward/id1803701876" target="_blank" rel="noopener" class="platform-link"><span class="platform-icon platform-apple"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg></span>Apple Podcasts</a>
+      <a href="https://www.youtube.com/playlist?list=PL2MYnWAZNvuRQW0kwX0MA0J5lKMoTx6Qv" target="_blank" rel="noopener" class="platform-link"><span class="platform-icon platform-youtube"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></span>YouTube</a>
+    </div>
+  </div>
+
+  <section class="ep-section">
+    <div class="ep-grid">
+      <div class="ep-left">
+        <div class="ep-eyebrow">Now Playing</div>
+        <h2 class="ep-headline">Episode 50<br>&amp; Counting</h2>
+        <p class="ep-body">The 4th &amp; Ward Podcast tackles the lighter side of football — packed with hilarious stories from years of coaching and playing. From locker room mishaps to sideline blunders, every episode delivers humor, heart, and a front-row seat to the funniest tales from the field.</p>
+        <a href="episodes.html" class="btn-gold" style="align-self:flex-start;">All Episodes →</a>
+      </div>
+      <div class="ep-right">
+        <div style="border-radius:12px;overflow:hidden;">
+          <iframe src="https://open.spotify.com/embed/show/0xmgSTyk4RQFx3XgVWomeS?utm_source=generator&theme=0" width="100%" height="352" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" style="display:block;"></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.png" alt="4th & Ward Podcast"></div>
+    <ul class="footer-links">
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="totw.html">TOTW</a></li>
+      <li><a href="merch.html">Merch</a></li>
+    </ul>
+    <p class="footer-copy">© 2026 4th & Ward Podcast. All rights reserved.</p>
+  </footer>
+</body>
+</html>
