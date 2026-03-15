@@ -875,26 +875,23 @@
       <div class="ep-grid">
         <div class="ep-left">
           <div class="ep-number">Latest Episode</div>
-          <h2 class="ep-title">Replace This<br>With Your<br>Episode Title</h2>
-          <p class="ep-desc">
-            Add your episode description here. Tell listeners what you and Adam talked about, 
-            who you had on, what topics you covered. Keep it punchy — 2-3 sentences max.
-          </p>
+          <h2 class="ep-title" id="ep-title">Loading...</h2>
+          <p class="ep-desc" id="ep-desc">Fetching latest episode...</p>
           <div class="ep-meta">
             <div class="ep-meta-item">
-              <strong>Ep. 001</strong>
+              <strong id="ep-num">#—</strong>
               Episode
             </div>
             <div class="ep-meta-item">
-              <strong>Mar 2026</strong>
+              <strong id="ep-date">—</strong>
               Released
             </div>
             <div class="ep-meta-item">
-              <strong>62 min</strong>
+              <strong id="ep-duration">—</strong>
               Runtime
             </div>
           </div>
-          <a href="#listen" class="btn-gold">Full Episode Archive →</a>
+          <a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="btn-gold">Listen on Spotify →</a>
         </div>
         <div class="ep-right">
           <!-- LIVE SPOTIFY EMBED — auto-updates with every new episode -->
@@ -1064,5 +1061,69 @@
     <p class="footer-copy">© 2026 4th & Ward Podcast. All rights reserved.</p>
   </footer>
 
+  <script>
+    // Auto-fetch latest episode from RSS feed
+    const RSS_URL = 'https://api.riverside.fm/hosting/ZZKrwzya.rss';
+    const PROXY   = 'https://api.allorigins.win/get?url=';
+
+    async function loadLatestEpisode() {
+      try {
+        const res  = await fetch(PROXY + encodeURIComponent(RSS_URL));
+        const data = await res.json();
+        const parser = new DOMParser();
+        const xml  = parser.parseFromString(data.contents, 'text/xml');
+        const items = xml.querySelectorAll('item');
+        if (!items.length) return;
+
+        const latest = items[0];
+
+        // Title
+        const title = latest.querySelector('title')?.textContent || '';
+        document.getElementById('ep-title').textContent = title;
+
+        // Description — strip HTML tags, truncate to 200 chars
+        const rawDesc = latest.querySelector('description')?.textContent || '';
+        const cleanDesc = rawDesc.replace(/<[^>]+>/g, '').trim();
+        document.getElementById('ep-desc').textContent =
+          cleanDesc.length > 200 ? cleanDesc.slice(0, 197) + '...' : cleanDesc;
+
+        // Episode number — try itunes:episode, fallback to position
+        const epNum = latest.querySelector('episode')?.textContent
+          || (items.length - Array.from(items).indexOf(latest));
+        document.getElementById('ep-num').textContent = '#' + epNum;
+
+        // Date
+        const pubDate = latest.querySelector('pubDate')?.textContent || '';
+        if (pubDate) {
+          const d = new Date(pubDate);
+          document.getElementById('ep-date').textContent =
+            d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        }
+
+        // Duration
+        const dur = latest.querySelector('duration')?.textContent || '';
+        if (dur) {
+          // Handle HH:MM:SS or seconds
+          if (dur.includes(':')) {
+            const parts = dur.split(':');
+            document.getElementById('ep-duration').textContent =
+              parts.length === 3
+                ? parts[0] + 'h ' + parts[1] + 'm'
+                : parts[0] + ' min';
+          } else {
+            const mins = Math.round(parseInt(dur) / 60);
+            document.getElementById('ep-duration').textContent = mins + ' min';
+          }
+        }
+      } catch (e) {
+        // Silently fail — placeholders stay if fetch fails
+        document.getElementById('ep-title').textContent = '4th & Ward Podcast';
+        document.getElementById('ep-desc').textContent =
+          'Football talk, sports culture, and unfiltered commentary. New episodes every week.';
+      }
+    }
+
+    loadLatestEpisode();
+  </script>
 </body>
 </html>
