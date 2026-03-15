@@ -11,19 +11,42 @@
     .page-hero { padding: 120px 48px 60px; border-bottom: 1px solid var(--border); }
     .page-hero h1 { font-family: var(--condensed); font-weight: 900; font-size: clamp(52px, 8vw, 96px); text-transform: uppercase; line-height: 0.88; letter-spacing: -0.01em; }
     .page-hero h1 span { color: var(--gold); }
-    .page-hero p { color: var(--muted); font-size: 17px; margin-top: 20px; max-width: 520px; }
-    .episodes-wrap { padding: 60px 48px 100px; }
-    .spotify-full { border-radius: 12px; overflow: hidden; margin-bottom: 60px; }
-    .platform-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .plat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 28px 24px; display: flex; align-items: center; gap: 16px; text-decoration: none; color: var(--white); transition: border-color 0.2s, transform 0.2s; }
-    .plat-card:hover { border-color: var(--gold-dim); transform: translateY(-2px); }
-    .plat-icon-lg { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .plat-card-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
-    .plat-card-sub { font-size: 12px; color: var(--muted); }
+    .page-hero p { color: var(--muted); font-size: 17px; margin-top: 20px; max-width: 520px; line-height: 1.65; }
+    .episodes-body { padding: 60px 48px 100px; }
+    .ep-count { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 32px; }
+    .ep-count span { color: var(--gold); }
+    .ep-list { display: flex; flex-direction: column; gap: 2px; }
+    .ep-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 28px 32px; display: grid; grid-template-columns: 64px 1fr auto; gap: 24px; align-items: center; transition: border-color 0.2s, background 0.2s; cursor: default; }
+    .ep-card:hover { border-color: var(--gold-dim); background: #151515; }
+    .ep-num { font-family: var(--condensed); font-weight: 900; font-size: 32px; color: var(--gold); line-height: 1; text-align: center; }
+    .ep-num-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-align: center; margin-top: 2px; }
+    .ep-info { min-width: 0; }
+    .ep-title-text { font-family: var(--condensed); font-weight: 900; font-size: 22px; text-transform: uppercase; line-height: 1.1; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ep-desc-text { font-size: 13px; color: var(--muted); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 10px; }
+    .ep-meta-row { display: flex; gap: 16px; align-items: center; }
+    .ep-date { font-size: 11px; color: var(--muted); font-weight: 500; }
+    .ep-dur { font-size: 11px; color: var(--muted); font-weight: 500; }
+    .ep-dur::before { content: '·'; margin-right: 16px; }
+    .ep-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+    .ep-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 3px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; transition: opacity 0.2s, transform 0.15s; white-space: nowrap; }
+    .ep-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+    .ep-btn-spotify { background: #1DB954; color: #000; }
+    .ep-btn-apple { background: #FC3C44; color: #fff; }
+    .ep-btn-youtube { background: #FF0000; color: #fff; }
+    .ep-loading { text-align: center; padding: 80px 0; color: var(--muted); font-size: 15px; }
+    .ep-loading-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); margin: 0 3px; animation: bounce 1.2s ease-in-out infinite; }
+    .ep-loading-dot:nth-child(2) { animation-delay: 0.2s; }
+    .ep-loading-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
+    .platform-bar { display: flex; gap: 12px; margin-bottom: 40px; flex-wrap: wrap; }
+    .platform-pill { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; transition: opacity 0.2s; }
+    .platform-pill:hover { opacity: 0.85; }
     @media (max-width: 900px) {
       .page-hero { padding: 100px 24px 48px; }
-      .episodes-wrap { padding: 40px 24px 80px; }
-      .platform-grid { grid-template-columns: 1fr; }
+      .episodes-body { padding: 40px 24px 80px; }
+      .ep-card { grid-template-columns: 48px 1fr; gap: 16px; padding: 20px; }
+      .ep-actions { grid-column: 1 / -1; justify-content: flex-start; }
+      .ep-title-text { font-size: 18px; white-space: normal; }
     }
   </style>
 </head>
@@ -44,30 +67,35 @@
   <div class="page-hero">
     <div class="section-inner">
       <div class="section-label">All Episodes</div>
-      <h1>50 Episodes.<br><span>Zero Filter.</span></h1>
-      <p>Every episode of the 4th &amp; Ward Podcast — from week one to right now. Play directly or subscribe on your platform of choice.</p>
+      <h1>Every Episode.<br><span>Zero Filter.</span></h1>
+      <p>Every episode of the 4th &amp; Ward Podcast — from week one to right now.</p>
     </div>
   </div>
 
-  <div class="episodes-wrap">
+  <div class="episodes-body">
     <div class="section-inner">
-      <div class="spotify-full">
-        <iframe src="https://open.spotify.com/embed/show/0xmgSTyk4RQFx3XgVWomeS?utm_source=generator&theme=0" width="100%" height="500" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" style="display:block;"></iframe>
+      <div class="platform-bar">
+        <a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="platform-pill ep-btn-spotify">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+          Follow on Spotify
+        </a>
+        <a href="http://podcasts.apple.com/us/podcast/4th-ward/id1803701876" target="_blank" class="platform-pill ep-btn-apple">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          Subscribe on Apple
+        </a>
+        <a href="https://www.youtube.com/playlist?list=PL2MYnWAZNvuRQW0kwX0MA0J5lKMoTx6Qv" target="_blank" class="platform-pill ep-btn-youtube">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          Watch on YouTube
+        </a>
       </div>
-      <div class="section-label" style="margin-bottom:24px;">Also Available On</div>
-      <div class="platform-grid">
-        <a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="plat-card">
-          <span class="plat-icon-lg platform-spotify"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg></span>
-          <div><div class="plat-card-title">Spotify</div><div class="plat-card-sub">Stream all episodes</div></div>
-        </a>
-        <a href="http://podcasts.apple.com/us/podcast/4th-ward/id1803701876" target="_blank" class="plat-card">
-          <span class="plat-icon-lg platform-apple"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg></span>
-          <div><div class="plat-card-title">Apple Podcasts</div><div class="plat-card-sub">Subscribe &amp; listen</div></div>
-        </a>
-        <a href="https://www.youtube.com/playlist?list=PL2MYnWAZNvuRQW0kwX0MA0J5lKMoTx6Qv" target="_blank" class="plat-card">
-          <span class="plat-icon-lg platform-youtube"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></span>
-          <div><div class="plat-card-title">YouTube</div><div class="plat-card-sub">Watch full episodes</div></div>
-        </a>
+
+      <div id="ep-count" class="ep-count">Loading episodes...</div>
+      <div id="ep-list" class="ep-list">
+        <div class="ep-loading">
+          <span class="ep-loading-dot"></span>
+          <span class="ep-loading-dot"></span>
+          <span class="ep-loading-dot"></span>
+        </div>
       </div>
     </div>
   </div>
@@ -82,5 +110,105 @@
     </ul>
     <p class="footer-copy">© 2026 4th & Ward Podcast. All rights reserved.</p>
   </footer>
+
+  <script>
+    const RSS = 'https://api.riverside.fm/hosting/ZZKrwzya.rss';
+    const PROXY = 'https://corsproxy.io/?';
+    const SPOTIFY_SHOW = 'https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS';
+    const APPLE_SHOW = 'http://podcasts.apple.com/us/podcast/4th-ward/id1803701876';
+    const YOUTUBE_SHOW = 'https://www.youtube.com/playlist?list=PL2MYnWAZNvuRQW0kwX0MA0J5lKMoTx6Qv';
+
+    function formatDate(str) {
+      if (!str) return '';
+      const d = new Date(str);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function formatDuration(dur) {
+      if (!dur) return '';
+      if (dur.includes(':')) {
+        const parts = dur.split(':');
+        if (parts.length === 3) {
+          const h = parseInt(parts[0]);
+          const m = parseInt(parts[1]);
+          return h > 0 ? `${h}h ${m}m` : `${m} min`;
+        }
+        return `${parts[0]} min`;
+      }
+      const mins = Math.round(parseInt(dur) / 60);
+      return `${mins} min`;
+    }
+
+    function stripHtml(html) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      return tmp.textContent || tmp.innerText || '';
+    }
+
+    async function loadEpisodes() {
+      try {
+        const res = await fetch(PROXY + encodeURIComponent(RSS));
+        const text = await res.text();
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(text, 'text/xml');
+        const items = Array.from(xml.querySelectorAll('item'));
+
+        if (!items.length) throw new Error('No episodes found');
+
+        document.getElementById('ep-count').innerHTML =
+          `Showing <span>${items.length}</span> episode${items.length !== 1 ? 's' : ''}`;
+
+        const html = items.map((item, i) => {
+          const title = item.querySelector('title')?.textContent || 'Untitled Episode';
+          const rawDesc = item.querySelector('description')?.textContent || '';
+          const desc = stripHtml(rawDesc).trim();
+          const truncDesc = desc.length > 200 ? desc.slice(0, 197) + '...' : desc;
+          const pubDate = formatDate(item.querySelector('pubDate')?.textContent || '');
+          const dur = formatDuration(item.querySelector('duration')?.textContent || '');
+          const epNum = item.querySelector('episode')?.textContent || (items.length - i);
+          const link = item.querySelector('link')?.textContent || SPOTIFY_SHOW;
+
+          return `
+            <div class="ep-card">
+              <div>
+                <div class="ep-num">${epNum}</div>
+                <div class="ep-num-label">EP</div>
+              </div>
+              <div class="ep-info">
+                <div class="ep-title-text">${title}</div>
+                <div class="ep-desc-text">${truncDesc}</div>
+                <div class="ep-meta-row">
+                  ${pubDate ? `<span class="ep-date">${pubDate}</span>` : ''}
+                  ${dur ? `<span class="ep-dur">${dur}</span>` : ''}
+                </div>
+              </div>
+              <div class="ep-actions">
+                <a href="${SPOTIFY_SHOW}" target="_blank" class="ep-btn ep-btn-spotify">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                  Spotify
+                </a>
+                <a href="${APPLE_SHOW}" target="_blank" class="ep-btn ep-btn-apple">Apple</a>
+                <a href="${YOUTUBE_SHOW}" target="_blank" class="ep-btn ep-btn-youtube">YouTube</a>
+              </div>
+            </div>`;
+        }).join('');
+
+        document.getElementById('ep-list').innerHTML = html;
+
+      } catch (e) {
+        document.getElementById('ep-count').innerHTML = 'Could not load episodes';
+        document.getElementById('ep-list').innerHTML = `
+          <div style="text-align:center;padding:60px 0;">
+            <p style="color:var(--muted);margin-bottom:24px;">Listen to all episodes on your favorite platform:</p>
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+              <a href="${SPOTIFY_SHOW}" target="_blank" class="btn-gold">Listen on Spotify</a>
+              <a href="${APPLE_SHOW}" target="_blank" class="btn-ghost">Apple Podcasts</a>
+            </div>
+          </div>`;
+      }
+    }
+
+    loadEpisodes();
+  </script>
 </body>
 </html>
