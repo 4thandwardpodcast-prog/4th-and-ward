@@ -66,11 +66,11 @@
 
     /* WHEEL TAB */
     .wheel-section { text-align: center; }
-    .wheel-wrap { position: relative; width: 600px; height: 600px; margin: 0 auto 32px; }
+    .wheel-wrap { position: relative; width: 680px; height: 680px; margin: 0 auto 32px; }
     .wheel-canvas { border-radius: 50%; border: 8px solid var(--gold); box-shadow: 0 0 40px rgba(245,197,24,0.15); display: block; }
     .wheel-pointer { position: absolute; top: -24px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 22px solid transparent; border-right: 22px solid transparent; border-top: 48px solid var(--gold); z-index: 20; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.8)); }
-    .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 110px; height: 110px; background: var(--black); border-radius: 50%; border: 5px solid var(--gold); z-index: 10; display: flex; align-items: center; justify-content: center; }
-    .wheel-center img { width: 80px; height: 80px; border-radius: 50%; object-fit: contain; }
+    .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 130px; height: 130px; background: var(--black); border-radius: 50%; border: 4px solid var(--gold); z-index: 10; display: flex; align-items: center; justify-content: center; }
+    .wheel-center img { width: 96px; height: 96px; border-radius: 50%; object-fit: contain; }
     .spin-btn { background: var(--gold); color: var(--black); border: none; border-radius: 8px; padding: 18px 60px; font-size: 22px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; font-family: var(--condensed); transition: background 0.2s, transform 0.15s; box-shadow: 0 6px 20px rgba(245,197,24,0.3); }
     .spin-btn:hover { background: var(--gold-hover); transform: translateY(-2px); }
     .spin-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
@@ -84,6 +84,13 @@
     .pin-btn { background: var(--gold); color: var(--black); border: none; border-radius: 6px; padding: 12px 20px; font-size: 13px; font-weight: 700; text-transform: uppercase; cursor: pointer; font-family: var(--body); }
     .pin-error { color: #e05555; font-size: 13px; margin-top: 8px; display: none; }
     .wheel-no-nominees { text-align: center; padding: 60px; color: var(--muted); font-size: 16px; }
+
+    /* EPISODE INPUT BAR */
+    .ep-input-bar { display: flex; align-items: center; gap: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 24px; margin-bottom: 32px; flex-wrap: wrap; }
+    .ep-input-label { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); white-space: nowrap; }
+    .ep-number-input { width: 100px; background: var(--surface2); border: 2px solid var(--gold); border-radius: 6px; padding: 10px 16px; font-size: 20px; font-weight: 900; color: var(--gold); font-family: var(--condensed); outline: none; text-align: center; }
+    .ep-number-input:focus { border-color: var(--gold-hover); }
+    .ep-input-hint { font-size: 12px; color: var(--muted); }
 
     /* WINNER MODAL */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
@@ -266,6 +273,14 @@
 
       <!-- WHEEL (hidden until unlocked) -->
       <div id="wheel-area" class="wheel-section" style="display:none;">
+
+        <!-- Episode number input -->
+        <div class="ep-input-bar">
+          <div class="ep-input-label">Episode # for this spin:</div>
+          <input type="number" class="ep-number-input" id="ep-number-input" placeholder="51" min="1">
+          <div class="ep-input-hint">Set before spinning — this gets saved to the sheet</div>
+        </div>
+
         <div class="wheel-wrap">
           <div class="wheel-pointer"></div>
           <canvas id="wheel-canvas" class="wheel-canvas"></canvas>
@@ -575,6 +590,9 @@
             document.getElementById('wheel-no-nominees').style.display = 'block';
           } else {
             drawWheel();
+            // Pre-fill episode number
+            const epInput = document.getElementById('ep-number-input');
+            if (epInput && !epInput.value) epInput.value = nextEpisode;
           }
         });
       } else {
@@ -590,50 +608,90 @@
       canvas.width = size;
       canvas.height = size;
       const ctx = canvas.getContext('2d');
-      const cx = size / 2, cy = size / 2, radius = size / 2 - 4;
+      const cx = size / 2, cy = size / 2;
+      const radius = size / 2 - 6;
+      const innerRadius = radius * 0.18; // center hole size
 
       ctx.clearRect(0, 0, size, size);
-
       if (!nominees.length) return;
 
-      const arc = (Math.PI * 2) / nominees.length;
+      const n = nominees.length;
+      const arc = (Math.PI * 2) / n;
+
+      // Color palette — alternating dark/gold with variety
+      const palettes = [
+        ['#1a1a1a', '#F5C518'],
+        ['#0d1b2a', '#F5C518'],
+        ['#1a1a1a', '#fff'],
+        ['#111', '#F5C518'],
+      ];
 
       ctx.save();
       ctx.translate(cx, cy);
       ctx.rotate(currentRotation);
 
-      for (let i = 0; i < nominees.length; i++) {
-        const angle = i * arc;
-        ctx.save();
-        ctx.rotate(angle);
+      for (let i = 0; i < n; i++) {
+        const startAngle = i * arc - Math.PI / 2;
+        const endAngle = startAngle + arc;
+        const [bg, fg] = palettes[i % palettes.length];
 
-        // Slice fill
+        // Slice
         ctx.beginPath();
         ctx.moveTo(0, 0);
-        ctx.arc(0, 0, radius, 0, arc);
-        ctx.fillStyle = i % 2 === 0 ? '#1a1a1a' : '#F5C518';
+        ctx.arc(0, 0, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = bg;
         ctx.fill();
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth = 1;
+
+        // Subtle border
+        ctx.strokeStyle = 'rgba(245,197,24,0.3)';
+        ctx.lineWidth = 0.5;
         ctx.stroke();
 
-        // Text
-        ctx.clip();
-        ctx.fillStyle = i % 2 === 0 ? '#F5C518' : '#000';
-        const fontSize = Math.max(9, Math.min(14, radius * arc * 0.5));
-        ctx.font = `800 ${fontSize}px Barlow Condensed, sans-serif`;
+        // Text — only show school name, strip "High School"
+        ctx.save();
+        ctx.rotate(startAngle + arc / 2);
+
+        const rawText = nominees[i].text
+          .replace(/High School/gi, 'HS')
+          .replace(/\s*\([A-Z]{2}\)\s*$/, ''); // remove state abbrev from wheel
+
+        // Dynamic font size based on number of teams
+        const maxFontSize = n <= 20 ? 13 : n <= 35 ? 11 : 9;
+        const fontSize = Math.max(8, maxFontSize);
+        ctx.font = `700 ${fontSize}px 'Barlow Condensed', sans-serif`;
+        ctx.fillStyle = fg;
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
-        ctx.rotate(arc / 2);
-        let text = nominees[i].text;
-        const maxW = radius - 80;
-        while (ctx.measureText(text).width > maxW && text.length > 1) {
+
+        // Truncate text to fit
+        const maxW = radius - innerRadius - 20;
+        let text = rawText;
+        while (ctx.measureText(text).width > maxW && text.length > 2) {
           text = text.slice(0, -1);
         }
-        if (text !== nominees[i].text) text += '…';
-        ctx.fillText(text, radius - 12, 0);
+        if (text.length < rawText.length) text = text.trimEnd() + '…';
+
+        ctx.fillText(text, radius - 10, 0);
         ctx.restore();
       }
+
+      // Outer ring
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      ctx.strokeStyle = '#F5C518';
+      ctx.lineWidth = 6;
+      ctx.stroke();
+
+      // Inner ring separator
+      ctx.beginPath();
+      ctx.arc(0, 0, innerRadius, 0, Math.PI * 2);
+      ctx.fillStyle = '#0a0a0a';
+      ctx.fill();
+      ctx.strokeStyle = '#F5C518';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
       ctx.restore();
     }
 
@@ -655,6 +713,14 @@
 
     function spinWheel() {
       if (isSpinning || !nominees.length || !isHost) return;
+      const epInput = document.getElementById('ep-number-input');
+      if (epInput && !epInput.value.trim()) {
+        epInput.style.borderColor = '#e05555';
+        epInput.focus();
+        epInput.placeholder = 'Enter ep # first!';
+        setTimeout(() => { epInput.style.borderColor = 'var(--gold)'; }, 2000);
+        return;
+      }
       isSpinning = true;
       document.getElementById('spin-btn').disabled = true;
       document.getElementById('wheel-status').textContent = '';
@@ -692,9 +758,14 @@
       document.getElementById('wheel-status').textContent = winner.text + ' 🏈';
       triggerConfetti();
 
+      // Use manually entered episode number
+      const epInput = document.getElementById('ep-number-input');
+      const epNum = epInput ? epInput.value.trim() : '';
+      const episodeLabel = epNum || nextEpisode;
+
       // Save to sheet
       try {
-        await callTOTW('saveWinner', { row: winner.row, episodeName: nextEpisode, pin: HOST_PIN });
+        await callTOTW('saveWinner', { row: winner.row, episodeName: episodeLabel, pin: HOST_PIN });
         // Remove winner from nominees locally
         nominees = nominees.filter((_, i) => i !== idx);
         drawWheel();
@@ -711,7 +782,7 @@
       // Show modal
       document.getElementById('modal-school').textContent = winner.fullName || winner.text;
       document.getElementById('modal-meta').textContent = winner.location || '';
-      document.getElementById('modal-ep').textContent = nextEpisode + ' — Team of the Week';
+      document.getElementById('modal-ep').textContent = 'Ep. ' + episodeLabel + ' — Team of the Week';
       document.getElementById('winner-modal').classList.add('open');
       document.getElementById('spin-btn').disabled = false;
     }
