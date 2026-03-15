@@ -437,18 +437,21 @@
       const img = new Image();
       img.crossOrigin = 'anonymous';
 
+      // Proxy through our Vercel API — bypasses CORS and works for color extraction
+      const proxiedUrl = '/api/proxy-image?url=' + encodeURIComponent(logoUrl);
+
       img.onload = async () => {
-        // Extract colors first
+        // Extract colors from proxied image
         const [bg, fg] = await extractColors(img);
 
         // Apply colors to badge and card header
         badge.style.background = bg;
         const header = card?.querySelector('.winner-card-header');
-        if (header) header.style.background = bg + '22'; // subtle tint on header
+        if (header) header.style.background = bg + '22';
 
-        // Set logo image
+        // Set visible logo — use proxied URL so it displays correctly
         const logoImg = document.createElement('img');
-        logoImg.src = logoUrl;
+        logoImg.src = proxiedUrl;
         logoImg.alt = schoolName;
         logoImg.style.cssText = 'width:100%;height:100%;object-fit:contain;border-radius:6px;padding:4px;';
         badge.innerHTML = '';
@@ -456,11 +459,10 @@
       };
 
       img.onerror = () => {
-        // Keep initials if logo fails
+        // Keep initials if proxy fails
       };
 
-      // Use a CORS proxy for the image to allow canvas color extraction
-      img.src = 'https://corsproxy.io/?' + encodeURIComponent(logoUrl);
+      img.src = proxiedUrl;
     }
 
     function getBadgeColors(state) {
