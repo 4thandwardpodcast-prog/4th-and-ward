@@ -384,34 +384,88 @@
       document.getElementById('view-list-btn').classList.toggle('active', v === 'list');
     }
 
-    function setLogo(i, logoUrl, schoolName) {
+    // Extract dominant color from logo image using canvas
+    function extractColors(img) {
+      return new Promise((resolve) => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = 64; canvas.height = 64;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, 64, 64);
+          const data = ctx.getImageData(0, 0, 64, 64).data;
+
+          // Sample pixels, skip white/transparent, find dominant color
+          let rSum = 0, gSum = 0, bSum = 0, count = 0;
+          let darkR = 0, darkG = 0, darkB = 0, darkCount = 0;
+
+          for (let i = 0; i < data.length; i += 16) {
+            const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+            if (a < 100) continue; // skip transparent
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            if (brightness > 240) continue; // skip near-white
+            if (brightness > 30 && brightness < 220) {
+              rSum += r; gSum += g; bSum += b; count++;
+            }
+            if (brightness < 100) {
+              darkR += r; darkG += g; darkB += b; darkCount++;
+            }
+          }
+
+          if (count === 0) return resolve(['#1a1a1a', '#F5C518']);
+
+          const r = Math.round(rSum / count);
+          const g = Math.round(gSum / count);
+          const b = Math.round(bSum / count);
+          const bg = `rgb(${r},${g},${b})`;
+
+          // Determine if text should be white or black based on brightness
+          const luma = (r * 299 + g * 587 + b * 114) / 1000;
+          const fg = luma > 140 ? '#000' : '#fff';
+
+          resolve([bg, fg]);
+        } catch(e) {
+          resolve(['#1a1a1a', '#F5C518']);
+        }
+      });
+    }
+
+    async function setLogo(i, logoUrl, schoolName) {
       const badge = document.getElementById('badge-' + i);
+      const card = document.getElementById('winner-card-' + i);
       if (!badge) return;
-      const img = document.createElement('img');
-      img.src = logoUrl;
-      img.alt = schoolName;
-      img.style.cssText = 'width:100%;height:100%;object-fit:contain;border-radius:6px;padding:4px;';
-      img.onerror = () => {}; // keep initials on error
-      badge.innerHTML = '';
-      badge.appendChild(img);
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      img.onload = async () => {
+        // Extract colors first
+        const [bg, fg] = await extractColors(img);
+
+        // Apply colors to badge and card header
+        badge.style.background = bg;
+        const header = card?.querySelector('.winner-card-header');
+        if (header) header.style.background = bg + '22'; // subtle tint on header
+
+        // Set logo image
+        const logoImg = document.createElement('img');
+        logoImg.src = logoUrl;
+        logoImg.alt = schoolName;
+        logoImg.style.cssText = 'width:100%;height:100%;object-fit:contain;border-radius:6px;padding:4px;';
+        badge.innerHTML = '';
+        badge.appendChild(logoImg);
+      };
+
+      img.onerror = () => {
+        // Keep initials if logo fails
+      };
+
+      // Use a CORS proxy for the image to allow canvas color extraction
+      img.src = 'https://corsproxy.io/?' + encodeURIComponent(logoUrl);
     }
 
     function getBadgeColors(state) {
-      const map = {
-        TX: ['#003087','#B0986C'], SC: ['#582C83','#fff'],
-        GA: ['#BA0C2F','#fff'],   FL: ['#FA4616','#003087'],
-        AL: ['#9E1B32','#fff'],   OK: ['#841617','#FDB940'],
-        CA: ['#FDB927','#552583'],OH: ['#BB0000','#666'],
-        LA: ['#461D7C','#FDD023'],TN: ['#FF8200','#58595B'],
-        NC: ['#CC0000','#4B9CD3'],VA: ['#232D4B','#E57200'],
-        MI: ['#00274C','#FFCB05'],PA: ['#011E41','#C5A900'],
-        NJ: ['#002868','#BF0A30'],NY: ['#1B4D8E','#fff'],
-        WA: ['#005C5C','#C4CED4'],CO: ['#002868','#BF0A30'],
-        MO: ['#F1B82D','#002868'],WY: ['#003087','#FFC72C'],
-        WI: ['#C5050C','#fff'],   MN: ['#7A0019','#FFD700'],
-        ME: ['#002868','#BF0A30'],
-      };
-      return map[state] || ['#333', '#F5C518'];
+      // Fallback colors while logo loads
+      return ['#1a1a1a', '#F5C518'];
     }
 
     function getInitials(name) {
@@ -460,19 +514,10 @@
         </div>`;
       }).join('');
 
-      // Fetch real logos async after cards render
+      // Set logos from sheet data — Column F has the MaxPreps URLs
       winners.forEach((w, i) => {
         if (w.logoUrl) {
-          // Sheet has a logo URL already — use it directly
           setLogo(i, w.logoUrl, w.team);
-        } else {
-          // Try to fetch from MaxPreps via API
-          const state = w.location ? w.location.split(',').pop().trim() : '';
-          const city = w.location ? w.location.split(',')[0].trim() : '';
-          fetch(`/api/school-logo?school=${encodeURIComponent(w.team)}&mascot=${encodeURIComponent(w.mascot||'')}&city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}`)
-            .then(r => r.json())
-            .then(data => { if (data.logoUrl) setLogo(i, data.logoUrl, w.team); })
-            .catch(() => {});
         }
       });
 
