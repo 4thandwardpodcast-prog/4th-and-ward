@@ -26,6 +26,7 @@
 
     /* NOMINATIONS TAB */
     .nom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+    .nom-inline-form { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
     .nom-form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 36px; }
     .nom-form-card h2 { font-family: var(--condensed); font-weight: 900; font-size: 28px; text-transform: uppercase; margin-bottom: 6px; }
     .nom-form-card p { color: var(--muted); font-size: 14px; margin-bottom: 28px; line-height: 1.6; }
@@ -187,46 +188,57 @@
 
     <!-- ── NOMINATE TAB ── -->
     <div id="tab-nominate">
-      <div class="nom-grid">
-        <div class="nom-form-card">
-          <h2>Submit Your Team</h2>
-          <p>Know a great high school football program with an awesome tradition, wild mascot, or untold story? Nominate them here — your school goes straight onto the wheel.</p>
-          <div class="form-group">
+
+      <!-- FORM — full width, compact horizontal layout -->
+      <div class="nom-form-card" style="margin-bottom:24px;">
+        <h2>Submit Your Team</h2>
+        <p>Know a great high school program with an awesome tradition, wild mascot, or untold story? Your school goes straight onto the wheel.</p>
+        <div class="nom-inline-form">
+          <div class="form-group" style="flex:2;min-width:160px;">
             <label class="form-label">School Name *</label>
             <input type="text" class="form-input" id="nom-school" placeholder="e.g. Lone Pine High School" autocomplete="off">
           </div>
-          <div class="form-group">
+          <div class="form-group" style="flex:1;min-width:120px;">
             <label class="form-label">Mascot *</label>
-            <input type="text" class="form-input" id="nom-mascot" placeholder="e.g. Golden Eagles" autocomplete="off">
+            <input type="text" class="form-input" id="nom-mascot" placeholder="e.g. Eagles" autocomplete="off">
           </div>
-          <div class="form-group">
-            <label class="form-label">Location *</label>
-            <div class="form-row">
-              <input type="text" class="form-input" id="nom-city" placeholder="City" autocomplete="off">
-              <select class="form-select" id="nom-state">
-                <option value="" disabled selected>ST</option>
-                <option>AL</option><option>AK</option><option>AZ</option><option>AR</option><option>CA</option>
-                <option>CO</option><option>CT</option><option>DE</option><option>FL</option><option>GA</option>
-                <option>HI</option><option>ID</option><option>IL</option><option>IN</option><option>IA</option>
-                <option>KS</option><option>KY</option><option>LA</option><option>ME</option><option>MD</option>
-                <option>MA</option><option>MI</option><option>MN</option><option>MS</option><option>MO</option>
-                <option>MT</option><option>NE</option><option>NV</option><option>NH</option><option>NJ</option>
-                <option>NM</option><option>NY</option><option>NC</option><option>ND</option><option>OH</option>
-                <option>OK</option><option>OR</option><option>PA</option><option>RI</option><option>SC</option>
-                <option>SD</option><option>TN</option><option>TX</option><option>UT</option><option>VT</option>
-                <option>VA</option><option>WA</option><option>WV</option><option>WI</option><option>WY</option>
-              </select>
-            </div>
+          <div class="form-group" style="flex:1;min-width:120px;">
+            <label class="form-label">City *</label>
+            <input type="text" class="form-input" id="nom-city" placeholder="City" autocomplete="off">
           </div>
-          <button class="submit-btn" id="nom-btn" onclick="submitNomination()">Submit to the Wheel</button>
-          <div class="form-success" id="nom-success">🏈 Submitted! Your team is on the wheel.</div>
+          <div class="form-group" style="flex:0 0 90px;">
+            <label class="form-label">State *</label>
+            <select class="form-select" id="nom-state">
+              <option value="" disabled selected>ST</option>
+              <option>AL</option><option>AK</option><option>AZ</option><option>AR</option><option>CA</option>
+              <option>CO</option><option>CT</option><option>DE</option><option>FL</option><option>GA</option>
+              <option>HI</option><option>ID</option><option>IL</option><option>IN</option><option>IA</option>
+              <option>KS</option><option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+              <option>MA</option><option>MI</option><option>MN</option><option>MS</option><option>MO</option>
+              <option>MT</option><option>NE</option><option>NV</option><option>NH</option><option>NJ</option>
+              <option>NM</option><option>NY</option><option>NC</option><option>ND</option><option>OH</option>
+              <option>OK</option><option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+              <option>SD</option><option>TN</option><option>TX</option><option>UT</option><option>VT</option>
+              <option>VA</option><option>WA</option><option>WV</option><option>WI</option><option>WY</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:0 0 auto;align-self:flex-end;">
+            <label class="form-label" style="opacity:0;">Submit</label>
+            <button class="submit-btn" id="nom-btn" onclick="submitNomination()" style="width:auto;padding:12px 24px;white-space:nowrap;">Submit to the Wheel</button>
+          </div>
         </div>
-
-        <div class="nominees-card">
-          <h2>On the Wheel</h2>
-          <div id="nominees-list"><div class="nominees-loading">Loading nominees...</div></div>
-        </div>
+        <div class="form-success" id="nom-success">🏈 Submitted! Your team is on the wheel.</div>
       </div>
+
+      <!-- NOMINEES — scrollable list below form -->
+      <div class="nominees-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h2 style="margin-bottom:0;">On the Wheel</h2>
+          <span id="nom-count" style="font-size:12px;color:var(--muted);font-weight:600;"></span>
+        </div>
+        <div id="nominees-list" style="max-height:400px;overflow-y:auto;"><div class="nominees-loading">Loading nominees...</div></div>
+      </div>
+
     </div>
 
     <!-- ── WINNERS TAB ── -->
@@ -345,6 +357,8 @@
     // ── NOMINEES ──
     function renderNominees() {
       const el = document.getElementById('nominees-list');
+      const countEl = document.getElementById('nom-count');
+      if (countEl) countEl.textContent = nominees.length + ' team' + (nominees.length !== 1 ? 's' : '') + ' on the wheel';
       if (!nominees.length) {
         el.innerHTML = '<div class="nominees-loading">No nominees yet — be the first!</div>';
         return;
