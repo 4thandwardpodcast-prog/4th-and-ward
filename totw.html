@@ -97,6 +97,41 @@
     .modal-close { background: var(--gold); color: var(--black); border: none; border-radius: 6px; padding: 12px 32px; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; font-family: var(--body); transition: background 0.2s; }
     .modal-close:hover { background: var(--gold-hover); }
 
+    /* WINNERS GRID */
+    .winners-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .winner-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
+    .winner-card:hover { border-color: var(--gold-dim); transform: translateY(-3px); }
+    .winner-card-header { background: var(--black); padding: 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 16px; }
+    .winner-logo { width: 56px; height: 56px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: var(--condensed); font-weight: 900; font-size: 18px; color: var(--gold); overflow: hidden; }
+    .winner-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+    .winner-header-info { min-width: 0; }
+    .winner-school { font-family: var(--condensed); font-weight: 900; font-size: 20px; text-transform: uppercase; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .winner-mascot { font-size: 12px; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 3px; }
+    .winner-card-body { padding: 16px 20px; }
+    .winner-location { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+    .winner-location::before { content: '📍'; font-size: 12px; }
+    .winner-ep-badge { background: rgba(245,197,24,0.1); border: 1px solid rgba(245,197,24,0.2); border-radius: 4px; padding: 6px 12px; font-size: 11px; font-weight: 700; color: var(--gold); letter-spacing: 0.1em; text-transform: uppercase; display: inline-block; }
+    .winner-state-flag { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; padding: 3px 7px; color: var(--muted); margin-left: 6px; }
+    .winner-card-maxpreps { display: block; text-align: center; padding: 10px; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); text-decoration: none; border-top: 1px solid var(--border); transition: color 0.2s, background 0.2s; }
+    .winner-card-maxpreps:hover { color: var(--gold); background: rgba(245,197,24,0.04); }
+
+    /* VIEW TOGGLE */
+    .view-btn { background: var(--surface); border: 1px solid var(--border); color: var(--muted); padding: 8px 16px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; font-family: var(--body); transition: all 0.2s; }
+    .view-btn.active { background: rgba(245,197,24,0.1); border-color: rgba(245,197,24,0.4); color: var(--gold); }
+
+    /* WINNERS GRID */
+    .winners-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+    .winner-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
+    .winner-card:hover { border-color: var(--gold-dim); transform: translateY(-3px); }
+    .winner-card-header { padding: 24px 20px 16px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid var(--border); }
+    .school-badge { width: 56px; height: 56px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: var(--condensed); font-weight: 900; font-size: 20px; flex-shrink: 0; overflow: hidden; }
+    .school-badge img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+    .winner-card-title { font-family: var(--condensed); font-weight: 900; font-size: 18px; text-transform: uppercase; line-height: 1.1; }
+    .winner-card-mascot { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .winner-card-body { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .winner-card-loc { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .winner-card-ep { background: rgba(245,197,24,0.1); border: 1px solid rgba(245,197,24,0.2); border-radius: 3px; padding: 4px 8px; font-size: 11px; font-weight: 700; color: var(--gold); white-space: nowrap; }
+
     @media (max-width: 900px) {
       .page-hero { padding: 90px 24px 48px; }
       .tab-bar { padding: 24px 24px 0; gap: 0; overflow-x: auto; }
@@ -196,21 +231,9 @@
 
     <!-- ── WINNERS TAB ── -->
     <div id="tab-winners" style="display:none;">
-      <div class="section-label" style="margin-bottom:24px;">All-Time Archive — <span style="color:var(--white);" id="winners-count">loading...</span></div>
-      <div class="winners-table-wrap">
-        <table class="winners-table">
-          <thead>
-            <tr>
-              <th>Episode</th>
-              <th>School</th>
-              <th>Mascot</th>
-              <th>Location</th>
-            </tr>
-          </thead>
-          <tbody id="winners-tbody">
-            <tr><td colspan="4" class="winners-loading">Loading winners...</td></tr>
-          </tbody>
-        </table>
+      <div class="section-label" style="margin-bottom:32px;">All-Time Archive — <span style="color:var(--white);" id="winners-count">loading...</span></div>
+      <div id="winners-grid" class="winners-grid">
+        <div class="winners-loading">Loading winners...</div>
       </div>
     </div>
 
@@ -337,15 +360,110 @@
     }
 
     // ── WINNERS ──
+    let currentView = 'grid';
+
+    function setView(v) {
+      currentView = v;
+      document.getElementById('winners-grid').style.display = v === 'grid' ? 'grid' : 'none';
+      document.getElementById('winners-list-view').style.display = v === 'list' ? 'block' : 'none';
+      document.getElementById('view-grid-btn').classList.toggle('active', v === 'grid');
+      document.getElementById('view-list-btn').classList.toggle('active', v === 'list');
+    }
+
+    function setLogo(i, logoUrl, schoolName) {
+      const badge = document.getElementById('badge-' + i);
+      if (!badge) return;
+      const img = document.createElement('img');
+      img.src = logoUrl;
+      img.alt = schoolName;
+      img.style.cssText = 'width:100%;height:100%;object-fit:contain;border-radius:6px;padding:4px;';
+      img.onerror = () => {}; // keep initials on error
+      badge.innerHTML = '';
+      badge.appendChild(img);
+    }
+
+    function getBadgeColors(state) {
+      const map = {
+        TX: ['#003087','#B0986C'], SC: ['#582C83','#fff'],
+        GA: ['#BA0C2F','#fff'],   FL: ['#FA4616','#003087'],
+        AL: ['#9E1B32','#fff'],   OK: ['#841617','#FDB940'],
+        CA: ['#FDB927','#552583'],OH: ['#BB0000','#666'],
+        LA: ['#461D7C','#FDD023'],TN: ['#FF8200','#58595B'],
+        NC: ['#CC0000','#4B9CD3'],VA: ['#232D4B','#E57200'],
+        MI: ['#00274C','#FFCB05'],PA: ['#011E41','#C5A900'],
+        NJ: ['#002868','#BF0A30'],NY: ['#1B4D8E','#fff'],
+        WA: ['#005C5C','#C4CED4'],CO: ['#002868','#BF0A30'],
+        MO: ['#F1B82D','#002868'],WY: ['#003087','#FFC72C'],
+        WI: ['#C5050C','#fff'],   MN: ['#7A0019','#FFD700'],
+        ME: ['#002868','#BF0A30'],
+      };
+      return map[state] || ['#333', '#F5C518'];
+    }
+
+    function getInitials(name) {
+      return name.replace(/High School/gi, '').replace(/HS/gi, '').trim()
+        .split(' ').filter(w => w.length > 1).slice(0, 2)
+        .map(w => w[0].toUpperCase()).join('') || name[0].toUpperCase();
+    }
+
     function renderWinners() {
-      const tbody = document.getElementById('winners-tbody');
+      const count = winners.length;
       document.getElementById('winners-count').textContent =
-        winners.length + ' team' + (winners.length !== 1 ? 's' : '') + ' featured';
-      if (!winners.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="winners-loading">No winners yet.</td></tr>';
+        count + ' team' + (count !== 1 ? 's' : '') + ' featured';
+
+      if (!count) {
+        document.getElementById('winners-grid').innerHTML =
+          '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted);">No winners yet.</div>';
+        document.getElementById('winners-tbody').innerHTML =
+          '<tr><td colspan="4" class="winners-loading">No winners yet.</td></tr>';
         return;
       }
-      tbody.innerHTML = winners.map(w => `
+
+      // Grid view — render cards immediately with initials, then fetch logos async
+      document.getElementById('winners-grid').innerHTML = winners.map((w, i) => {
+        const state = w.location ? w.location.split(',').pop().trim() : '';
+        const city = w.location ? w.location.split(',')[0].trim() : '';
+        const [bg, fg] = getBadgeColors(state);
+        const initials = getInitials(w.team);
+
+        return `<div class="winner-card" id="winner-card-${i}">
+          <div class="winner-card-header">
+            <div class="school-badge" id="badge-${i}" style="background:${bg};color:${fg};">
+              <span>${initials}</span>
+            </div>
+            <div>
+              <div class="winner-card-title">${w.team}</div>
+              <div class="winner-card-mascot">${w.mascot || ''}</div>
+            </div>
+          </div>
+          <div class="winner-card-body">
+            <span class="winner-card-loc">${w.location || ''}</span>
+            <span class="winner-card-ep">Ep. ${w.episode}</span>
+          </div>
+          <a href="https://www.maxpreps.com/${(state||'').toLowerCase()}/${(city||'').toLowerCase().replace(/[^a-z0-9]/g,'-')}/${(w.team+' '+(w.mascot||'')).toLowerCase().replace(/high school/gi,'').trim().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-')}/"
+             target="_blank" rel="noopener"
+             class="winner-card-maxpreps">View on MaxPreps →</a>
+        </div>`;
+      }).join('');
+
+      // Fetch real logos async after cards render
+      winners.forEach((w, i) => {
+        if (w.logoUrl) {
+          // Sheet has a logo URL already — use it directly
+          setLogo(i, w.logoUrl, w.team);
+        } else {
+          // Try to fetch from MaxPreps via API
+          const state = w.location ? w.location.split(',').pop().trim() : '';
+          const city = w.location ? w.location.split(',')[0].trim() : '';
+          fetch(`/api/school-logo?school=${encodeURIComponent(w.team)}&mascot=${encodeURIComponent(w.mascot||'')}&city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}`)
+            .then(r => r.json())
+            .then(data => { if (data.logoUrl) setLogo(i, data.logoUrl, w.team); })
+            .catch(() => {});
+        }
+      });
+
+      // List view
+      document.getElementById('winners-tbody').innerHTML = winners.map(w => `
         <tr>
           <td><span class="ep-badge">Ep. ${w.episode}</span></td>
           <td><div class="school-name">${w.team}</div></td>
