@@ -26,12 +26,14 @@
     .ep-date { font-size: 11px; color: var(--muted); font-weight: 500; }
     .ep-dur { font-size: 11px; color: var(--muted); font-weight: 500; }
     .ep-dur::before { content: '·'; margin-right: 16px; }
-    .ep-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
-    .ep-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 3px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; transition: opacity 0.2s, transform 0.15s; white-space: nowrap; }
-    .ep-btn:hover { opacity: 0.85; transform: translateY(-1px); }
-    .ep-btn-spotify { background: #1DB954; color: #000; }
-    .ep-btn-apple { background: #FC3C44; color: #fff; }
-    .ep-btn-youtube { background: #FF0000; color: #fff; }
+    .ep-actions { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; }
+    .ep-listen-label { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+    .ep-icon-btn { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: opacity 0.2s, transform 0.15s; }
+    .ep-icon-btn:hover { opacity: 0.85; transform: scale(1.08); }
+    .ep-icon-btn svg { width: 18px; height: 18px; }
+    .ep-icon-spotify { background: #1DB954; color: #000; }
+    .ep-icon-apple { background: #FC3C44; color: #fff; }
+    .ep-icon-youtube { background: #FF0000; color: #fff; }
     .ep-loading { text-align: center; padding: 80px 0; color: var(--muted); font-size: 15px; }
     .ep-loading-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); margin: 0 3px; animation: bounce 1.2s ease-in-out infinite; }
     .ep-loading-dot:nth-child(2) { animation-delay: 0.2s; }
@@ -40,6 +42,10 @@
     .platform-bar { display: flex; gap: 12px; margin-bottom: 40px; flex-wrap: wrap; }
     .platform-pill { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; transition: opacity 0.2s; }
     .platform-pill:hover { opacity: 0.85; }
+    .filter-tabs { display: flex; gap: 8px; margin-bottom: 28px; flex-wrap: wrap; }
+    .filter-btn { background: var(--surface); border: 1px solid var(--border); color: var(--muted); padding: 10px 20px; border-radius: 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; font-family: var(--body); }
+    .filter-btn:hover { border-color: var(--gold-dim); color: var(--white); }
+    .filter-btn.active { background: rgba(245,197,24,0.1); border-color: rgba(245,197,24,0.4); color: var(--gold); }
     .ep-section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; margin-top: 8px; }
     .ep-badge { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 12px; border-radius: 3px; }
     .badge-regular { background: rgba(245,197,24,0.12); color: var(--gold); border: 1px solid rgba(245,197,24,0.25); }
@@ -76,8 +82,8 @@
   <div class="page-hero">
     <div class="section-inner">
       <div class="section-label">All Episodes</div>
-      <h1>Every Episode.<br><span>Zero Filter.</span></h1>
-      <p>Every episode of the 4th &amp; Ward Podcast — from week one to right now.</p>
+      <h1>From the<br><span>Coaches Office.</span></h1>
+      <p>Funny stories, wild takes, and everything in between — straight from two high school football coaches in SC and TX.</p>
     </div>
   </div>
 
@@ -98,6 +104,11 @@
         </a>
       </div>
 
+      <div class="filter-tabs">
+        <button class="filter-btn active" onclick="setFilter('all')">All Episodes</button>
+        <button class="filter-btn" onclick="setFilter('regular')">🏈 Weekly Episodes</button>
+        <button class="filter-btn" onclick="setFilter('sideline')">🎙 Sideline Stories</button>
+      </div>
       <div id="ep-count" class="ep-count">Loading episodes...</div>
       <div id="ep-list" class="ep-list">
         <div class="ep-loading">
@@ -196,6 +207,34 @@
         </div>`;
     }
 
+    let allEpisodes = [];
+    let regularEps = [];
+    let sidelineEps = [];
+    let currentFilter = 'all';
+
+    function setFilter(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.filter-btn')[filter === 'all' ? 0 : filter === 'regular' ? 1 : 2].classList.add('active');
+      renderView();
+    }
+
+    function renderView() {
+      let html = '';
+      if (currentFilter === 'all') {
+        const sorted = [...allEpisodes].sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
+        document.getElementById('ep-count').innerHTML = `Showing <span>${sorted.length}</span> episodes — newest first`;
+        html = `<div class="ep-list">${sorted.map(renderCard).join('')}</div>`;
+      } else if (currentFilter === 'regular') {
+        document.getElementById('ep-count').innerHTML = `<span>${regularEps.length}</span> Weekly Episode${regularEps.length !== 1 ? 's' : ''}`;
+        html = renderSection(regularEps, '🏈 Weekly Episodes', 'badge-regular');
+      } else {
+        document.getElementById('ep-count').innerHTML = `<span>${sidelineEps.length}</span> Sideline Stor${sidelineEps.length !== 1 ? 'ies' : 'y'}`;
+        html = renderSection(sidelineEps, '🎙 Sideline Stories', 'badge-sideline');
+      }
+      document.getElementById('ep-list').innerHTML = html;
+    }
+
     async function loadEpisodes() {
       try {
         const res = await fetch('/api/episodes');
@@ -206,38 +245,24 @@
         const xml = parser.parseFromString(text, 'text/xml');
         const items = Array.from(xml.querySelectorAll('item'));
 
-        const regular = [];
-        const sideline = [];
-
         items.forEach((item, i) => {
           const title = item.querySelector('title')?.textContent || 'Untitled Episode';
           const rawDesc = item.querySelector('description')?.textContent || '';
           const desc = stripHtml(rawDesc).trim().replace(/^summaryIn/, 'In').replace(/^summary/, '');
           const truncDesc = desc.length > 220 ? desc.slice(0, 217) + '...' : desc;
-          const pubDate = formatDate(item.querySelector('pubDate')?.textContent || '');
+          const rawDate = item.querySelector('pubDate')?.textContent || '';
+          const pubDate = formatDate(rawDate);
           const dur = formatDuration(item.querySelector('duration')?.textContent || '');
-
-          // Get thumbnail — try itunes:image first, then enclosure
           const itunesImg = item.getElementsByTagNameNS('http://www.itunes.com/dtds/podcast-1.0.dtd', 'image')[0];
           const thumb = itunesImg?.getAttribute('href') || itunesImg?.textContent || '';
-
-          // Episode number — use itunes:episode if available, else position
           const epNumTag = item.getElementsByTagNameNS('http://www.itunes.com/dtds/podcast-1.0.dtd', 'episode')[0]?.textContent;
           const epNum = epNumTag || (items.length - i);
-
-          const ep = { title, desc: truncDesc, pubDate, dur, epNum, thumb, isSideline: isSidelineStory(title) };
-          isSidelineStory(title) ? sideline.push(ep) : regular.push(ep);
+          const ep = { title, desc: truncDesc, pubDate, rawDate, dur, epNum, thumb };
+          allEpisodes.push(ep);
+          isSidelineStory(title) ? sidelineEps.push(ep) : regularEps.push(ep);
         });
 
-        const total = items.length;
-        document.getElementById('ep-count').innerHTML =
-          `Showing <span>${total}</span> episode${total !== 1 ? 's' : ''} &nbsp;·&nbsp; <span>${regular.length}</span> regular &nbsp;·&nbsp; <span>${sideline.length}</span> sideline stories`;
-
-        const html =
-          renderSection(regular, '🏈 Weekly Episodes', 'badge-regular') +
-          (sideline.length ? `<div style="margin-top:48px;"></div>` + renderSection(sideline, '🎙 Sideline Stories', 'badge-sideline') : '');
-
-        document.getElementById('ep-list').innerHTML = html;
+        renderView();
 
       } catch (e) {
         document.getElementById('ep-count').textContent = 'Could not load episodes';
