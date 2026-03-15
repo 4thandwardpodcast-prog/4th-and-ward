@@ -85,6 +85,11 @@
     .pin-error { color: #e05555; font-size: 13px; margin-top: 8px; display: none; }
     .wheel-no-nominees { text-align: center; padding: 60px; color: var(--muted); font-size: 16px; }
 
+    /* WHEEL CONTROLS BAR */
+    .wheel-controls-bar { display: flex; gap: 12px; align-items: stretch; margin-bottom: 24px; flex-wrap: wrap; }
+    .fullscreen-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--gold); color: var(--gold); padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; font-family: var(--body); transition: background 0.2s; white-space: nowrap; }
+    .fullscreen-btn:hover { background: rgba(245,197,24,0.1); }
+
     /* EPISODE INPUT BAR */
     .ep-input-bar { display: flex; align-items: center; gap: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 24px; margin-bottom: 32px; flex-wrap: wrap; }
     .ep-input-label { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); white-space: nowrap; }
@@ -188,7 +193,7 @@
   <div class="tab-bar">
     <button class="tab-btn active" onclick="switchTab('nominate')">Nominate a Team</button>
     <button class="tab-btn" onclick="switchTab('winners')">Past Winners</button>
-    <button class="tab-btn" onclick="switchTab('wheel')">🎡 The Wheel</button>
+    <button class="tab-btn" onclick="switchTab('wheel')" style="opacity:0.4;font-size:10px;" title="Host only">🔒 Host</button>
   </div>
 
   <div class="totw-body">
@@ -274,18 +279,32 @@
       <!-- WHEEL (hidden until unlocked) -->
       <div id="wheel-area" class="wheel-section" style="display:none;">
 
-        <!-- Episode number input -->
-        <div class="ep-input-bar">
+        <!-- Top controls bar -->
+        <div class="wheel-controls-bar">
+          <div class="ep-input-bar" style="margin-bottom:0;flex:1;">
+            <div class="ep-input-label">Episode #:</div>
+            <input type="number" class="ep-number-input" id="ep-number-input" placeholder="51" min="1">
+            <div class="ep-input-hint">Set before spinning — saved to sheet</div>
+          </div>
+          <button class="fullscreen-btn" onclick="enterFullscreen()" title="Fullscreen mode">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+            Fullscreen
+          </button>
+        </div>
+
+        <!-- Episode number input (keep for spacing, hidden) -->
+        <div class="ep-input-bar" style="display:none;">
           <div class="ep-input-label">Episode # for this spin:</div>
           <input type="number" class="ep-number-input" id="ep-number-input" placeholder="51" min="1">
           <div class="ep-input-hint">Set before spinning — this gets saved to the sheet</div>
+        </div>
         </div>
 
         <div class="wheel-wrap">
           <div class="wheel-pointer"></div>
           <canvas id="wheel-canvas" class="wheel-canvas"></canvas>
           <div class="wheel-center">
-            <img src="logo.png" alt="4th & Ward">
+            <canvas id="center-logo-canvas"></canvas>
           </div>
         </div>
         <button class="spin-btn" id="spin-btn" onclick="spinWheel()">Spin the Wheel</button>
@@ -309,6 +328,24 @@
       <div class="modal-ep" id="modal-ep">—</div>
       <button class="modal-close" onclick="closeModal()">Done</button>
     </div>
+  </div>
+
+  <!-- FULLSCREEN WHEEL OVERLAY -->
+  <div id="fullscreen-overlay" style="display:none;position:fixed;inset:0;background:#000;z-index:2000;flex-direction:column;align-items:center;justify-content:center;">
+    <button onclick="exitFullscreen()" style="position:absolute;top:20px;right:20px;background:rgba(245,197,24,0.15);border:1px solid var(--gold);color:var(--gold);padding:10px 20px;border-radius:6px;font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;font-family:var(--body);z-index:10;">✕ Exit</button>
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-family:var(--condensed);font-weight:900;font-size:18px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);">Team of the Week</div>
+      <div style="font-size:13px;color:var(--muted);">Presented by Gridiron Spice Company</div>
+    </div>
+    <div id="fs-wheel-wrap" style="position:relative;width:min(80vh,80vw);height:min(80vh,80vw);">
+      <div class="wheel-pointer"></div>
+      <canvas id="fs-wheel-canvas" style="border-radius:50%;display:block;width:100%;height:100%;"></canvas>
+      <div class="wheel-center" id="fs-center">
+        <canvas id="fs-center-logo-canvas"></canvas>
+      </div>
+    </div>
+    <button class="spin-btn" id="fs-spin-btn" onclick="spinWheel(true)" style="margin-top:24px;">Spin the Wheel</button>
+    <div class="wheel-status" id="fs-wheel-status" style="margin-top:12px;"></div>
   </div>
 
   <footer>
@@ -590,6 +627,7 @@
             document.getElementById('wheel-no-nominees').style.display = 'block';
           } else {
             drawWheel();
+            drawCenterLogo('center-logo-canvas');
             // Pre-fill episode number
             const epInput = document.getElementById('ep-number-input');
             if (epInput && !epInput.value) epInput.value = nextEpisode;
@@ -603,8 +641,12 @@
 
     // ── WHEEL DRAWING ──
     function drawWheel() {
-      const canvas = document.getElementById('wheel-canvas');
-      const wrap = canvas.parentElement;
+      drawWheelOnCanvas('wheel-canvas', 'wheel-wrap');
+    }
+
+    function drawWheelOnCanvas(canvasId, wrapId) {
+      const canvas = document.getElementById(canvasId);
+      const wrap = document.getElementById(wrapId);
       const size = wrap.offsetWidth;
       // High DPI for crisp text
       const dpr = window.devicePixelRatio || 1;
@@ -727,7 +769,7 @@
       } catch(e) {}
     }
 
-    function spinWheel() {
+    function spinWheel(fromFullscreen) {
       if (isSpinning || !nominees.length || !isHost) return;
       const epInput = document.getElementById('ep-number-input');
       if (epInput && !epInput.value.trim()) {
@@ -739,7 +781,9 @@
       }
       isSpinning = true;
       document.getElementById('spin-btn').disabled = true;
+      if (document.getElementById('fs-spin-btn')) document.getElementById('fs-spin-btn').disabled = true;
       document.getElementById('wheel-status').textContent = '';
+      if (document.getElementById('fs-wheel-status')) document.getElementById('fs-wheel-status').textContent = '';
 
       const spinSpeed = Math.random() * 8 + 18;
       const spinDuration = Math.random() * 3000 + 5000;
@@ -759,6 +803,9 @@
         if (idx !== lastSliceIndex) { playTick(); lastSliceIndex = idx; }
 
         drawWheel();
+        if (document.getElementById('fullscreen-overlay').style.display !== 'none') {
+          drawWheelOnCanvas('fs-wheel-canvas', 'fs-wheel-wrap');
+        }
         requestAnimationFrame(frame);
       }
       requestAnimationFrame(frame);
@@ -772,6 +819,7 @@
       const winner = nominees[idx];
 
       document.getElementById('wheel-status').textContent = winner.text + ' 🏈';
+      if (document.getElementById('fs-wheel-status')) document.getElementById('fs-wheel-status').textContent = winner.text + ' 🏈';
       triggerConfetti();
 
       // Use manually entered episode number
@@ -801,6 +849,7 @@
       document.getElementById('modal-ep').textContent = 'Ep. ' + episodeLabel + ' — Team of the Week';
       document.getElementById('winner-modal').classList.add('open');
       document.getElementById('spin-btn').disabled = false;
+      if (document.getElementById('fs-spin-btn')) document.getElementById('fs-spin-btn').disabled = false;
     }
 
     function closeModal() {
@@ -818,9 +867,82 @@
       })();
     }
 
+    // ── CENTER LOGO ──
+    function drawCenterLogo(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const size = canvas.parentElement.offsetWidth || 130;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = size * dpr;
+      canvas.height = size * dpr;
+      canvas.style.width = size + 'px';
+      canvas.style.height = size + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        ctx.clearRect(0, 0, size, size);
+        // Draw circular clip
+        ctx.beginPath();
+        ctx.arc(size/2, size/2, size/2 - 2, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(img, 0, 0, size, size);
+
+        // Color shift: replace non-gold yellows with #F5C518
+        // Apply a gold overlay on the image using source-atop
+        ctx.globalCompositeOperation = 'color';
+        ctx.fillStyle = '#F5C518';
+        ctx.fillRect(0, 0, size, size);
+        ctx.globalCompositeOperation = 'source-over';
+      };
+      img.onerror = () => {
+        // Fallback — draw text
+        ctx.fillStyle = '#F5C518';
+        ctx.font = `900 ${size * 0.2}px 'Barlow Condensed', sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('4TH &', size/2, size/2 - 8);
+        ctx.fillText('WARD', size/2, size/2 + 12);
+      };
+      img.src = '/api/proxy-image?url=' + encodeURIComponent('https://i.postimg.cc/VNLjTgMG/4th_and_Ward_Logos_(2).png');
+    }
+
+    // ── FULLSCREEN ──
+    function enterFullscreen() {
+      const overlay = document.getElementById('fullscreen-overlay');
+      overlay.style.display = 'flex';
+      // Copy episode number
+      const epVal = document.getElementById('ep-number-input')?.value;
+      // Draw fullscreen wheel
+      setTimeout(() => {
+        drawWheelOnCanvas('fs-wheel-canvas', 'fs-wheel-wrap');
+        drawCenterLogo('fs-center-logo-canvas');
+      }, 50);
+      // Try native fullscreen
+      overlay.requestFullscreen?.() || overlay.webkitRequestFullscreen?.();
+    }
+
+    function exitFullscreen() {
+      document.getElementById('fullscreen-overlay').style.display = 'none';
+      document.exitFullscreen?.() || document.webkitExitFullscreen?.();
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement) {
+        document.getElementById('fullscreen-overlay').style.display = 'none';
+      }
+    });
+
     // ── INIT ──
     window.addEventListener('resize', () => {
-      if (isHost && nominees.length) drawWheel();
+      if (isHost && nominees.length) {
+        drawWheel();
+        if (document.getElementById('fullscreen-overlay').style.display !== 'none') {
+          drawWheelOnCanvas('fs-wheel-canvas', 'fs-wheel-wrap');
+        }
+      }
     });
     loadData();
   </script>
