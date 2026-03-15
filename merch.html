@@ -19,9 +19,19 @@
     .merch-embed-box h2 { font-family: var(--condensed); font-weight: 900; font-size: 36px; text-transform: uppercase; margin-bottom: 16px; }
     .merch-embed-box p { color: var(--muted); font-size: 15px; margin-bottom: 32px; }
     @media (max-width: 900px) {
-      .merch-hero { padding: 100px 24px 60px; }
-      .merch-body { padding: 48px 24px 80px; }
-      .merch-embed-box { padding: 40px 24px; }
+      .merch-hero { padding: 90px 24px 60px; min-height: auto; }
+      .merch-body { padding: 40px 24px 80px; }
+      .merch-embed-box { padding: 36px 24px; }
+      .merch-hero h1 { font-size: 64px; }
+    }
+    @media (max-width: 600px) {
+      .merch-hero { padding: 80px 16px 48px; }
+      .merch-hero h1 { font-size: 48px; }
+      .merch-hero p { font-size: 15px; }
+      .merch-body { padding: 28px 16px 60px; }
+      .merch-embed-box { padding: 28px 16px; }
+      .merch-embed-box h2 { font-size: 26px; }
+      .btn-black, .btn-gold { width: 100%; justify-content: center; }
     }
   </style>
 </head>

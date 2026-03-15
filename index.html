@@ -39,12 +39,27 @@
     .ep-body { color: var(--muted); font-size: 15px; line-height: 1.7; margin-bottom: 32px; }
     .ep-right { padding: 40px; display: flex; flex-direction: column; justify-content: center; }
     @media (max-width: 900px) {
-      .hero { padding: 68px 24px 0; }
-      .hero-inner { grid-template-columns: 1fr; gap: 40px; padding: 60px 0; }
-      .listen-strip { padding: 20px 24px; }
+      .hero { padding: 80px 24px 0; }
+      .hero-inner { grid-template-columns: 1fr; gap: 32px; padding: 48px 0 60px; }
+      .hero-cover { max-width: 260px; }
+      .hero-cover-badge { bottom: -12px; left: -12px; padding: 10px 14px; }
+      .listen-strip { padding: 16px 24px; gap: 20px; flex-wrap: wrap; }
       .ep-grid { grid-template-columns: 1fr; }
-      .ep-left { border-right: none; border-bottom: 1px solid var(--border); padding: 40px 24px; }
+      .ep-left { border-right: none; border-bottom: 1px solid var(--border); padding: 36px 24px; }
       .ep-right { padding: 24px; }
+    }
+    @media (max-width: 600px) {
+      .hero { padding: 72px 16px 0; }
+      .hero-inner { padding: 36px 0 48px; gap: 28px; }
+      .hero h1 { font-size: 56px; }
+      .hero-desc { font-size: 15px; }
+      .hero-actions { flex-direction: column; gap: 10px; }
+      .btn-gold, .btn-ghost { width: 100%; justify-content: center; }
+      .hero-cover { max-width: 200px; }
+      .listen-strip { padding: 14px 16px; }
+      .ep-left { padding: 28px 16px; }
+      .ep-right { padding: 16px; }
+      .ep-headline { font-size: 28px; }
     }
   </style>
 </head>

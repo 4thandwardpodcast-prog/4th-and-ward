@@ -16,17 +16,17 @@
     .ep-count { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 32px; }
     .ep-count span { color: var(--gold); }
     .ep-list { display: flex; flex-direction: column; gap: 2px; }
-    .ep-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 20px 24px; display: grid; grid-template-columns: 80px 1fr auto; gap: 20px; align-items: center; transition: border-color 0.2s, background 0.2s; cursor: default; margin-bottom: 2px; }
+    .ep-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 20px 24px; display: grid; grid-template-columns: 80px 1fr; gap: 20px; align-items: start; transition: border-color 0.2s, background 0.2s; cursor: default; margin-bottom: 2px; min-width: 0; }
     .ep-card:hover { border-color: var(--gold-dim); background: #151515; }
 
-    .ep-info { min-width: 0; }
+    .ep-info { min-width: 0; overflow: hidden; }
     .ep-title-text { font-family: var(--condensed); font-weight: 900; font-size: 22px; text-transform: uppercase; line-height: 1.1; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ep-desc-text { font-size: 13px; color: var(--muted); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 10px; }
     .ep-meta-row { display: flex; gap: 16px; align-items: center; }
     .ep-date { font-size: 11px; color: var(--muted); font-weight: 500; }
     .ep-dur { font-size: 11px; color: var(--muted); font-weight: 500; }
     .ep-dur::before { content: '·'; margin-right: 16px; }
-    .ep-actions { display: flex; flex-direction: column; align-items: center; gap: 8px; flex-shrink: 0; }
+    .ep-actions { display: flex; flex-direction: row; align-items: center; gap: 8px; margin-top: 10px; }
     .ep-logo-btn { display: block; transition: transform 0.18s, opacity 0.15s; }
     .ep-logo-btn:hover { transform: scale(1.12); opacity: 0.9; }
     .ep-listen-label { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
@@ -59,12 +59,32 @@
     .ep-thumb-placeholder { width: 80px; height: 80px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .ep-num-big { font-family: var(--condensed); font-weight: 900; font-size: 28px; color: var(--gold); line-height: 1; }
     @media (max-width: 900px) {
-      .page-hero { padding: 100px 24px 48px; }
-      .episodes-body { padding: 40px 24px 80px; }
-      .ep-card { grid-template-columns: 60px 1fr; gap: 12px; padding: 16px; }
-      .ep-thumb-wrap, .ep-thumb, .ep-thumb-placeholder { width: 60px; height: 60px; }
-      .ep-actions { grid-column: 1 / -1; justify-content: flex-start; }
-      .ep-title-text { font-size: 18px; white-space: normal; }
+      .page-hero { padding: 90px 24px 48px; }
+      .episodes-body { padding: 28px 24px 80px; }
+      .platform-bar { gap: 8px; flex-wrap: wrap; }
+      .platform-pill { padding: 8px 14px; font-size: 11px; }
+      .filter-tabs { gap: 6px; flex-wrap: wrap; }
+      .filter-btn { padding: 8px 14px; font-size: 11px; }
+      .ep-card { grid-template-columns: 64px 1fr; gap: 12px; padding: 14px 16px; }
+      .ep-thumb-wrap, .ep-thumb, .ep-thumb-placeholder { width: 64px; height: 64px; }
+      .ep-logo-btn img { width: 30px !important; height: 30px !important; }
+      .ep-title-text { font-size: 16px; white-space: normal; }
+      .ep-desc-text { -webkit-line-clamp: 1; }
+    }
+    @media (max-width: 600px) {
+      .page-hero { padding: 80px 16px 36px; }
+      .episodes-body { padding: 20px 12px 60px; }
+      .platform-bar { gap: 6px; }
+      .platform-pill { padding: 7px 12px; font-size: 10px; gap: 6px; }
+      .platform-pill img { width: 16px !important; height: 16px !important; }
+      .filter-btn { padding: 7px 10px; font-size: 10px; }
+      .ep-card { grid-template-columns: 52px 1fr; gap: 10px; padding: 12px; }
+      .ep-thumb-wrap, .ep-thumb, .ep-thumb-placeholder { width: 52px; height: 52px; }
+      .ep-logo-btn img { width: 26px !important; height: 26px !important; }
+      .ep-title-text { font-size: 14px; }
+      .ep-desc-text { display: none; }
+      .ep-date, .ep-dur { font-size: 10px; }
+      .ep-section-header { margin-bottom: 10px; }
     }
   </style>
 </head>
@@ -184,7 +204,7 @@
     }
 
     function renderCard(ep) {
-      const { title, desc, pubDate, dur, epNum, thumb, isSideline } = ep;
+      const { title, desc, pubDate, dur, epNum, thumb } = ep;
       const thumbHtml = thumb
         ? `<img src="${thumb}" alt="${title}" class="ep-thumb" onerror="this.style.display='none'">`
         : `<div class="ep-thumb ep-thumb-placeholder"><div class="ep-num-big">${epNum}</div><div class="ep-num-label">EP</div></div>`;
@@ -199,17 +219,17 @@
               ${pubDate ? `<span class="ep-date">${pubDate}</span>` : ''}
               ${dur ? `<span class="ep-dur">${dur}</span>` : ''}
             </div>
-          </div>
-          <div class="ep-actions">
-            <a href="${SPOTIFY_SHOW}" target="_blank" class="ep-logo-btn" title="Spotify">
-              <img src="spotify-logo.png" alt="Spotify" width="40" height="40" style="border-radius:50%;display:block;">
-            </a>
-            <a href="${APPLE_SHOW}" target="_blank" class="ep-logo-btn" title="Apple Podcasts">
-              <img src="apple-logo.png" alt="Apple Podcasts" width="40" height="40" style="border-radius:10px;display:block;">
-            </a>
-            <a href="${YOUTUBE_SHOW}" target="_blank" class="ep-logo-btn" title="YouTube">
-              <img src="youtube-logo.png" alt="YouTube" width="40" height="40" style="border-radius:6px;display:block;">
-            </a>
+            <div class="ep-actions">
+              <a href="${SPOTIFY_SHOW}" target="_blank" class="ep-logo-btn" title="Spotify">
+                <img src="spotify-logo.png" alt="Spotify" width="36" height="36" style="border-radius:50%;display:block;">
+              </a>
+              <a href="${APPLE_SHOW}" target="_blank" class="ep-logo-btn" title="Apple Podcasts">
+                <img src="apple-logo.png" alt="Apple Podcasts" width="36" height="36" style="border-radius:9px;display:block;">
+              </a>
+              <a href="${YOUTUBE_SHOW}" target="_blank" class="ep-logo-btn" title="YouTube">
+                <img src="youtube-logo.png" alt="YouTube" width="36" height="36" style="border-radius:6px;display:block;">
+              </a>
+            </div>
           </div>
         </div>`;
     }

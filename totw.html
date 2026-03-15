@@ -11,22 +11,37 @@
     .page-hero { padding: 120px 48px 80px; border-bottom: 1px solid var(--border); }
     .page-hero h1 { font-family: var(--condensed); font-weight: 900; font-size: clamp(52px, 8vw, 96px); text-transform: uppercase; line-height: 0.88; }
     .page-hero h1 span { color: var(--gold); }
-    .page-hero p { color: var(--muted); font-size: 17px; margin-top: 20px; max-width: 560px; line-height: 1.65; }
+    .page-hero p { color: var(--muted); font-size: 17px; margin-top: 20px; max-width: 600px; line-height: 1.65; }
     .totw-body { padding: 80px 48px 100px; }
-    .totw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .totw-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
-    .totw-card:hover { border-color: var(--gold-dim); transform: translateY(-3px); }
-    .totw-header { background: var(--black); padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-    .totw-week { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
-    .totw-school { font-family: var(--condensed); font-weight: 900; font-size: 22px; text-transform: uppercase; line-height: 1; }
-    .totw-mascot-badge { background: rgba(245,197,24,0.1); border: 1px solid rgba(245,197,24,0.2); border-radius: 4px; padding: 6px 10px; font-size: 11px; font-weight: 700; color: var(--gold); white-space: nowrap; flex-shrink: 0; }
-    .totw-body-inner { padding: 20px 24px; }
-    .totw-location { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px; }
-    .totw-fact { font-size: 14px; color: var(--white); line-height: 1.6; }
+    .totw-table-wrap { overflow-x: auto; }
+    .totw-table { width: 100%; border-collapse: collapse; }
+    .totw-table thead tr { border-bottom: 2px solid var(--gold); }
+    .totw-table th { text-align: left; padding: 12px 20px; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); white-space: nowrap; }
+    .totw-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+    .totw-table tbody tr:hover { background: var(--surface); }
+    .totw-table td { padding: 18px 20px; font-size: 14px; color: var(--white); vertical-align: middle; }
+    .totw-school-name { font-family: var(--condensed); font-weight: 900; font-size: 18px; text-transform: uppercase; line-height: 1; }
+    .totw-ep-badge { background: rgba(245,197,24,0.1); border: 1px solid rgba(245,197,24,0.2); border-radius: 3px; padding: 4px 8px; font-size: 11px; font-weight: 700; color: var(--gold); white-space: nowrap; display: inline-block; }
+    .totw-mascot { font-size: 13px; color: var(--muted); font-weight: 500; }
+    .totw-location { font-size: 13px; color: var(--muted); }
+    .submit-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 40px; margin-top: 60px; display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+    .submit-box h3 { font-family: var(--condensed); font-weight: 900; font-size: 28px; text-transform: uppercase; margin-bottom: 8px; }
+    .submit-box p { color: var(--muted); font-size: 15px; max-width: 440px; line-height: 1.6; }
     @media (max-width: 900px) {
-      .page-hero { padding: 100px 24px 60px; }
-      .totw-body { padding: 48px 24px 80px; }
-      .totw-grid { grid-template-columns: 1fr; }
+      .page-hero { padding: 90px 24px 48px; }
+      .totw-body { padding: 40px 24px 80px; }
+      .totw-table th { font-size: 9px; padding: 10px 12px; }
+      .totw-table td { padding: 14px 12px; font-size: 13px; }
+      .totw-school-name { font-size: 16px; }
+      .submit-box { flex-direction: column; padding: 28px 24px; gap: 20px; }
+    }
+    @media (max-width: 600px) {
+      .page-hero { padding: 80px 16px 36px; }
+      .totw-body { padding: 28px 16px 60px; }
+      .totw-table th:last-child, .totw-table td:last-child { display: none; }
+      .totw-table th, .totw-table td { padding: 10px 10px; }
+      .submit-box { padding: 20px 16px; }
+      .submit-box h3 { font-size: 22px; }
     }
   </style>
 </head>
@@ -48,43 +63,36 @@
     <div class="section-inner">
       <div class="section-label">Recurring Segment</div>
       <h1>Team of<br>the <span>Week</span></h1>
-      <p>Every week Jack and Adam spotlight an obscure small-town program with a great story. Small towns. Big traditions. Ridiculous mascots.</p>
+      <p>Every week Jack and Adam spotlight an obscure small-town high school football program with a great story. Small towns. Crazy mascots. Big Friday night traditions. This is the archive.</p>
     </div>
   </div>
 
   <div class="totw-body">
     <div class="section-inner">
-      <div class="totw-grid">
-        <div class="totw-card">
-          <div class="totw-header">
-            <div><div class="totw-week">Featured</div><div class="totw-school">Valdosta Wildcats</div></div>
-            <span class="totw-mascot-badge">Wildcats</span>
-          </div>
-          <div class="totw-body-inner">
-            <div class="totw-location">Valdosta, Georgia</div>
-            <p class="totw-fact">6-time national champions with over 900 all-time wins. The most storied small-city program in American football history.</p>
-          </div>
+      <div class="section-label" style="margin-bottom: 24px;">Full Archive — <span style="color:var(--white);" id="totw-count">loading...</span></div>
+      <div class="totw-table-wrap">
+        <table class="totw-table">
+          <thead>
+            <tr>
+              <th>Episode</th>
+              <th>School</th>
+              <th>Mascot</th>
+              <th>Location</th>
+              <th>Fun Fact</th>
+            </tr>
+          </thead>
+          <tbody id="totw-tbody">
+            <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:40px;">Loading teams...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="submit-box">
+        <div>
+          <h3>Know a Team?</h3>
+          <p>Got a school with a wild tradition, an insane mascot, or an untold story from a small town? Hit the pod on social and let us know — it might be the next Team of the Week.</p>
         </div>
-        <div class="totw-card">
-          <div class="totw-header">
-            <div><div class="totw-week">Coming Soon</div><div class="totw-school">Next Team Up</div></div>
-            <span class="totw-mascot-badge">TBA</span>
-          </div>
-          <div class="totw-body-inner">
-            <div class="totw-location">Somewhere, USA</div>
-            <p class="totw-fact">Tune in each week to find out which small-town program Jack and Adam are putting on the map next.</p>
-          </div>
-        </div>
-        <div class="totw-card">
-          <div class="totw-header">
-            <div><div class="totw-week">Submit a Team</div><div class="totw-school">Know a Program?</div></div>
-            <span class="totw-mascot-badge">DM Us →</span>
-          </div>
-          <div class="totw-body-inner">
-            <div class="totw-location">Your Town Here</div>
-            <p class="totw-fact">Got a team with a wild tradition, an insane mascot, or an untold story? Hit the pod on social and let us know.</p>
-          </div>
-        </div>
+        <a href="https://www.tiktok.com/@coachwardlaw" target="_blank" class="btn-gold">Submit a Team →</a>
       </div>
     </div>
   </div>
@@ -99,5 +107,37 @@
     </ul>
     <p class="footer-copy">© 2026 4th & Ward Podcast. All rights reserved.</p>
   </footer>
+
+  <script>
+    // Known Team of the Week archive — add new entries here each week
+    // Format: { ep, school, mascot, city, state, fact }
+    const TEAMS = [
+      { ep: 1,  school: "Ninety-Six Wildcats",        mascot: "Wildcats",       city: "Ninety-Six",      state: "SC", fact: "The town is literally named Ninety-Six — one of the most unique school names in America." },
+      { ep: 2,  school: "Bridge Creek Bobcats",        mascot: "Bobcats",        city: "Blanchard",       state: "OK", fact: "Perennial Oklahoma powerhouse known for developing college talent out of a small rural community." },
+      { ep: 3,  school: "Valdosta Wildcats",           mascot: "Wildcats",       city: "Valdosta",        state: "GA", fact: "6-time national champions with over 900 all-time wins — the most storied small-city program in America." },
+      { ep: 4,  school: "Lone Pine Golden Eagles",     mascot: "Golden Eagles",  city: "Lone Pine",       state: "CA", fact: "Tiny school in the Eastern Sierras playing 6-man football in the shadow of Mt. Whitney." },
+    ];
+
+    function renderTeams() {
+      const tbody = document.getElementById('totw-tbody');
+      if (!TEAMS.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:40px;">Archive coming soon — check back each week.</td></tr>';
+        document.getElementById('totw-count').textContent = '0 teams';
+        return;
+      }
+      const sorted = [...TEAMS].sort((a, b) => b.ep - a.ep);
+      tbody.innerHTML = sorted.map(t => `
+        <tr>
+          <td><span class="totw-ep-badge">Ep. ${t.ep}</span></td>
+          <td><div class="totw-school-name">${t.school}</div></td>
+          <td><span class="totw-mascot">${t.mascot}</span></td>
+          <td><span class="totw-location">${t.city}, ${t.state}</span></td>
+          <td style="color:var(--muted);font-size:13px;line-height:1.5;max-width:300px;">${t.fact}</td>
+        </tr>`).join('');
+      document.getElementById('totw-count').textContent = `${TEAMS.length} team${TEAMS.length !== 1 ? 's' : ''} featured`;
+    }
+
+    renderTeams();
+  </script>
 </body>
 </html>

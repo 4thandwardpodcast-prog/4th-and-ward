@@ -54,8 +54,19 @@ footer { padding: 48px; border-top: 1px solid var(--border); display: flex; alig
 .fade-up-3 { animation-delay: 0.4s; opacity: 0; }
 .fade-up-4 { animation-delay: 0.55s; opacity: 0; }
 @media (max-width: 900px) {
-  nav { padding: 0 16px; overflow-x: auto; }
-  .nav-links { gap: 16px; flex-wrap: nowrap; }
-  .nav-links a { font-size: 11px; white-space: nowrap; }
-  footer { flex-direction: column; align-items: flex-start; padding: 32px 24px; }
+  nav { padding: 0 16px; height: auto; min-height: 60px; flex-wrap: wrap; gap: 0; }
+  .nav-logo img { height: 32px; }
+  .nav-links { gap: 6px; flex-wrap: wrap; justify-content: flex-end; padding: 6px 0; }
+  .nav-links a { font-size: 10px; padding: 5px 8px; letter-spacing: 0.06em; }
+  .nav-listen { font-size: 10px !important; padding: 6px 12px !important; }
+  footer { flex-direction: column; align-items: flex-start; padding: 32px 24px; gap: 16px; }
+  .footer-links { flex-wrap: wrap; gap: 16px; }
+}
+@media (max-width: 600px) {
+  nav { padding: 10px 16px; flex-direction: column; align-items: flex-start; height: auto; }
+  .nav-links { width: 100%; justify-content: flex-start; gap: 4px; flex-wrap: wrap; padding: 6px 0 4px; }
+  .nav-links a { font-size: 10px; padding: 4px 8px; }
+  .nav-listen { display: none; }
+  footer { padding: 24px 16px; }
+  .footer-copy { font-size: 11px; }
 }
