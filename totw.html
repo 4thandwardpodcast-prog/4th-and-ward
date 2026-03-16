@@ -648,7 +648,14 @@
     function drawWheelOnCanvas(canvasId, wrapId) {
       const canvas = document.getElementById(canvasId);
       const wrap = document.getElementById(wrapId);
-      const size = wrap.offsetWidth;
+      // Use offsetWidth if available, fallback to viewport calc
+      let size = wrap ? wrap.offsetWidth : 0;
+      if (!size || size < 10) {
+        const vw = window.innerWidth;
+        if (vw <= 600) size = 280;
+        else if (vw <= 900) size = 320;
+        else size = Math.min(680, Math.floor(vw * 0.42));
+      }
       // High DPI for crisp text
       const dpr = window.devicePixelRatio || 1;
       canvas.width = size * dpr;
@@ -685,15 +692,25 @@
         ctx.arc(0, 0, outerR, start, end);
         ctx.arc(0, 0, innerR, end, start, true);
         ctx.closePath();
-        ctx.fillStyle = isEven ? '#111111' : '#F5C518';
+        ctx.fillStyle = isEven ? '#1a1a1a' : '#F5C518';
         ctx.fill();
+
+        // White outline on each slice
+        ctx.beginPath();
+        ctx.moveTo(innerR * Math.cos(start), innerR * Math.sin(start));
+        ctx.arc(0, 0, outerR, start, end);
+        ctx.arc(0, 0, innerR, end, start, true);
+        ctx.closePath();
+        ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
 
         // Divider lines
         ctx.beginPath();
         ctx.moveTo(innerR * Math.cos(start), innerR * Math.sin(start));
         ctx.lineTo(outerR * Math.cos(start), outerR * Math.sin(start));
-        ctx.strokeStyle = isEven ? '#F5C518' : '#111';
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = isEven ? '#F5C518' : 'rgba(255,255,255,0.5)';
+        ctx.lineWidth = 2;
         ctx.stroke();
 
         // Text — school name only, clean
@@ -714,7 +731,7 @@
         ctx.rotate(mid);
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = isEven ? '#F5C518' : '#111111';
+        ctx.fillStyle = isEven ? '#FFFFFF' : '#111111';
         ctx.font = `700 ${baseFontSize}px 'Barlow Condensed', sans-serif`;
 
         // Truncate if needed
