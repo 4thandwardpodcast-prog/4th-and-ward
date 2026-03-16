@@ -322,6 +322,9 @@
     <div class="modal-card">
       <div class="modal-trophy">🏈</div>
       <div class="modal-headline">Team of the Week</div>
+      <div id="modal-logo-wrap" style="display:none;margin:12px auto 4px;width:100px;height:100px;background:rgba(255,255,255,0.05);border-radius:50%;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;overflow:hidden;">
+        <img id="modal-logo" src="" alt="" style="width:84px;height:84px;object-fit:contain;">
+      </div>
       <div class="modal-school" id="modal-school">—</div>
       <div class="modal-meta" id="modal-meta">—</div>
       <div class="modal-ep" id="modal-ep">—</div>
@@ -865,6 +868,16 @@
       document.getElementById('modal-school').textContent = winner.fullName || winner.text;
       document.getElementById('modal-meta').textContent = winner.location || '';
       document.getElementById('modal-ep').textContent = 'Ep. ' + episodeLabel + ' — Team of the Week';
+      // Show logo if available
+      const logoWrap = document.getElementById('modal-logo-wrap');
+      const logoImg = document.getElementById('modal-logo');
+      if (winner.logoUrl) {
+        logoImg.src = '/api/proxy-image?url=' + encodeURIComponent(winner.logoUrl);
+        logoImg.alt = winner.fullName || winner.text;
+        logoWrap.style.display = 'flex';
+      } else {
+        logoWrap.style.display = 'none';
+      }
       document.getElementById('winner-modal').classList.add('open');
       document.getElementById('spin-btn').disabled = false;
       if (document.getElementById('fs-spin-btn')) document.getElementById('fs-spin-btn').disabled = false;
