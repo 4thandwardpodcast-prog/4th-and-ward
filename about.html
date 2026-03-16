@@ -18,7 +18,8 @@
     .hosts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 48px; }
     .host-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 40px; transition: border-color 0.2s; }
     .host-card:hover { border-color: var(--gold-dim); }
-    .host-avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--gold); display: flex; align-items: center; justify-content: center; font-family: var(--condensed); font-weight: 900; font-size: 24px; color: var(--black); margin-bottom: 20px; }
+    .host-avatar { width: 160px; height: 160px; margin-bottom: 20px; position: relative; }
+    .host-avatar img { width: 100%; height: 100%; object-fit: contain; object-position: bottom; filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5)); }
     .host-name { font-family: var(--condensed); font-weight: 900; font-size: 32px; text-transform: uppercase; margin-bottom: 6px; }
     .host-role { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); margin-bottom: 20px; }
     .host-bio { font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 16px; }
@@ -86,10 +87,10 @@
       <div class="section-label">The Hosts</div>
       <div class="hosts-grid">
         <div class="host-card">
-          <div class="host-avatar">JW</div>
+          <div class="host-avatar"><img src="jack_nobg.png" alt="Jack Wardlaw"></div>
           <div class="host-name">Jack Wardlaw</div>
-          <div class="host-role">The Analyst</div>
-          <p class="host-bio">High school Health &amp; PE teacher and assistant football coach in the Upstate of South Carolina. Former staff member at Clemson and the Jacksonville Jaguars. Jack brings the X's and O's, the insider perspective, and more stories from the weight room and film room than anyone should legally be allowed to tell.</p>
+          <div class="host-role">Co-Host</div>
+          <p class="host-bio">High school Health &amp; PE teacher and assistant football coach in the Upstate of South Carolina. Former staff member at Clemson and the Jacksonville Jaguars. Jack brings the insider perspective and more stories from the weight room and film room than anyone should legally be allowed to tell.</p>
           <div class="host-tags">
             <span class="tag">Upstate SC</span>
             <span class="tag">H&amp;PE Teacher</span>
@@ -99,10 +100,10 @@
           </div>
         </div>
         <div class="host-card">
-          <div class="host-avatar">AW</div>
+          <div class="host-avatar"><img src="adam_nobg.png" alt="Adam Wardlaw"></div>
           <div class="host-name">Adam Wardlaw</div>
-          <div class="host-role">The Comedian</div>
-          <p class="host-bio">High school science teacher and assistant football coach at a school outside of Dallas, Texas. TikTok creator behind the viral "Day in the Life of a Texas High School Football Coach" series. Adam brings the humor, the chaos, and the stories that make you realize coaching is basically just organized insanity.</p>
+          <div class="host-role">Co-Host</div>
+          <p class="host-bio">High school science teacher and assistant football coach at a school outside of Dallas, Texas. TikTok creator behind the viral "Day in the Life of a Texas High School Football Coach" series. Adam brings the stories, the chaos, and a front-row seat to why coaching is basically just organized insanity.</p>
           <div class="host-tags">
             <span class="tag">Dallas Area, TX</span>
             <span class="tag">Science Teacher</span>
