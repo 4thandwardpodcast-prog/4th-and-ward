@@ -818,8 +818,8 @@
         const speed = spinSpeed * (1 - eased);
         currentRotation += speed * Math.PI / 180;
 
-        const deg = ((currentRotation * 180 / Math.PI) % 360 + 360) % 360;
-        const idx = Math.floor((360 - deg + 270) % 360 / arcDeg) % nominees.length;
+        const localAngle = ((-currentRotation) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+        const idx = Math.floor(localAngle / (Math.PI * 2 / nominees.length)) % nominees.length;
         if (idx !== lastSliceIndex) { playTick(); lastSliceIndex = idx; }
 
         drawWheel();
