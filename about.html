@@ -18,7 +18,7 @@
     .hosts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 48px; }
     .host-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color 0.2s; display: flex; flex-direction: row; }
     .host-card:hover { border-color: var(--gold-dim); }
-    .host-avatar { width: 180px; min-width: 180px; height: auto; overflow: hidden; }
+    .host-avatar { width: 160px; min-width: 160px; max-width: 160px; height: 200px; overflow: hidden; flex-shrink: 0; }
     .host-avatar img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
     .host-info { padding: 32px 28px; display: flex; flex-direction: column; justify-content: center; }
     .host-name { font-family: var(--condensed); font-weight: 900; font-size: 28px; text-transform: uppercase; margin-bottom: 6px; }
@@ -91,20 +91,22 @@
       <div class="section-label">The Hosts</div>
       <div class="hosts-grid">
         <div class="host-card">
-          <div class="host-avatar"><img src="https://i.postimg.cc/LXWW8Cth/1.png"
-          <div class="host-name">Jack Wardlaw</div>
-          <div class="host-role">Co-Host</div>
-          <p class="host-bio">High school Health &amp; PE teacher and assistant football coach in the Upstate of South Carolina. Former staff member at Clemson and the Jacksonville Jaguars. Jack brings the insider perspective and more stories from the weight room and film room than anyone should legally be allowed to tell.</p>
-          <div class="host-tags">
-            <span class="tag">Upstate SC</span>
-            <span class="tag">H&amp;PE Teacher</span>
-            <span class="tag">Asst. Coach</span>
-            <span class="tag">Clemson Staff</span>
-            <span class="tag">Jaguars Staff</span>
+          <div class="host-avatar"><img src="https://i.postimg.cc/LXWW8Cth/1.png" alt="Jack Wardlaw"></div>
+          <div class="host-info">
+            <div class="host-name">Jack Wardlaw</div>
+            <div class="host-role">Co-Host</div>
+            <p class="host-bio">High school Health &amp; PE teacher and assistant football coach in the Upstate of South Carolina. Former staff member at Clemson and the Jacksonville Jaguars. Jack brings the insider perspective and more stories from the weight room and film room than anyone should legally be allowed to tell.</p>
+            <div class="host-tags">
+              <span class="tag">Upstate SC</span>
+              <span class="tag">H&amp;PE Teacher</span>
+              <span class="tag">Asst. Coach</span>
+              <span class="tag">Clemson Staff</span>
+              <span class="tag">Jaguars Staff</span>
+            </div>
           </div>
         </div>
         <div class="host-card">
-          <div class="host-avatar"><img src="https://i.postimg.cc/KzWW8qPj/2.png"
+          <div class="host-avatar"><img src="https://i.postimg.cc/KzWW8qPj/2.png" alt="Adam Wardlaw"></div>
           <div class="host-info">
             <div class="host-name">Adam Wardlaw</div>
             <div class="host-role">Co-Host</div>
@@ -117,6 +119,7 @@
             </div>
           </div>
         </div>
+      </div>
     </div>
   </div>
 
