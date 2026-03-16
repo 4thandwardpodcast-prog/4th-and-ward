@@ -18,8 +18,8 @@
     .hosts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 48px; }
     .host-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color 0.2s; display: flex; flex-direction: row; }
     .host-card:hover { border-color: var(--gold-dim); }
-    .host-avatar { align-self: stretch; overflow: hidden; flex-shrink: 0; display: flex; align-items: flex-end; }
-    .host-avatar img { width: auto; height: 100%; max-height: 280px; object-fit: contain; display: block; }
+    .host-avatar { width: 200px; min-width: 200px; max-width: 200px; align-self: stretch; flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .host-avatar img { width: 100%; height: 100%; object-fit: contain; object-position: center center; display: block; }
     .host-info { padding: 32px 28px; display: flex; flex-direction: column; justify-content: center; }
     .host-name { font-family: var(--condensed); font-weight: 900; font-size: 28px; text-transform: uppercase; margin-bottom: 6px; }
     .host-role { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
@@ -39,7 +39,7 @@
       .about-body, .hosts-section, .tiktok-section { padding: 48px 24px; }
       .hosts-grid { grid-template-columns: 1fr; gap: 16px; }
 
-      .host-avatar img { max-height: 180px; }
+      .host-avatar { width: 130px; min-width: 130px; max-width: 130px; }
       .tiktok-inner { grid-template-columns: 1fr; gap: 40px; }
       .tiktok-cards { grid-template-columns: 1fr 1fr; }
     }
