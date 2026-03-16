@@ -625,10 +625,10 @@
             document.getElementById('wheel-area').style.display = 'none';
             document.getElementById('wheel-no-nominees').style.display = 'block';
           } else {
-            setTimeout(() => {
+            requestAnimationFrame(() => requestAnimationFrame(() => {
               drawWheel();
               drawCenterLogo('center-logo-canvas');
-            }, 50);
+            }));
             // Pre-fill episode number
             const epInput = document.getElementById('ep-number-input');
             if (epInput && !epInput.value) epInput.value = nextEpisode;
@@ -708,7 +708,7 @@
 
         // Font size scales with slice arc width
         const sliceWidth = 2 * outerR * Math.sin(arc / 2);
-        const baseFontSize = Math.min(13, Math.max(8, sliceWidth * 0.28));
+        const baseFontSize = Math.min(22, Math.max(11, sliceWidth * 0.38));
 
         ctx.save();
         ctx.rotate(mid);
