@@ -625,8 +625,10 @@
             document.getElementById('wheel-area').style.display = 'none';
             document.getElementById('wheel-no-nominees').style.display = 'block';
           } else {
-            drawWheel();
-            drawCenterLogo('center-logo-canvas');
+            setTimeout(() => {
+              drawWheel();
+              drawCenterLogo('center-logo-canvas');
+            }, 50);
             // Pre-fill episode number
             const epInput = document.getElementById('ep-number-input');
             if (epInput && !epInput.value) epInput.value = nextEpisode;
