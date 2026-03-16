@@ -813,8 +813,7 @@
 
       function frame() {
         elapsed += 16;
-        if (elapsed >= spinDuration) { stopSpin(); return; }
-        const t = elapsed / spinDuration;
+        const t = Math.min(elapsed / spinDuration, 1);
         const eased = 1 - Math.pow(1 - t, 3);
         const speed = spinSpeed * (1 - eased);
         currentRotation += speed * Math.PI / 180;
@@ -827,16 +826,20 @@
         if (document.getElementById('fullscreen-overlay').style.display !== 'none') {
           drawWheelOnCanvas('fs-wheel-canvas', 'fs-wheel-wrap');
         }
+
+        if (elapsed >= spinDuration) {
+          // Capture index NOW before anything else changes currentRotation
+          stopSpin(idx);
+          return;
+        }
         requestAnimationFrame(frame);
       }
       requestAnimationFrame(frame);
     }
 
-    async function stopSpin() {
+    async function stopSpin(winnerIdx) {
       isSpinning = false;
-      const arcDeg = 360 / nominees.length;
-      const deg = ((currentRotation * 180 / Math.PI) % 360 + 360) % 360;
-      const idx = Math.floor((360 - deg + 270) % 360 / arcDeg) % nominees.length;
+      const idx = winnerIdx;
       const winner = nominees[idx];
 
       document.getElementById('wheel-status').textContent = winner.text + ' 🏈';
