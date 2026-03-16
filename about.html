@@ -9,132 +9,177 @@
   <link rel="stylesheet" href="shared.css">
   <style>
     .page-hero { padding: 120px 48px 80px; border-bottom: 1px solid var(--border); }
-    .page-hero h1 { font-family: var(--condensed); font-weight: 900; font-size: clamp(52px, 8vw, 96px); text-transform: uppercase; line-height: 0.88; letter-spacing: -0.01em; }
+    .page-hero h1 { font-family: var(--condensed); font-weight: 900; font-size: clamp(42px, 8vw, 96px); text-transform: uppercase; line-height: 0.88; letter-spacing: -0.01em; }
     .page-hero h1 span { color: var(--gold); }
     .page-hero .lead { color: var(--muted); font-size: 18px; line-height: 1.7; margin-top: 28px; max-width: 680px; }
+    
     .about-body { padding: 80px 48px; border-bottom: 1px solid var(--border); }
-    .about-body p { color: var(--muted); font-size: 16px; line-height: 1.75; margin-bottom: 20px; max-width: 720px; }
-    .hosts-section { padding: 80px 48px; border-bottom: 1px solid var(--border); background: var(--surface); }
-    .hosts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 48px; }
-    .host-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 40px; transition: border-color 0.2s; }
-    .host-card:hover { border-color: var(--gold-dim); }
-    .host-avatar { width: 160px; height: 160px; margin-bottom: 20px; position: relative; }
-    .host-avatar img { width: 100%; height: 100%; object-fit: contain; object-position: bottom; filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5)); }
-    .host-name { font-family: var(--condensed); font-weight: 900; font-size: 32px; text-transform: uppercase; margin-bottom: 6px; }
-    .host-role { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); margin-bottom: 20px; }
-    .host-bio { font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 16px; }
-    .host-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-    .tag { background: rgba(245,197,24,0.08); border: 1px solid rgba(245,197,24,0.2); border-radius: 3px; padding: 5px 10px; font-size: 11px; font-weight: 600; color: var(--gold); letter-spacing: 0.06em; text-transform: uppercase; }
-    .tiktok-section { padding: 80px 48px 100px; }
-    .tiktok-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
-    .tiktok-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .tiktok-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px; transition: border-color 0.2s; }
-    .tiktok-card:hover { border-color: var(--gold-dim); }
-    .tiktok-card-time { font-family: var(--condensed); font-weight: 900; font-size: 28px; color: var(--gold); margin-bottom: 6px; }
-    .tiktok-card-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-    .tiktok-card-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
-    @media (max-width: 900px) {
-      .page-hero { padding: 90px 24px 48px; }
-      .about-body, .hosts-section, .tiktok-section { padding: 48px 24px; }
-      .hosts-grid { grid-template-columns: 1fr; gap: 16px; }
-      .tiktok-inner { grid-template-columns: 1fr; gap: 40px; }
-      .tiktok-cards { grid-template-columns: 1fr 1fr; }
+    
+    /* Grid Container */
+    .tiktok-cards { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
+      gap: 24px; 
+      margin-top: 48px;
     }
+
+    /* Card Layout - Desktop (Side-by-Side) */
+    .tiktok-card { 
+      display: flex; 
+      flex-direction: row; /* Image left, Text right */
+      align-items: center;
+      gap: 20px;
+      background: rgba(255,255,255,0.03);
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      transition: border-color 0.3s ease;
+    }
+
+    .tiktok-card:hover {
+        border-color: var(--gold);
+    }
+
+    .card-image {
+      flex-shrink: 0;
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 4px;
+      background: #222; /* Fallback if image missing */
+    }
+
+    .card-content {
+      flex-grow: 1;
+    }
+
+    .tiktok-card-time { 
+      font-family: var(--condensed); 
+      color: var(--gold); 
+      font-weight: 900; 
+      font-size: 14px; 
+      text-transform: uppercase; 
+      letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+
+    .tiktok-card-title { 
+      font-family: var(--condensed); 
+      font-weight: 900; 
+      font-size: 24px; 
+      text-transform: uppercase;
+      line-height: 1.1;
+      margin-bottom: 8px;
+    }
+
+    .tiktok-card-desc { 
+      color: var(--muted); 
+      font-size: 15px; 
+      line-height: 1.5; 
+    }
+
+    /* RESPONSIVE FIX FOR MOBILE */
     @media (max-width: 600px) {
-      .page-hero { padding: 80px 16px 36px; }
-      .about-body, .hosts-section, .tiktok-section { padding: 36px 16px; }
-      .host-card { padding: 24px; }
-      .host-name { font-size: 26px; }
-      .host-tags { gap: 6px; }
-      .tiktok-cards { grid-template-columns: 1fr; }
-      .about-text { font-size: 15px; }
+      .page-hero { padding: 80px 24px 40px; }
+      .about-body { padding: 40px 24px; }
+      
+      .tiktok-cards {
+        grid-template-columns: 1fr; /* Stack cards vertically */
+      }
+
+      .tiktok-card {
+        flex-direction: column; /* Stack image above text */
+        align-items: flex-start;
+        text-align: left;
+      }
+
+      .card-image {
+        width: 100%; /* Make image full width of card */
+        height: 200px;
+      }
+    }
+
+    .social-cta { margin-bottom: 40px; }
+    .social-link { 
+      display: inline-flex; 
+      align-items: center; 
+      gap: 12px; 
+      background: #fff; 
+      color: #000; 
+      padding: 16px 28px; 
+      text-decoration: none; 
+      font-family: var(--condensed); 
+      font-weight: 900; 
+      text-transform: uppercase;
     }
   </style>
 </head>
 <body>
-  <nav>
-    <a href="index.html" class="nav-logo"><img src="logo.png" alt="4th & Ward Podcast"></a>
-    <ul class="nav-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="episodes.html">Episodes</a></li>
-      <li><a href="about.html" class="active">About</a></li>
-      <li><a href="totw.html">Team of the Week</a></li>
-      <li><a href="wardle.html">4th &amp; Wardle</a></li>
-      <li><a href="https://www.tiktok.com/@coachwardlaw" target="_blank" rel="noopener">TikTok</a></li>
-      <li><a href="merch.html">Merch</a></li>
-      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
-    </ul>
-  </nav>
+
+  <header>
+    <div class="nav-container">
+      <a href="index.html" class="logo"><img src="logo.png" alt="4th & Ward"></a>
+      <nav>
+        <a href="episodes.html">Episodes</a>
+        <a href="about.html" class="active">About</a>
+        <a href="totw.html">TOTW</a>
+      </nav>
+    </div>
+  </header>
 
   <div class="page-hero">
-    <div class="section-inner">
-      <div class="section-label">About the Show</div>
-      <h1>Stories from<br>the <span>Coaches Office.</span></h1>
-      <p class="lead">Two high school football coaches — one in South Carolina, one in Texas — sharing the stories you only get from living inside the game.</p>
-    </div>
+    <h1>KNOW YOUR <span>COACH</span></h1>
+    <p class="lead">Texas High School Football isn't just a sport; it's a religion. Coach Wardlaw has spent his life on the sidelines, in the film rooms, and under the lights.</p>
   </div>
 
   <div class="about-body">
-    <div class="section-inner">
-      <p>The 4th &amp; Ward Podcast is hosted by coaching brothers Adam &amp; Jack Wardlaw — a lively and entertaining show that tackles the lighter side of football. Packed with hilarious stories from their years of coaching and playing, each episode serves up a playbook of laugh-out-loud moments and unforgettable anecdotes.</p>
-      <p>From locker room mishaps to sideline blunders, their sharp wit and seasoned perspective brings the gridiron to life in a way that'll have fans, players, and fellow coaches in stitches.</p>
-      <p>Perfect for anyone who loves football — or just a good story — this podcast delivers humor, heart, and a front-row seat to the funniest tales from the field.</p>
-    </div>
-  </div>
+    <div class="content-wrapper">
+      
+      <div class="social-cta">
+        <a href="#" class="social-link">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="20"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1 .05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1.04-.1z"/></svg>
+          Follow @coachwardlaw
+        </a>
+      </div>
 
-  <div class="hosts-section">
-    <div class="section-inner">
-      <div class="section-label">The Hosts</div>
-      <div class="hosts-grid">
-        <div class="host-card">
-          <div class="host-avatar"><img src="jack_nobg.png" alt="Jack Wardlaw"></div>
-          <div class="host-name">Jack Wardlaw</div>
-          <div class="host-role">Co-Host</div>
-          <p class="host-bio">High school Health &amp; PE teacher and assistant football coach in the Upstate of South Carolina. Former staff member at Clemson and the Jacksonville Jaguars. Jack brings the insider perspective and more stories from the weight room and film room than anyone should legally be allowed to tell.</p>
-          <div class="host-tags">
-            <span class="tag">Upstate SC</span>
-            <span class="tag">H&amp;PE Teacher</span>
-            <span class="tag">Asst. Coach</span>
-            <span class="tag">Clemson Staff</span>
-            <span class="tag">Jaguars Staff</span>
+      <div class="tiktok-cards">
+        <div class="tiktok-card">
+          <img src="img1.jpg" alt="6AM Lifts" class="card-image">
+          <div class="card-content">
+            <div class="tiktok-card-time">6AM</div>
+            <div class="tiktok-card-title">Morning Lifts</div>
+            <div class="tiktok-card-desc">Before school. Every day. No exceptions. It's where the championship is won.</div>
           </div>
         </div>
-        <div class="host-card">
-          <div class="host-avatar"><img src="adam_nobg.png" alt="Adam Wardlaw"></div>
-          <div class="host-name">Adam Wardlaw</div>
-          <div class="host-role">Co-Host</div>
-          <p class="host-bio">High school science teacher and assistant football coach at a school outside of Dallas, Texas. TikTok creator behind the viral "Day in the Life of a Texas High School Football Coach" series. Adam brings the stories, the chaos, and a front-row seat to why coaching is basically just organized insanity.</p>
-          <div class="host-tags">
-            <span class="tag">Dallas Area, TX</span>
-            <span class="tag">Science Teacher</span>
-            <span class="tag">Asst. Coach</span>
-            <span class="tag">TikTok Creator</span>
+
+        <div class="tiktok-card">
+          <img src="img2.jpg" alt="Film" class="card-image">
+          <div class="card-content">
+            <div class="tiktok-card-time">Film</div>
+            <div class="tiktok-card-title">Film Sessions</div>
+            <div class="tiktok-card-desc">The eye in the sky doesn't lie. Breaking down tape to find every advantage.</div>
+          </div>
+        </div>
+
+        <div class="tiktok-card">
+          <img src="img3.jpg" alt="Practice" class="card-image">
+          <div class="card-content">
+            <div class="tiktok-card-time">Prac</div>
+            <div class="tiktok-card-title">Practice</div>
+            <div class="tiktok-card-desc">Full contact. Full speed. This is where we sharpen the iron.</div>
+          </div>
+        </div>
+
+        <div class="tiktok-card">
+          <img src="img4.jpg" alt="Friday Night" class="card-image">
+          <div class="card-content">
+            <div class="tiktok-card-time">FNL</div>
+            <div class="tiktok-card-title">Game Night</div>
+            <div class="tiktok-card-desc">Friday Night Lights. The culmination of the week's sacrifice.</div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <div class="tiktok-section">
-    <div class="section-inner">
-      <div class="tiktok-inner">
-        <div>
-          <div class="section-label">@coachwardlaw</div>
-          <h2 style="font-family:var(--condensed);font-weight:900;font-size:clamp(36px,5vw,56px);text-transform:uppercase;line-height:0.92;margin-bottom:24px;">Day in the Life of a Texas <span style="color:var(--gold);">Football Coach</span></h2>
-          <p style="color:var(--muted);font-size:16px;line-height:1.7;margin-bottom:16px;">Adam takes you inside the grind of Texas high school football — film sessions, practice, game days, and everything in between. No filter. All football.</p>
-          <p style="color:var(--muted);font-size:16px;line-height:1.7;margin-bottom:32px;">If you want to know what it actually looks like to coach at the high school level in Texas, this is it.</p>
-          <a href="https://www.tiktok.com/@coachwardlaw" target="_blank" rel="noopener" class="btn-gold">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.79 1.54V6.79a4.85 4.85 0 01-1.02-.1z"/></svg>
-            Follow @coachwardlaw
-          </a>
-        </div>
-        <div class="tiktok-cards">
-          <div class="tiktok-card"><div class="tiktok-card-time">6AM</div><div class="tiktok-card-title">Morning Lifts</div><div class="tiktok-card-desc">Before school. Every day. No exceptions.</div></div>
-          <div class="tiktok-card"><div class="tiktok-card-time">Film</div><div class="tiktok-card-title">Film Sessions</div><div class="tiktok-card-desc">Breaking down tape the way real coaches do it.</div></div>
-          <div class="tiktok-card"><div class="tiktok-card-time">Prac</div><div class="tiktok-card-title">Practice</div><div class="tiktok-card-desc">Full contact. Full speed. Texas football.</div></div>
-          <div class="tiktok-card"><div class="tiktok-card-time">FNL</div><div class="tiktok-card-title">Game Night</div><div class="tiktok-card-desc">Friday Night Lights. The whole reason you coach.</div></div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -144,10 +189,9 @@
       <li><a href="episodes.html">Episodes</a></li>
       <li><a href="about.html">About</a></li>
       <li><a href="totw.html">TOTW</a></li>
-      <li><a href="wardle.html">Wardle</a></li>
-      <li><a href="merch.html">Merch</a></li>
     </ul>
-    <p class="footer-copy">© 2026 4th & Ward Podcast. All rights reserved.</p>
+    <div class="copyright">© 2026 4th & Ward Podcast. All Rights Reserved.</div>
   </footer>
+
 </body>
 </html>
