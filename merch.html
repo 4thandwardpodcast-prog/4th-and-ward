@@ -11,6 +11,7 @@
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getFirestore, doc, setDoc, increment }
     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
   const app = initializeApp({
     apiKey: "AIzaSyB5EJMsZT4WsfJjaFQ-srIdNwAINr7Q2yY",
     authDomain: "th-and-ward-b8f1c.firebaseapp.com",
@@ -19,13 +20,28 @@
     messagingSenderId: "499057353962",
     appId: "1:499057353962:web:18f42748c242a6e0be2393"
   });
-  const db  = getFirestore(app);
+
+  const db   = getFirestore(app);
   const page = window.location.pathname.replace(/\//g,'').replace('.html','') || 'index';
-  const d   = new Date();
+  const d    = new Date();
   const today = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-  setDoc(doc(db, 'pageviews', page + '_' + today),
-    { page, date: today, views: increment(1), allTime: increment(1) },
-    { merge: true });
+
+  // New vs returning visitor detection via localStorage
+  let visitorId = localStorage.getItem('4ward_vid');
+  let isNew = false;
+  if (!visitorId) {
+    visitorId = 'v_' + Math.random().toString(36).slice(2) + Date.now();
+    localStorage.setItem('4ward_vid', visitorId);
+    isNew = true;
+  }
+
+  setDoc(doc(db, 'pageviews', page + '_' + today), {
+    page,
+    date:        today,
+    views:       increment(1),
+    allTime:     increment(1),
+    newVisitors: increment(isNew ? 1 : 0)
+  }, { merge: true });
 </script>
   <style>
     .merch-hero { min-height: 60vh; display: flex; align-items: center; padding: 120px 48px 80px; background: var(--gold); position: relative; overflow: hidden; }
