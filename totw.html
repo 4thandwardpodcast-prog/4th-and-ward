@@ -311,7 +311,7 @@
       projectId:"th-and-ward-b8f1c",storageBucket:"th-and-ward-b8f1c.firebasestorage.app",
       messagingSenderId:"499057353962",appId:"1:499057353962:web:18f42748c242a6e0be2393"
     };
-    const ADMIN_EMAIL = '4thandwardpodcast@gmail.com';
+    const ADMIN_EMAIL = ['4thandwardpodcast@gmail.com', 'jmackwardlaw@gmail.com', 'coachwardlawsocial@gmail.com'];
     let nextEpNumber = 52; // auto-calculated from winners on load
 
     const app  = initializeApp(FIREBASE_CONFIG);
@@ -331,7 +331,7 @@
 
     // ── AUTH ───────────────────────────────────────────────
     onAuthStateChanged(auth, user => {
-      if (user && user.email === ADMIN_EMAIL) {
+      if (user && ADMIN_EMAIL.includes(user.email)) {
         isHost = true;
         document.getElementById('wheel-locked').style.display = 'none';
         document.getElementById('wheel-area').style.display = 'block';
@@ -351,7 +351,7 @@
     window.signInHost = async function() {
       try {
         const result = await signInWithPopup(auth, provider);
-        if (result.user.email !== ADMIN_EMAIL) {
+        if (!ADMIN_EMAIL.includes(result.user.email)) {
           auth.signOut();
           document.getElementById('auth-error').style.display = 'block';
         }
