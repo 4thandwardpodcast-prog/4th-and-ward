@@ -562,7 +562,7 @@
         const entries = [];
         snap.forEach(d => {
           const s = d.data();
-          if (s.playerName && s.playerName !== 'Anonymous') entries.push(s);
+          if (s.playerName) entries.push(s);
         });
         entries.sort((a, b) => b.score - a.score);
         const top10 = entries.slice(0, 10);
@@ -577,7 +577,7 @@
 
     function renderLeaderboard(wrap, entries, highlightName) {
       if (!entries || entries.length === 0) {
-        wrap.innerHTML = '<div class="lb-empty">No scores posted yet — be the first!</div>';
+        wrap.innerHTML = '<div class="lb-empty">No scores yet for this puzzle.</div>';
         return;
       }
       const rankIcon = r => r === 1 ? '&#129351;' : r === 2 ? '&#129352;' : r === 3 ? '&#129353;' : r;
