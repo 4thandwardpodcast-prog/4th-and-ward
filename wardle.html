@@ -88,6 +88,7 @@
       max-width: 800px;
       margin: 0 auto;
     }
+
     .game-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -120,6 +121,8 @@
       animation: pulse 1.5s ease-in-out infinite;
     }
     @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+    /* CLUE PROGRESS DOTS */
     .clue-dots {
       display: flex;
       gap: 8px;
@@ -132,7 +135,7 @@
       border: 2px solid var(--border);
       transition: all 0.3s;
     }
-    .clue-dot.used   { background: var(--gold); border-color: var(--gold); }
+    .clue-dot.used { background: var(--gold); border-color: var(--gold); }
     .clue-dot.active { border-color: var(--gold); box-shadow: 0 0 6px rgba(245,197,24,0.4); }
 
     /* SCORE BAR */
@@ -146,7 +149,9 @@
       flex-wrap: wrap;
       background: var(--surface2);
     }
-    .score-item { text-align: center; }
+    .score-item {
+      text-align: center;
+    }
     .score-num {
       font-family: var(--condensed);
       font-weight: 900;
@@ -162,11 +167,22 @@
       color: var(--muted);
       margin-top: 3px;
     }
-    .score-divider { width: 1px; height: 40px; background: var(--border); }
-    .attempts-pips { display: flex; gap: 6px; align-items: center; }
+    .score-divider {
+      width: 1px;
+      height: 40px;
+      background: var(--border);
+    }
+    .attempts-pips {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
     .pip {
-      width: 12px; height: 12px; border-radius: 50%;
-      background: var(--gold); transition: all 0.3s;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--gold);
+      transition: all 0.3s;
     }
     .pip.used { background: var(--border); }
 
@@ -187,20 +203,40 @@
     @keyframes slideIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
     .guess-row:last-child { border-bottom: none; }
     .guess-icon {
-      width: 28px; height: 28px; border-radius: 50%;
-      background: #3a1a1a; border: 1px solid #5a2020;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #3a1a1a;
+      border: 1px solid #5a2020;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
     }
-    .guess-text  { font-size: 14px; color: var(--muted); font-style: italic; }
+    .guess-text {
+      font-size: 14px;
+      color: var(--muted);
+      font-style: italic;
+    }
     .guess-result {
-      font-size: 11px; font-weight: 700; color: #e05555;
-      letter-spacing: 0.08em; text-transform: uppercase; margin-left: auto;
+      font-size: 11px;
+      font-weight: 700;
+      color: #e05555;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-left: auto;
     }
 
     /* INPUT AREA */
-    .input-section { padding: 28px 40px; }
-    .input-wrap { display: flex; gap: 12px; margin-bottom: 16px; }
+    .input-section {
+      padding: 28px 40px;
+    }
+    .input-wrap {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
     .guess-input {
       flex: 1;
       background: var(--surface2);
@@ -232,163 +268,67 @@
     }
     .guess-btn:hover { background: var(--gold-hover); transform: translateY(-1px); }
     .guess-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-    .hint-text { font-size: 13px; color: var(--muted); text-align: center; }
-
-    /* WIN / LOSE RESULT CARD */
-    .result-card { padding: 40px; text-align: center; }
-    .result-win  { background: rgba(245,197,24,0.08); border-top: 3px solid var(--gold); }
-    .result-lose { background: rgba(255,80,80,0.05);  border-top: 3px solid #e05555; }
-    .result-emoji  { font-size: 48px; margin-bottom: 12px; }
-    .result-headline {
-      font-family: var(--condensed); font-weight: 900;
-      font-size: 40px; text-transform: uppercase; margin-bottom: 8px;
+    .hint-text {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
     }
-    .result-win  .result-headline { color: var(--gold); }
+
+    /* WIN / LOSE STATES */
+    .result-card {
+      padding: 40px;
+      text-align: center;
+    }
+    .result-win {
+      background: rgba(245,197,24,0.08);
+      border-top: 3px solid var(--gold);
+    }
+    .result-lose {
+      background: rgba(255,80,80,0.05);
+      border-top: 3px solid #e05555;
+    }
+    .result-emoji { font-size: 48px; margin-bottom: 12px; }
+    .result-headline {
+      font-family: var(--condensed);
+      font-weight: 900;
+      font-size: 40px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .result-win .result-headline { color: var(--gold); }
     .result-lose .result-headline { color: #e05555; }
-    .result-answer { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
-    .result-meta   { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
-    .result-score  {
-      font-family: var(--condensed); font-weight: 900;
-      font-size: 52px; color: var(--gold); line-height: 1; margin-bottom: 4px;
+    .result-answer {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .result-meta {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+    .result-score {
+      font-family: var(--condensed);
+      font-weight: 900;
+      font-size: 52px;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 4px;
     }
     .result-score-label {
-      font-size: 12px; font-weight: 600; letter-spacing: 0.14em;
-      text-transform: uppercase; color: var(--muted); margin-bottom: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 28px;
     }
     .result-actions {
-      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
-      margin-bottom: 24px;
-    }
-
-    /* NICKNAME / LEADERBOARD SECTION (inside result card) */
-    .leaderboard-section {
-      margin-top: 24px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 24px 28px;
-      text-align: left;
-    }
-    .lb-title {
-      font-family: var(--condensed);
-      font-weight: 900;
-      font-size: 20px;
-      text-transform: uppercase;
-      color: var(--gold);
-      letter-spacing: 0.05em;
-      margin-bottom: 16px;
-    }
-    /* Name entry */
-    .lb-name-row {
       display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 12px;
+      justify-content: center;
       flex-wrap: wrap;
     }
-    .lb-name-input {
-      flex: 1;
-      min-width: 140px;
-      background: var(--surface);
-      border: 2px solid var(--border);
-      border-radius: 6px;
-      padding: 10px 14px;
-      font-size: 15px;
-      color: var(--white);
-      font-family: var(--body);
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .lb-name-input:focus { border-color: var(--gold); }
-    .lb-name-input::placeholder { color: var(--muted); }
-    .lb-submit-btn {
-      background: var(--gold);
-      color: var(--black);
-      border: none;
-      border-radius: 6px;
-      padding: 10px 20px;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      cursor: pointer;
-      font-family: var(--body);
-      white-space: nowrap;
-      transition: background 0.2s;
-    }
-    .lb-submit-btn:hover { background: var(--gold-hover); }
-    .lb-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    /* Leaderboard table */
-    .lb-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-    .lb-table th {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--muted);
-      padding: 6px 8px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-    }
-    .lb-table th:last-child { text-align: right; }
-    .lb-table td {
-      padding: 9px 8px;
-      border-bottom: 1px solid #1e1e1e;
-      color: var(--white);
-      vertical-align: middle;
-    }
-    .lb-table td:last-child { text-align: right; color: var(--gold); font-weight: 700; font-family: var(--condensed); font-size: 16px; }
-    .lb-table tr:last-child td { border-bottom: none; }
-    .lb-rank {
-      font-family: var(--condensed);
-      font-weight: 900;
-      font-size: 18px;
-      color: var(--muted);
-      width: 32px;
-    }
-    .lb-rank.top1 { color: #ffd700; }
-    .lb-rank.top2 { color: #c0c0c0; }
-    .lb-rank.top3 { color: #cd7f32; }
-    .lb-you-row td { background: rgba(245,197,24,0.06); }
-    .lb-empty {
-      text-align: center;
-      color: var(--muted);
-      font-size: 13px;
-      padding: 16px 0;
-    }
-    .lb-loading {
-      text-align: center;
-      color: var(--muted);
-      font-size: 13px;
-      padding: 12px 0;
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-
-    /* COUNTDOWN */
-    .countdown-bar {
-      margin-top: 20px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 16px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-    .countdown-label {
-      font-size: 12px; font-weight: 600; letter-spacing: 0.12em;
-      text-transform: uppercase; color: var(--muted);
-    }
-    .countdown-time {
-      font-family: var(--condensed); font-weight: 900;
-      font-size: 32px; color: var(--gold); letter-spacing: 0.04em; line-height: 1;
-    }
-    .countdown-next { font-size: 12px; color: var(--muted); font-weight: 500; }
 
     /* PAST PUZZLES */
     .past-section {
@@ -406,9 +346,15 @@
       gap: 20px;
       flex-wrap: wrap;
     }
-    .past-label { font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+    .past-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      white-space: nowrap;
+    }
     .past-select {
-      flex: 1; min-width: 200px;
+      flex: 1;
+      min-width: 200px;
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 6px;
@@ -416,7 +362,8 @@
       font-size: 14px;
       color: var(--white);
       font-family: var(--body);
-      cursor: pointer; outline: none;
+      cursor: pointer;
+      outline: none;
     }
     .past-select:focus { border-color: var(--gold); }
     .past-btn {
@@ -425,10 +372,14 @@
       color: var(--gold);
       border-radius: 6px;
       padding: 10px 20px;
-      font-size: 13px; font-weight: 700;
-      letter-spacing: 0.08em; text-transform: uppercase;
-      cursor: pointer; font-family: var(--body);
-      transition: background 0.2s, color 0.2s; white-space: nowrap;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: var(--body);
+      transition: background 0.2s, color 0.2s;
+      white-space: nowrap;
     }
     .past-btn:hover { background: var(--gold); color: var(--black); }
 
@@ -438,7 +389,11 @@
       max-width: 800px;
       margin: 0 auto;
     }
-    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
     .stat-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -447,15 +402,53 @@
       text-align: center;
     }
     .stat-num {
-      font-family: var(--condensed); font-weight: 900;
-      font-size: 32px; color: var(--gold); line-height: 1; margin-bottom: 4px;
+      font-family: var(--condensed);
+      font-weight: 900;
+      font-size: 32px;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 4px;
     }
     .stat-label {
-      font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
-      text-transform: uppercase; color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
     }
 
-    /* RESPONSIVE */
+    .countdown-bar {
+      margin-top: 20px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .countdown-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .countdown-time {
+      font-family: var(--condensed);
+      font-weight: 900;
+      font-size: 32px;
+      color: var(--gold);
+      letter-spacing: 0.04em;
+      line-height: 1;
+    }
+    .countdown-next {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+    }
     @media (max-width: 900px) {
       .wardle-hero { padding: 90px 24px 0; }
       .wardle-hero-inner { padding: 48px 0 36px; }
@@ -478,7 +471,6 @@
       .past-inner { padding: 20px 16px; gap: 12px; }
       .result-score { font-size: 40px; }
       .result-headline { font-size: 32px; }
-      .leaderboard-section { padding: 18px 16px; }
     }
   </style>
 </head>
@@ -490,7 +482,7 @@
       <li><a href="about.html">About</a></li>
       <li><a href="episodes.html">Episodes</a></li>
       <li><a href="totw.html">Team of the Week</a></li>
-      <li><a href="wardle.html" class="active">4th &amp; Wardle</a></li>
+      <li><a href="wardle.html" class="active">4th & Wardle</a></li>
       <li><a href="merch.html">Merch</a></li>
       <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
     </ul>
@@ -593,14 +585,14 @@
             type="text"
             class="guess-input"
             id="guess-input"
-            placeholder="Type school name (e.g. Allen, Allen HS, Allen High School)"
+            placeholder="Type school name (e.g. Allen High School)"
             autocomplete="off"
             autocorrect="off"
             spellcheck="false"
           >
           <button class="guess-btn" id="guess-btn" onclick="submitGuess()">Guess</button>
         </div>
-        <p class="hint-text">Any format accepted: "Palmetto", "Palmetto HS", "Palmetto High School" • Press Enter to submit</p>
+        <p class="hint-text">Enter the full school name • Press Enter to submit</p>
       </div>
 
     </div>
@@ -620,59 +612,30 @@
 
   <script>
     // ─── CONFIG ───────────────────────────────────────────────────────
+    // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE after deploying
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxLbhNA91yZSo37_s_44LRKgKP_Q3K5vo8LoDjOceCqZp_Y4nHbbateLaYB7dnI2pHD/exec';
     // ─────────────────────────────────────────────────────────────────
 
-    let puzzle      = null;
-    let attempts    = 6;
-    let clueIndex   = 0;
-    let score       = 100;
-    let gameOver    = false;
-    let finalScore  = 0;
-    let scoreSaved  = false;
-    let countdownInterval = null;
+    let puzzle = null;
+    let attempts = 6;
+    let clueIndex = 0;
+    let score = 100;
+    let gameOver = false;
 
-    // ── CALL APPS SCRIPT ─────────────────────────────────────────────
-    function callScript(fn, param, param2) {
-      let url = APPS_SCRIPT_URL + '?fn=' + fn;
-      if (param  !== undefined) url += '&param='  + encodeURIComponent(param);
-      if (param2 !== undefined) url += '&param2=' + encodeURIComponent(param2);
+    // ── CALL APPS SCRIPT ──
+    function callScript(fn, param) {
+      const url = APPS_SCRIPT_URL + '?fn=' + fn + (param !== undefined ? '&param=' + encodeURIComponent(param) : '');
       return fetch(url).then(r => r.json());
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // FUZZY ANSWER MATCHING
-    // Normalises both the guess and the answer so that:
-    //   "Palmetto"  /  "Palmetto HS"  /  "Palmetto High School"
-    //   "palmetto high school"  /  "  palmetto  "
-    // all match an answer of "Palmetto High School"
-    // ─────────────────────────────────────────────────────────────────
-    function normalizeSchool(str) {
-      return str
-        .toLowerCase()
-        // remove common suffixes in various forms
-        .replace(/\bhigh school\b/g, '')
-        .replace(/\bsenior high school\b/g, '')
-        .replace(/\bsenior high\b/g, '')
-        .replace(/\bhigh\b/g, '')
-        .replace(/\bschool\b/g, '')
-        .replace(/\bhs\b/g, '')
-        .replace(/\bsr\.?\s*high\b/g, '')
-        // strip punctuation and extra whitespace
-        .replace(/[^a-z0-9\s]/g, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-    }
-
-    function isCorrectAnswer(guess, answer) {
-      return normalizeSchool(guess) === normalizeSchool(answer);
-    }
-
-    // ── INIT ─────────────────────────────────────────────────────────
+    // ── INIT ──
     async function init() {
       try {
+        // Load stats
         loadStats();
+        // Load puzzle count for dropdown
         loadPuzzleList();
+        // Load today's puzzle
         const data = await callScript('getPuzzleJson');
         puzzle = typeof data === 'string' ? JSON.parse(data) : data;
         startGame();
@@ -685,23 +648,24 @@
     async function loadStats() {
       try {
         const s = await callScript('getAverageStats');
-        document.getElementById('stat-plays').textContent   = s.totalPlays ?? '—';
-        document.getElementById('stat-today').textContent   = s.todayAvg   ?? '—';
+        document.getElementById('stat-plays').textContent = s.totalPlays ?? '—';
+        document.getElementById('stat-today').textContent = s.todayAvg ?? '—';
         document.getElementById('stat-alltime').textContent = s.allTimeAvg ?? '—';
       } catch(e) {}
     }
 
     async function loadPuzzleList() {
       try {
-        const count  = await callScript('getPreviousPuzzleCount');
+        const count = await callScript('getPreviousPuzzleCount');
         const select = document.getElementById('puzzleSelect');
         const startDate = new Date('2026-03-13T00:00:00');
+        // Add puzzles newest first (today at top)
         for (let i = count; i >= 1; i--) {
           const d = new Date(startDate);
           d.setDate(d.getDate() + (i - 1));
           const opt = document.createElement('option');
           opt.value = i;
-          const isToday = (i === count);
+          const isToday = i === count;
           const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
           opt.textContent = isToday
             ? `Puzzle #${i} — Today (${dateStr})`
@@ -709,7 +673,8 @@
           if (isToday) opt.selected = true;
           select.appendChild(opt);
         }
-        document.getElementById('next-puzzle-num') && (document.getElementById('next-puzzle-num').textContent = count + 1);
+        // Update next puzzle number in countdown
+        document.getElementById('next-puzzle-num').textContent = count + 1;
       } catch(e) {}
     }
 
@@ -735,57 +700,57 @@
 
     function resetGame() {
       if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
-      attempts   = 6;
-      clueIndex  = 0;
-      score      = 100;
-      gameOver   = false;
-      finalScore = 0;
-      scoreSaved = false;
-      puzzle     = null;
-      document.getElementById('guess-history').innerHTML   = '';
+      attempts = 6;
+      clueIndex = 0;
+      score = 100;
+      gameOver = false;
+      puzzle = null;
+      document.getElementById('guess-history').innerHTML = '';
       document.getElementById('score-display').textContent = '100';
-      document.getElementById('clue-text').textContent     = 'Loading...';
+      document.getElementById('clue-text').textContent = 'Loading...';
       document.getElementById('clue-text').classList.add('loading');
-      document.getElementById('guess-input').value         = '';
-      document.getElementById('guess-btn').disabled        = false;
+      document.getElementById('guess-input').value = '';
+      document.getElementById('guess-btn').disabled = false;
       document.getElementById('input-section').style.display = '';
+      // Reset pips
       for (let i = 0; i < 6; i++) document.getElementById('pip-' + i).classList.remove('used');
+      // Reset dots
       for (let i = 0; i < 5; i++) {
         const d = document.getElementById('dot-' + i);
         d.classList.remove('used', 'active');
         if (i === 0) d.classList.add('active');
       }
+      // Remove result card if present
       const rc = document.querySelector('.result-card');
       if (rc) rc.remove();
     }
 
     function showClue() {
       if (!puzzle) return;
-      document.getElementById('clue-label').textContent   = `Clue ${clueIndex + 1} of 5`;
-      document.getElementById('clue-text').textContent    = puzzle.clues[clueIndex];
+      document.getElementById('clue-label').textContent = `Clue ${clueIndex + 1} of 5`;
+      document.getElementById('clue-text').textContent = puzzle.clues[clueIndex];
       document.getElementById('score-display').textContent = score;
-      document.getElementById('clue-cost').textContent    = clueIndex < 4 ? '-20' : '—';
+      document.getElementById('clue-cost').textContent = clueIndex < 4 ? '-20' : '—';
+      // Update dots
       for (let i = 0; i < 5; i++) {
         const d = document.getElementById('dot-' + i);
         d.classList.remove('used', 'active');
-        if (i < clueIndex)      d.classList.add('used');
+        if (i < clueIndex) d.classList.add('used');
         else if (i === clueIndex) d.classList.add('active');
       }
     }
 
-    // ── SUBMIT GUESS ─────────────────────────────────────────────────
     function submitGuess() {
       if (gameOver || !puzzle) return;
       const input = document.getElementById('guess-input');
       const guess = input.value.trim();
       if (!guess) return;
 
-      if (isCorrectAnswer(guess, puzzle.answer)) {
-        gameOver   = true;
-        finalScore = Math.max(0, score);
+      if (guess.toLowerCase() === puzzle.answer.toLowerCase()) {
+        gameOver = true;
         addGuessRow(guess, true);
         showResult(true);
-        persistScore(finalScore);
+        saveScore(score);
         return;
       }
 
@@ -795,10 +760,9 @@
       updatePips();
 
       if (attempts <= 0) {
-        gameOver   = true;
-        finalScore = 0;
+        gameOver = true;
         showResult(false);
-        persistScore(0);
+        saveScore(0);
         return;
       }
 
@@ -818,63 +782,41 @@
       row.className = 'guess-row';
       row.innerHTML = `
         <div class="guess-icon">${correct ? '✓' : '✗'}</div>
-        <div class="guess-text">${escapeHtml(guess)}</div>
+        <div class="guess-text">${guess}</div>
         <div class="guess-result">${correct ? 'Correct!' : 'Wrong'}</div>
       `;
       if (correct) {
         row.querySelector('.guess-icon').style.background = 'rgba(245,197,24,0.15)';
-        row.querySelector('.guess-icon').style.border     = '1px solid rgba(245,197,24,0.3)';
-        row.querySelector('.guess-icon').style.color      = 'var(--gold)';
-        row.querySelector('.guess-result').style.color    = 'var(--gold)';
+        row.querySelector('.guess-icon').style.border = '1px solid rgba(245,197,24,0.3)';
+        row.querySelector('.guess-icon').style.color = 'var(--gold)';
+        row.querySelector('.guess-result').style.color = 'var(--gold)';
       }
       history.appendChild(row);
     }
 
     function updatePips() {
+      const used = 6 - attempts;
       for (let i = 0; i < 6; i++) {
         document.getElementById('pip-' + i).classList.toggle('used', i >= attempts);
       }
     }
 
-    // ── RESULT CARD ───────────────────────────────────────────────────
     function showResult(won) {
       document.getElementById('input-section').style.display = 'none';
       const card = document.createElement('div');
       card.className = 'result-card ' + (won ? 'result-win' : 'result-lose');
-      const fs = won ? score : 0;
-
+      const finalScore = won ? score : 0;
       card.innerHTML = `
         <div class="result-emoji">${won ? '🏈' : '😤'}</div>
         <div class="result-headline">${won ? 'Nice Call!' : 'Game Over'}</div>
-        <div class="result-answer">${escapeHtml(puzzle.answer)}</div>
-        <div class="result-meta">${escapeHtml(puzzle.mascot)} · ${escapeHtml(puzzle.city)}, ${escapeHtml(puzzle.state)} · ${escapeHtml(puzzle.stadium)}</div>
-        <div class="result-score">${fs}</div>
+        <div class="result-answer">${puzzle.answer}</div>
+        <div class="result-meta">${puzzle.mascot} · ${puzzle.city}, ${puzzle.state} · ${puzzle.stadium}</div>
+        <div class="result-score">${finalScore}</div>
         <div class="result-score-label">Points Earned</div>
         <div class="result-actions">
           <button class="btn-gold" onclick="resetAndLoadNew()" style="cursor:pointer;border:none;">Play Again</button>
           <a href="episodes.html" class="btn-ghost">Listen to the Pod</a>
         </div>
-
-        <!-- LEADERBOARD -->
-        <div class="leaderboard-section" id="lb-section">
-          <div class="lb-title">🏆 Puzzle #${puzzle.puzzleNum} Leaderboard</div>
-          <div class="lb-name-row" id="lb-name-row">
-            <input
-              type="text"
-              class="lb-name-input"
-              id="lb-name-input"
-              placeholder="Enter your name or nickname"
-              maxlength="24"
-              autocomplete="off"
-              autocorrect="off"
-              spellcheck="false"
-            >
-            <button class="lb-submit-btn" id="lb-submit-btn" onclick="submitToLeaderboard()">Post Score</button>
-          </div>
-          <div id="lb-table-wrap"><div class="lb-loading">Loading leaderboard...</div></div>
-        </div>
-
-        <!-- COUNTDOWN -->
         <div class="countdown-bar" style="margin-top:24px;">
           <div>
             <div class="countdown-label">Next Puzzle In</div>
@@ -883,122 +825,12 @@
           <div class="countdown-time" id="countdown-timer">--:--:--</div>
         </div>
       `;
-
       document.querySelector('.game-card').appendChild(card);
       startCountdown();
-
-      // Pre-load current leaderboard (before name is posted)
-      loadLeaderboard(puzzle.puzzleNum, null);
-
-      // Allow Enter key in name field
-      setTimeout(() => {
-        const ni = document.getElementById('lb-name-input');
-        if (ni) ni.addEventListener('keypress', e => { if (e.key === 'Enter') submitToLeaderboard(); });
-      }, 100);
-    }
-
-    // ── LEADERBOARD ───────────────────────────────────────────────────
-    let _playerName = null; // the name the current player submitted
-
-    async function submitToLeaderboard() {
-      const input = document.getElementById('lb-name-input');
-      const btn   = document.getElementById('lb-submit-btn');
-      if (!input || !btn) return;
-
-      const name = input.value.trim() || 'Anonymous';
-      _playerName = name;
-
-      btn.disabled = true;
-      btn.textContent = 'Saving...';
-      input.disabled  = true;
-
-      try {
-        // Save score with name to the sheet
-        await callScript('saveScoreWithName', finalScore, name);
-        // Refresh leaderboard
-        await loadLeaderboard(puzzle.puzzleNum, name);
-
-        // Hide the name row after submitting
-        const nameRow = document.getElementById('lb-name-row');
-        if (nameRow) nameRow.style.display = 'none';
-
-        // Update community stats
-        loadStats();
-      } catch(e) {
-        btn.disabled    = false;
-        btn.textContent = 'Post Score';
-        input.disabled  = false;
-      }
-    }
-
-    async function loadLeaderboard(puzzleNum, highlightName) {
-      const wrap = document.getElementById('lb-table-wrap');
-      if (!wrap) return;
-      wrap.innerHTML = '<div class="lb-loading">Loading leaderboard...</div>';
-
-      try {
-        const data = await callScript('getLeaderboard', puzzleNum);
-        const entries = data.entries || [];
-        renderLeaderboard(wrap, entries, highlightName || _playerName);
-      } catch(e) {
-        wrap.innerHTML = '<div class="lb-empty">Could not load leaderboard.</div>';
-      }
-    }
-
-    function renderLeaderboard(wrap, entries, highlightName) {
-      if (!entries || entries.length === 0) {
-        wrap.innerHTML = '<div class="lb-empty">No scores yet — be the first!</div>';
-        return;
-      }
-
-      const rankClass = r => r === 1 ? 'top1' : r === 2 ? 'top2' : r === 3 ? 'top3' : '';
-      const rankIcon  = r => r === 1 ? '🥇' : r === 2 ? '🥈' : r === 3 ? '🥉' : r;
-
-      let rows = '';
-      for (const e of entries) {
-        const isYou = highlightName && e.name.toLowerCase() === highlightName.toLowerCase();
-        rows += `
-          <tr class="${isYou ? 'lb-you-row' : ''}">
-            <td class="lb-rank ${rankClass(e.rank)}">${rankIcon(e.rank)}</td>
-            <td>${escapeHtml(e.name)}${isYou ? ' <span style="color:var(--gold);font-size:11px;font-weight:700;">YOU</span>' : ''}</td>
-            <td>${e.score}</td>
-          </tr>`;
-      }
-
-      wrap.innerHTML = `
-        <table class="lb-table">
-          <thead>
-            <tr>
-              <th style="width:36px;">#</th>
-              <th>Player</th>
-              <th>Score</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>`;
-    }
-
-    // persistScore is called immediately when game ends (no name yet)
-    // This ensures the score is recorded even if player doesn't submit a name.
-    // When they do submit a name via submitToLeaderboard(), it saves again with the name.
-    // Note: this means a player who submits a name gets TWO rows (one anonymous, one named).
-    // To avoid this, we only auto-save for losses; wins go through submitToLeaderboard.
-    // Actually simplest: auto-save always as Anonymous, then submitToLeaderboard saves with name.
-    // The leaderboard query picks the best score per name, so duplicates aren't a big deal.
-    async function persistScore(fs) {
-      try {
-        const s = await callScript('saveScore', fs);
-        if (s) {
-          document.getElementById('stat-plays').textContent   = s.totalPlays ?? '—';
-          document.getElementById('stat-today').textContent   = s.todayAvg   ?? '—';
-          document.getElementById('stat-alltime').textContent = s.allTimeAvg ?? '—';
-        }
-      } catch(e) {}
     }
 
     async function resetAndLoadNew() {
       resetGame();
-      _playerName = null;
       try {
         const data = await callScript('getPuzzleJson');
         puzzle = typeof data === 'string' ? JSON.parse(data) : data;
@@ -1006,34 +838,45 @@
       } catch(e) {}
     }
 
-    // ── COUNTDOWN TIMER ───────────────────────────────────────────────
-    function updateCountdown() {
-      const now      = new Date();
-      const midnight = new Date();
-      midnight.setHours(24, 0, 0, 0);
-      const diff = midnight - now;
-      if (diff <= 0) { document.getElementById('countdown-timer').textContent = 'Now!'; return; }
-      const h  = Math.floor(diff / 3600000);
-      const m  = Math.floor((diff % 3600000) / 60000);
-      const s  = Math.floor((diff % 60000) / 1000);
-      const p  = n => String(n).padStart(2, '0');
-      document.getElementById('countdown-timer').textContent = `${p(h)}:${p(m)}:${p(s)}`;
+    async function saveScore(finalScore) {
+      try {
+        const s = await callScript('saveScore', finalScore);
+        if (s) {
+          document.getElementById('stat-plays').textContent = s.totalPlays ?? '—';
+          document.getElementById('stat-today').textContent = s.todayAvg ?? '—';
+          document.getElementById('stat-alltime').textContent = s.allTimeAvg ?? '—';
+        }
+      } catch(e) {}
     }
+
+    // ── COUNTDOWN TIMER ──
+    function updateCountdown() {
+      const now = new Date();
+      // Midnight Central Time
+      const midnight = new Date();
+      midnight.setHours(24, 0, 0, 0); // next midnight local
+      // Adjust for Central Time offset (UTC-6 standard, UTC-5 daylight)
+      // We'll just use local midnight as approximation
+      const diff = midnight - now;
+      if (diff <= 0) {
+        document.getElementById('countdown-timer').textContent = 'Now!';
+        return;
+      }
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      const pad = n => String(n).padStart(2, '0');
+      document.getElementById('countdown-timer').textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+    }
+
+    // Start countdown after game ends
+    let countdownInterval = null;
     function startCountdown() {
       updateCountdown();
       countdownInterval = setInterval(updateCountdown, 1000);
     }
 
-    // ── UTILITIES ─────────────────────────────────────────────────────
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    }
-
-    // ── BOOT ──────────────────────────────────────────────────────────
+    // Enter key support
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('guess-input').addEventListener('keypress', e => {
         if (e.key === 'Enter') submitGuess();
