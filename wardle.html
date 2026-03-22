@@ -552,19 +552,23 @@
       if (!wrap) return;
       wrap.innerHTML = '<div class="lb-loading">Loading leaderboard...</div>';
       try {
+        // Query by puzzleNum only — no composite index needed
         const q = query(
           collection(db, 'scores'),
           where('puzzleNum', '==', puzzleNum),
-          where('named', '==', true),
-          orderBy('score', 'desc'),
-          limit(10)
+          limit(200)
         );
-        const snap    = await getDocs(q);
+        const snap = await getDocs(q);
         const entries = [];
-        snap.forEach((d, i) => entries.push({ rank: i + 1, ...d.data() }));
-        // Re-rank after fetch
+        snap.forEach(d => {
+          const s = d.data();
+          if (s.playerName && s.playerName !== 'Anonymous') entries.push(s);
+        });
         entries.sort((a, b) => b.score - a.score);
-        entries.forEach((e, i) => e.rank = i + 1);
+        const top10 = entries.slice(0, 10);
+        top10.forEach((e, i) => e.rank = i + 1);
+        // replace entries with top10 for render
+        entries.length = 0; top10.forEach(e => entries.push(e));
         renderLeaderboard(wrap, entries, highlightName || _playerName);
       } catch(e) {
         wrap.innerHTML = '<div class="lb-empty">Could not load leaderboard.</div>';
