@@ -697,10 +697,13 @@
         if (pv.date >= twoWeeksAgoStr && pv.date < sevenAgoStr)  visPrevWeek += views;
       });
 
-      // New visitor % — approximate: first-time page views today vs total today
-      // We treat each unique page_date combo as a "session"; new = first visit to that page
-      // Since we don't have user IDs, we show today vs yesterday as a proxy
-      const newPct = visToday > 0 ? '100%' : '—'; // Every view counts as new since we don't track users
+      // New visitor % — uses newVisitors field written by tracking snippet
+      let newVisToday = 0;
+      pvSnap.forEach(d => {
+        const pv = d.data();
+        if (pv.date === today) newVisToday += (pv.newVisitors || 0);
+      });
+      const newPct = visToday > 0 ? Math.round((newVisToday / visToday) * 100) + '%' : '—';
 
       // Growth % = (this week vs prev week)
       let growthStr = '—';
