@@ -7,71 +7,282 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="shared.css">
+
+  <!-- Page view tracking -->
   <script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getFirestore, doc, setDoc, increment }
-    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, doc, setDoc, increment } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    const app = initializeApp({
+      apiKey:"AIzaSyB5EJMsZT4WsfJjaFQ-srIdNwAINr7Q2yY",authDomain:"th-and-ward-b8f1c.firebaseapp.com",
+      projectId:"th-and-ward-b8f1c",storageBucket:"th-and-ward-b8f1c.firebasestorage.app",
+      messagingSenderId:"499057353962",appId:"1:499057353962:web:18f42748c242a6e0be2393"
+    });
+    const db=getFirestore(app);
+    const page='merch';
+    const d=new Date();
+    const today=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    let vid=localStorage.getItem('4ward_vid'),isNew=false;
+    if(!vid){vid='v_'+Math.random().toString(36).slice(2)+Date.now();localStorage.setItem('4ward_vid',vid);isNew=true;}
+    setDoc(doc(db,'pageviews',page+'_'+today),{page,date:today,views:increment(1),allTime:increment(1),newVisitors:increment(isNew?1:0)},{merge:true});
+  </script>
 
-  const app = initializeApp({
-    apiKey: "AIzaSyB5EJMsZT4WsfJjaFQ-srIdNwAINr7Q2yY",
-    authDomain: "th-and-ward-b8f1c.firebaseapp.com",
-    projectId: "th-and-ward-b8f1c",
-    storageBucket: "th-and-ward-b8f1c.firebasestorage.app",
-    messagingSenderId: "499057353962",
-    appId: "1:499057353962:web:18f42748c242a6e0be2393"
-  });
-
-  const db   = getFirestore(app);
-  const page = window.location.pathname.replace(/\//g,'').replace('.html','') || 'index';
-  const d    = new Date();
-  const today = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-
-  // New vs returning visitor detection via localStorage
-  let visitorId = localStorage.getItem('4ward_vid');
-  let isNew = false;
-  if (!visitorId) {
-    visitorId = 'v_' + Math.random().toString(36).slice(2) + Date.now();
-    localStorage.setItem('4ward_vid', visitorId);
-    isNew = true;
-  }
-
-  setDoc(doc(db, 'pageviews', page + '_' + today), {
-    page,
-    date:        today,
-    views:       increment(1),
-    allTime:     increment(1),
-    newVisitors: increment(isNew ? 1 : 0)
-  }, { merge: true });
-</script>
   <style>
-    .merch-hero { min-height: 60vh; display: flex; align-items: center; padding: 120px 48px 80px; background: var(--gold); position: relative; overflow: hidden; }
-    .merch-hero::before { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(0,0,0,0.04) 79px, rgba(0,0,0,0.04) 80px); }
-    .merch-hero-inner { position: relative; z-index: 2; max-width: 1200px; margin: 0 auto; width: 100%; }
-    .merch-hero .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(0,0,0,0.5); margin-bottom: 16px; }
-    .merch-hero h1 { font-family: var(--condensed); font-weight: 900; font-size: clamp(64px, 10vw, 120px); text-transform: uppercase; line-height: 0.85; color: var(--black); margin-bottom: 24px; }
-    .merch-hero p { font-size: 18px; color: rgba(0,0,0,0.6); max-width: 480px; margin-bottom: 36px; line-height: 1.6; }
-    .merch-body { padding: 80px 48px 100px; }
-    .merch-embed-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 60px; text-align: center; margin-bottom: 48px; }
-    .merch-embed-box h2 { font-family: var(--condensed); font-weight: 900; font-size: 36px; text-transform: uppercase; margin-bottom: 16px; }
-    .merch-embed-box p { color: var(--muted); font-size: 15px; margin-bottom: 32px; }
+    /* ── HERO ──────────────────────────────────────────────── */
+    .merch-hero {
+      padding: 120px 48px 80px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .merch-hero-bg {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 70% at 50% 0%, rgba(245,197,24,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .merch-hero-inner {
+      position: relative;
+      z-index: 2;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .merch-hero h1 {
+      font-family: var(--condensed);
+      font-weight: 900;
+      font-size: clamp(52px, 8vw, 96px);
+      text-transform: uppercase;
+      line-height: 0.88;
+      margin-bottom: 20px;
+    }
+    .merch-hero h1 span { color: var(--gold); }
+    .merch-hero p {
+      color: var(--muted);
+      font-size: 17px;
+      max-width: 520px;
+      line-height: 1.65;
+      margin-bottom: 0;
+    }
+
+    /* ── PRODUCTS GRID ─────────────────────────────────────── */
+    .merch-body {
+      padding: 72px 48px 120px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
+    }
+    .product-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .product-card:hover {
+      border-color: rgba(245,197,24,0.4);
+      transform: translateY(-4px);
+    }
+
+    /* Product image area */
+    .product-image-wrap {
+      background: #0f0f0f;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+      position: relative;
+    }
+    .product-badge {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: var(--gold);
+      color: var(--black);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    /* Product info */
+    .product-info {
+      padding: 28px 32px 0;
+    }
+    .product-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    .product-name {
+      font-family: var(--condensed);
+      font-weight: 900;
+      font-size: 32px;
+      text-transform: uppercase;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .product-price {
+      font-family: var(--condensed);
+      font-weight: 900;
+      font-size: 28px;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+    .product-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 8px;
+    }
+    .product-specs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .product-spec {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 4px 10px;
+    }
+
+    /* Shopify embed container */
+    .shopify-embed {
+      padding: 24px 32px 32px;
+    }
+
+    /* Override Shopify's default iframe styles to fit our layout */
+    .shopify-embed iframe {
+      width: 100% !important;
+    }
+
+    /* Hide Shopify's product title/price since we show our own */
+    .shopify-embed .shopify-buy__product__title,
+    .shopify-embed .shopify-buy__product__price { display: none !important; }
+
+    /* ── SHIPPING BANNER ───────────────────────────────────── */
+    .shipping-banner {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 48px;
+    }
+    .shipping-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+    }
+    .shipping-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .shipping-icon {
+      font-size: 20px;
+    }
+    .shipping-item strong {
+      color: var(--white);
+    }
+
+    /* ── ABOUT SECTION ─────────────────────────────────────── */
+    .merch-about {
+      padding: 80px 48px;
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      border-top: 1px solid var(--border);
+    }
+    .merch-about-text h2 {
+      font-family: var(--condensed);
+      font-weight: 900;
+      font-size: 48px;
+      text-transform: uppercase;
+      line-height: 0.9;
+      margin-bottom: 20px;
+    }
+    .merch-about-text h2 span { color: var(--gold); }
+    .merch-about-text p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.75;
+      margin-bottom: 24px;
+    }
+    .merch-about-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .merch-stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      text-align: center;
+    }
+    .merch-stat-num {
+      font-family: var(--condensed);
+      font-weight: 900;
+      font-size: 40px;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .merch-stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── RESPONSIVE ────────────────────────────────────────── */
     @media (max-width: 900px) {
-      .merch-hero { padding: 90px 24px 60px; min-height: auto; }
-      .merch-body { padding: 40px 24px 80px; }
-      .merch-embed-box { padding: 36px 24px; }
-      .merch-hero h1 { font-size: 64px; }
+      .merch-hero { padding: 90px 24px 60px; }
+      .merch-body { padding: 48px 24px 80px; }
+      .products-grid { grid-template-columns: 1fr; }
+      .shipping-banner { padding: 20px 24px; }
+      .shipping-inner { gap: 24px; }
+      .merch-about { padding: 60px 24px; grid-template-columns: 1fr; gap: 40px; }
     }
     @media (max-width: 600px) {
       .merch-hero { padding: 80px 16px 48px; }
-      .merch-hero h1 { font-size: 48px; }
-      .merch-hero p { font-size: 15px; }
-      .merch-body { padding: 28px 16px 60px; }
-      .merch-embed-box { padding: 28px 16px; }
-      .merch-embed-box h2 { font-size: 26px; }
-      .btn-black, .btn-gold { width: 100%; justify-content: center; }
+      .merch-body { padding: 32px 16px 60px; }
+      .product-info { padding: 20px 20px 0; }
+      .shopify-embed { padding: 16px 20px 24px; }
+      .merch-about { padding: 48px 16px; }
+      .merch-about-text h2 { font-size: 36px; }
+      .merch-about-stats { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
 <body>
+
   <nav>
     <a href="index.html" class="nav-logo"><img src="logo.png" alt="4th & Ward Podcast"></a>
     <ul class="nav-links">
@@ -85,23 +296,111 @@
     </ul>
   </nav>
 
+  <!-- HERO -->
   <div class="merch-hero">
+    <div class="merch-hero-bg"></div>
     <div class="merch-hero-inner">
-      <div class="eyebrow">Official Store</div>
-      <h1>Represent<br>the Ward</h1>
-      <p>Hats, tees, and gear for the real ones. All orders fulfilled through our Shopify store.</p>
-      <a href="https://shop.4thandward.com" target="_blank" class="btn-black">Shop Now →</a>
+      <div class="section-label">Official Store</div>
+      <h1>4th <span>&</span> Ward<br>Merch</h1>
+      <p>Rep the pod. Quality gear for fans who love football, great stories, and a good laugh. Printed on demand and shipped straight to you.</p>
     </div>
   </div>
 
-  <div class="merch-body">
-    <div class="section-inner">
-      <div class="merch-embed-box">
-        <h2>Full Store</h2>
-        <p>Browse the complete 4th &amp; Ward collection — apparel, accessories, and more.</p>
-        <a href="https://shop.4thandward.com" target="_blank" class="btn-gold">Visit the Store →</a>
+  <!-- SHIPPING BANNER -->
+  <div class="shipping-banner">
+    <div class="shipping-inner">
+      <div class="shipping-item">
+        <span class="shipping-icon">&#128666;</span>
+        <span><strong>Ships Worldwide</strong> — Printed on demand</span>
       </div>
-      <p style="color:var(--muted);font-size:13px;text-align:center;">Orders are processed and fulfilled through our Shopify store at shop.4thandward.com</p>
+      <div class="shipping-item">
+        <span class="shipping-icon">&#127775;</span>
+        <span><strong>Premium Quality</strong> — Bella Canvas &amp; Richardson</span>
+      </div>
+      <div class="shipping-item">
+        <span class="shipping-icon">&#128274;</span>
+        <span><strong>Secure Checkout</strong> — Powered by Shopify</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCTS -->
+  <div class="merch-body">
+    <div class="products-grid">
+
+      <!-- T-SHIRT -->
+      <div class="product-card">
+        <div class="product-image-wrap">
+          <div class="product-badge">New</div>
+          <!-- Shopify renders the product image inside its component -->
+          <div id='product-component-1774155629920' style="width:100%;"></div>
+        </div>
+        <div class="product-info">
+          <div class="product-label">Apparel</div>
+          <div class="product-name">4th &amp; Ward<br>Official Tee</div>
+          <div class="product-price">$25</div>
+          <p class="product-desc">The official 4th &amp; Ward Podcast tee — built for fans who love football and a great story. Bella Canvas 3001, the gold standard of premium tees.</p>
+          <div class="product-specs">
+            <span class="product-spec">Bella Canvas 3001</span>
+            <span class="product-spec">100% Ring-Spun Cotton</span>
+            <span class="product-spec">Unisex Fit</span>
+            <span class="product-spec">Black</span>
+          </div>
+        </div>
+        <div class="shopify-embed" id="shirt-embed"></div>
+      </div>
+
+      <!-- SNAPBACK -->
+      <div class="product-card">
+        <div class="product-image-wrap">
+          <div class="product-badge">New</div>
+          <div id='product-component-1774155669219' style="width:100%;"></div>
+        </div>
+        <div class="product-info">
+          <div class="product-label">Headwear</div>
+          <div class="product-name">4th &amp; Ward<br>Snapback Cap</div>
+          <div class="product-price">$30</div>
+          <p class="product-desc">The official 4th &amp; Ward Podcast snapback — sideline-ready and built to last. Richardson 112, the go-to trucker cap for coaches and fans alike.</p>
+          <div class="product-specs">
+            <span class="product-spec">Richardson 112</span>
+            <span class="product-spec">Structured Mid-Profile</span>
+            <span class="product-spec">Adjustable Snapback</span>
+            <span class="product-spec">One Size Fits Most</span>
+          </div>
+        </div>
+        <div class="shopify-embed" id="hat-embed"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ABOUT THE POD -->
+  <div class="merch-about">
+    <div class="merch-about-text">
+      <h2>More Than<br>a <span>Podcast</span></h2>
+      <p>Hosted by coaching brothers Adam &amp; Jack Wardlaw, 4th &amp; Ward delivers humor, heart, and a front-row seat to the funniest tales from the field. From locker room mishaps to sideline blunders — every episode is a playbook of stories you won't forget.</p>
+      <p>When you wear the merch, you're repping a show built by coaches, for fans of the game.</p>
+      <a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="btn-gold" style="display:inline-flex;align-items:center;gap:10px;text-decoration:none;">
+        <img src="spotify-logo.png" alt="Spotify" style="width:20px;height:20px;"> Listen on Spotify
+      </a>
+    </div>
+    <div class="merch-about-stats">
+      <div class="merch-stat">
+        <div class="merch-stat-num">51+</div>
+        <div class="merch-stat-label">Episodes</div>
+      </div>
+      <div class="merch-stat">
+        <div class="merch-stat-num">2</div>
+        <div class="merch-stat-label">Coaches Hosting</div>
+      </div>
+      <div class="merch-stat">
+        <div class="merch-stat-num">&#8734;</div>
+        <div class="merch-stat-label">Stories to Tell</div>
+      </div>
+      <div class="merch-stat">
+        <div class="merch-stat-num">1</div>
+        <div class="merch-stat-label">Goal: Your Laugh</div>
+      </div>
     </div>
   </div>
 
@@ -111,10 +410,215 @@
       <li><a href="about.html">About</a></li>
       <li><a href="episodes.html">Episodes</a></li>
       <li><a href="totw.html">TOTW</a></li>
-      <li><a href="wardle.html">Wardle</a></li>
+      <li><a href="wardle.html">4th &amp; Wardle</a></li>
       <li><a href="merch.html">Merch</a></li>
     </ul>
-    <p class="footer-copy">© 2026 4th & Ward Podcast. All rights reserved.</p>
+    <p class="footer-copy">&#169; 2026 4th &amp; Ward Podcast. All rights reserved.</p>
   </footer>
+
+  <!-- SHOPIFY BUY BUTTON SCRIPTS -->
+  <!-- The Shopify components render product images + Add to Cart inside the product-image-wrap divs -->
+  <!-- We hide the title/price from Shopify since we display our own above -->
+
+  <!-- T-SHIRT embed -->
+  <script type="text/javascript">
+  /*<![CDATA[*/
+  (function () {
+    var scriptURL = 'https://sdks.shopifycdn.com/buy-button/latest/buy-button-storefront.min.js';
+    if (window.ShopifyBuy) {
+      if (window.ShopifyBuy.UI) { ShopifyBuyInit(); } else { loadScript(); }
+    } else { loadScript(); }
+    function loadScript() {
+      var script = document.createElement('script');
+      script.async = true; script.src = scriptURL;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(script);
+      script.onload = ShopifyBuyInit;
+    }
+    function ShopifyBuyInit() {
+      var client = ShopifyBuy.buildClient({
+        domain: 'bnaiyp-tj.myshopify.com',
+        storefrontAccessToken: '544f505923dc166cd35038af8de3744b',
+      });
+      ShopifyBuy.UI.onReady(client).then(function (ui) {
+        ui.createComponent('product', {
+          id: '14997072478580',
+          node: document.getElementById('shirt-embed'),
+          moneyFormat: '%24%7B%7Bamount%7D%7D',
+          options: {
+            "product": {
+              "styles": {
+                "product": { "margin": "0", "padding": "0" },
+                "button": {
+                  "font-family": "'Barlow Condensed', sans-serif",
+                  "font-weight": "900",
+                  "font-size": "16px",
+                  "letter-spacing": "0.08em",
+                  "text-transform": "uppercase",
+                  "color": "#000000",
+                  "background-color": "#f5c518",
+                  "border-radius": "6px",
+                  "padding-top": "14px",
+                  "padding-bottom": "14px",
+                  "padding-left": "28px",
+                  "padding-right": "28px",
+                  "width": "100%",
+                  ":hover": { "background-color": "#ddb116", "color": "#000000" },
+                  ":focus": { "background-color": "#ddb116" }
+                },
+                "title": { "display": "none" },
+                "prices": { "display": "none" },
+                "price": { "display": "none" }
+              },
+              "contents": {
+                "img": false,
+                "title": false,
+                "price": false,
+                "options": true,
+                "quantity": false,
+                "button": true
+              },
+              "text": { "button": "Add to Cart" },
+              "googleFonts": ["Barlow Condensed"]
+            },
+            "cart": {
+              "styles": {
+                "button": {
+                  "font-family": "'Barlow Condensed', sans-serif",
+                  "font-weight": "900",
+                  "font-size": "16px",
+                  "letter-spacing": "0.08em",
+                  "text-transform": "uppercase",
+                  "color": "#000000",
+                  "background-color": "#f5c518",
+                  "border-radius": "6px",
+                  ":hover": { "background-color": "#ddb116", "color": "#000000" },
+                  ":focus": { "background-color": "#ddb116" }
+                }
+              },
+              "text": { "total": "Subtotal", "button": "Checkout" },
+              "googleFonts": ["Barlow Condensed"]
+            },
+            "toggle": {
+              "styles": {
+                "toggle": {
+                  "font-family": "'Barlow Condensed', sans-serif",
+                  "font-weight": "900",
+                  "background-color": "#f5c518",
+                  ":hover": { "background-color": "#ddb116" },
+                  ":focus": { "background-color": "#ddb116" }
+                },
+                "count": { "color": "#000000", ":hover": { "color": "#000000" } },
+                "iconPath": { "fill": "#000000" }
+              },
+              "googleFonts": ["Barlow Condensed"]
+            }
+          }
+        });
+      });
+    }
+  })();
+  /*]]>*/
+  </script>
+
+  <!-- HAT embed -->
+  <script type="text/javascript">
+  /*<![CDATA[*/
+  (function () {
+    var scriptURL = 'https://sdks.shopifycdn.com/buy-button/latest/buy-button-storefront.min.js';
+    if (window.ShopifyBuy) {
+      if (window.ShopifyBuy.UI) { ShopifyBuyInit2(); } else { loadScript2(); }
+    } else { loadScript2(); }
+    function loadScript2() {
+      var script = document.createElement('script');
+      script.async = true; script.src = scriptURL;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(script);
+      script.onload = ShopifyBuyInit2;
+    }
+    function ShopifyBuyInit2() {
+      var client = ShopifyBuy.buildClient({
+        domain: 'bnaiyp-tj.myshopify.com',
+        storefrontAccessToken: '544f505923dc166cd35038af8de3744b',
+      });
+      ShopifyBuy.UI.onReady(client).then(function (ui) {
+        ui.createComponent('product', {
+          id: '14997071757684',
+          node: document.getElementById('hat-embed'),
+          moneyFormat: '%24%7B%7Bamount%7D%7D',
+          options: {
+            "product": {
+              "styles": {
+                "product": { "margin": "0", "padding": "0" },
+                "button": {
+                  "font-family": "'Barlow Condensed', sans-serif",
+                  "font-weight": "900",
+                  "font-size": "16px",
+                  "letter-spacing": "0.08em",
+                  "text-transform": "uppercase",
+                  "color": "#000000",
+                  "background-color": "#f5c518",
+                  "border-radius": "6px",
+                  "padding-top": "14px",
+                  "padding-bottom": "14px",
+                  "padding-left": "28px",
+                  "padding-right": "28px",
+                  "width": "100%",
+                  ":hover": { "background-color": "#ddb116", "color": "#000000" },
+                  ":focus": { "background-color": "#ddb116" }
+                },
+                "title": { "display": "none" },
+                "prices": { "display": "none" },
+                "price": { "display": "none" }
+              },
+              "contents": {
+                "img": false,
+                "title": false,
+                "price": false,
+                "options": true,
+                "quantity": false,
+                "button": true
+              },
+              "text": { "button": "Add to Cart" },
+              "googleFonts": ["Barlow Condensed"]
+            },
+            "cart": {
+              "styles": {
+                "button": {
+                  "font-family": "'Barlow Condensed', sans-serif",
+                  "font-weight": "900",
+                  "font-size": "16px",
+                  "letter-spacing": "0.08em",
+                  "text-transform": "uppercase",
+                  "color": "#000000",
+                  "background-color": "#f5c518",
+                  "border-radius": "6px",
+                  ":hover": { "background-color": "#ddb116", "color": "#000000" },
+                  ":focus": { "background-color": "#ddb116" }
+                }
+              },
+              "text": { "total": "Subtotal", "button": "Checkout" },
+              "googleFonts": ["Barlow Condensed"]
+            },
+            "toggle": {
+              "styles": {
+                "toggle": {
+                  "font-family": "'Barlow Condensed', sans-serif",
+                  "font-weight": "900",
+                  "background-color": "#f5c518",
+                  ":hover": { "background-color": "#ddb116" },
+                  ":focus": { "background-color": "#ddb116" }
+                },
+                "count": { "color": "#000000", ":hover": { "color": "#000000" } },
+                "iconPath": { "fill": "#000000" }
+              },
+              "googleFonts": ["Barlow Condensed"]
+            }
+          }
+        });
+      });
+    }
+  })();
+  /*]]>*/
+  </script>
+
 </body>
 </html>
