@@ -11,7 +11,6 @@
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getFirestore, doc, setDoc, increment }
     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-
   const app = initializeApp({
     apiKey: "AIzaSyB5EJMsZT4WsfJjaFQ-srIdNwAINr7Q2yY",
     authDomain: "th-and-ward-b8f1c.firebaseapp.com",
@@ -20,29 +19,14 @@
     messagingSenderId: "499057353962",
     appId: "1:499057353962:web:18f42748c242a6e0be2393"
   });
-
-  const db   = getFirestore(app);
+  const db = getFirestore(app);
   const page = window.location.pathname.replace(/\//g,'').replace('.html','') || 'index';
-  const d    = new Date();
+  const d = new Date();
   const today = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-
-  // New vs returning visitor detection via localStorage
-  let visitorId = localStorage.getItem('4ward_vid');
-  let isNew = false;
-  if (!visitorId) {
-    visitorId = 'v_' + Math.random().toString(36).slice(2) + Date.now();
-    localStorage.setItem('4ward_vid', visitorId);
-    isNew = true;
-  }
-
-  setDoc(doc(db, 'pageviews', page + '_' + today), {
-    page,
-    date:        today,
-    views:       increment(1),
-    allTime:     increment(1),
-    newVisitors: increment(isNew ? 1 : 0)
-  }, { merge: true });
-</script>
+  let visitorId = localStorage.getItem('4ward_vid'), isNew = false;
+  if (!visitorId) { visitorId = 'v_' + Math.random().toString(36).slice(2) + Date.now(); localStorage.setItem('4ward_vid', visitorId); isNew = true; }
+  setDoc(doc(db, 'pageviews', page + '_' + today), { page, date: today, views: increment(1), allTime: increment(1), newVisitors: increment(isNew ? 1 : 0) }, { merge: true });
+  </script>
   <style>
     .page-hero { padding: 120px 48px 80px; border-bottom: 1px solid var(--border); }
     .page-hero h1 { font-family: var(--condensed); font-weight: 900; font-size: clamp(52px, 8vw, 96px); text-transform: uppercase; line-height: 0.88; letter-spacing: -0.01em; }
@@ -62,7 +46,7 @@
     .host-bio { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 16px; }
     .host-tags { display: flex; flex-wrap: wrap; gap: 8px; }
     .tag { background: rgba(245,197,24,0.08); border: 1px solid rgba(245,197,24,0.2); border-radius: 3px; padding: 5px 10px; font-size: 11px; font-weight: 600; color: var(--gold); letter-spacing: 0.06em; text-transform: uppercase; }
-    .tiktok-section { padding: 80px 48px 100px; }
+    .tiktok-section { padding: 80px 48px; border-bottom: 1px solid var(--border); }
     .tiktok-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
     .tiktok-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .tiktok-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px; transition: border-color 0.2s; }
@@ -70,23 +54,102 @@
     .tiktok-card-time { font-family: var(--condensed); font-weight: 900; font-size: 28px; color: var(--gold); margin-bottom: 6px; }
     .tiktok-card-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
     .tiktok-card-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* ── TEXT LINE SECTION ─────────────────────────────────── */
+    .text-line-section {
+      padding: 80px 48px 100px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+    .text-line-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .text-line-text h2 {
+      font-family: var(--condensed);
+      font-weight: 900;
+      font-size: clamp(36px, 5vw, 56px);
+      text-transform: uppercase;
+      line-height: 0.92;
+      margin-bottom: 20px;
+    }
+    .text-line-text h2 span { color: var(--gold); }
+    .text-line-text p {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.75;
+      margin-bottom: 12px;
+    }
+    .text-line-text .disclaimer {
+      font-size: 12px;
+      color: var(--muted);
+      opacity: 0.5;
+      margin-top: 8px;
+    }
+    .text-line-cta {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 48px 40px;
+      text-align: center;
+      gap: 20px;
+      transition: border-color 0.2s;
+    }
+    .text-line-cta:hover { border-color: rgba(245,197,24,0.4); }
+    .text-line-icon {
+      font-size: 48px;
+      line-height: 1;
+    }
+    .text-line-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .text-line-number {
+      display: inline-block;
+      font-family: var(--condensed);
+      font-weight: 900;
+      font-size: 42px;
+      color: var(--gold);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+    .text-line-number:hover { color: var(--gold-hover); }
+    .text-line-tap {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: -8px;
+    }
+
     @media (max-width: 900px) {
       .page-hero { padding: 90px 24px 48px; }
-      .about-body, .hosts-section, .tiktok-section { padding: 48px 24px; }
+      .about-body, .hosts-section, .tiktok-section, .text-line-section { padding: 48px 24px; }
       .hosts-grid { grid-template-columns: 1fr; gap: 16px; }
-
       .host-avatar { width: 130px; min-width: 130px; max-width: 130px; }
-      .tiktok-inner { grid-template-columns: 1fr; gap: 40px; }
+      .tiktok-inner, .text-line-inner { grid-template-columns: 1fr; gap: 40px; }
       .tiktok-cards { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 600px) {
       .page-hero { padding: 80px 16px 36px; }
-      .about-body, .hosts-section, .tiktok-section { padding: 36px 16px; }
-
+      .about-body, .hosts-section, .tiktok-section, .text-line-section { padding: 36px 16px; }
       .host-name { font-size: 26px; }
       .host-tags { gap: 6px; }
       .tiktok-cards { grid-template-columns: 1fr; }
       .about-text { font-size: 15px; }
+      .text-line-number { font-size: 34px; }
+      .text-line-cta { padding: 36px 24px; }
     }
   </style>
 </head>
@@ -180,6 +243,25 @@
     </div>
   </div>
 
+  <!-- TEXT LINE SECTION -->
+  <div class="text-line-section">
+    <div class="text-line-inner">
+      <div class="text-line-text">
+        <div class="section-label">Get in Touch</div>
+        <h2>Text Us<br><span>Directly</span></h2>
+        <p>Have a story suggestion, a team to nominate, or just want to tell us something hilarious happened at your school? Text us directly — we read every one.</p>
+        <p>Got a school that deserves the Team of the Week spotlight? Send it our way.</p>
+        <p class="disclaimer">Standard message and data rates may apply.</p>
+      </div>
+      <a href="sms:4697269875" class="text-line-cta">
+        <div class="text-line-icon">&#128172;</div>
+        <div class="text-line-label">Text Line</div>
+        <div class="text-line-number">469-726-9875</div>
+        <div class="text-line-tap">Tap to open in Messages &#8599;</div>
+      </a>
+    </div>
+  </div>
+
   <footer>
     <div class="footer-logo"><img src="logo.png" alt="4th & Ward Podcast"></div>
     <ul class="footer-links">
@@ -189,7 +271,12 @@
       <li><a href="wardle.html">Wardle</a></li>
       <li><a href="merch.html">Merch</a></li>
     </ul>
-    <p class="footer-copy">© 2026 4th & Ward Podcast. All rights reserved.</p>
+    <div class="footer-text-line">
+      <span>Text us:</span>
+      <a href="sms:4697269875">469-726-9875</a>
+      <span class="footer-text-disclaimer">Standard message rates apply</span>
+    </div>
+    <p class="footer-copy">&#169; 2026 4th &amp; Ward Podcast. All rights reserved.</p>
   </footer>
 </body>
 </html>
