@@ -312,7 +312,7 @@
       messagingSenderId:"499057353962",appId:"1:499057353962:web:18f42748c242a6e0be2393"
     };
     const ADMIN_EMAIL = '4thandwardpodcast@gmail.com';
-    const NEXT_EP_DEFAULT = 52; // update this after each spin
+    let nextEpNumber = 52; // auto-calculated from winners on load
 
     const app  = initializeApp(FIREBASE_CONFIG);
     const db   = getFirestore(app);
@@ -342,7 +342,7 @@
           } else {
             drawWheel();
             drawCenterLogo('center-logo-canvas');
-            document.getElementById('ep-number-input').value = NEXT_EP_DEFAULT;
+            document.getElementById('ep-number-input').value = nextEpNumber;
           }
         });
       }
@@ -387,6 +387,13 @@
           const nb = parseInt(String(b.episode).replace(/\D/g,'')) || 0;
           return nb - na;
         });
+        // Auto-calculate next episode number = highest winner episode + 1
+        let maxEp = 0;
+        winners.forEach(w => {
+          const n = parseInt(String(w.episode).replace(/\D/g,'')) || 0;
+          if (n > maxEp) maxEp = n;
+        });
+        if (maxEp > 0) nextEpNumber = maxEp + 1;
         renderNominees();
         renderWinners();
         if (isHost) drawWheel();
@@ -449,6 +456,22 @@
       img.onload = () => { badge.innerHTML=''; badge.appendChild(img); };
     }
 
+    // ── MAXPREPS LOGO FETCH ──────────────────────────────────
+    // Calls our Vercel serverless function which searches MaxPreps
+    // and returns the school mascot logo URL automatically.
+    // Falls back to empty string if school not found.
+    async function fetchMaxPrepsLogo(teamName, city, state) {
+      try {
+        const q = encodeURIComponent(teamName + ' ' + city + ' ' + state);
+        const res = await fetch('/api/maxpreps-logo?q=' + q);
+        if (!res.ok) return '';
+        const data = await res.json();
+        return data.logoUrl || '';
+      } catch(e) {
+        return '';
+      }
+    }
+
     // ── NOMINATION SUBMIT ──────────────────────────────────
     window.submitNomination = async function() {
       const school = document.getElementById('nom-school').value.trim();
@@ -461,17 +484,25 @@
       btn.textContent = 'Submitting...'; btn.disabled = true;
 
       try {
-        // Duplicate check
-        const nameNorm = school.toLowerCase().trim();
-        const isDup = nominees.some(n => n.teamName.toLowerCase().trim() === nameNorm);
-        if (isDup) {
+        // Duplicate check — nominees AND past winners
+        const nameNorm  = school.toLowerCase().trim();
+        const onWheel   = nominees.some(n => n.teamName.toLowerCase().trim() === nameNorm);
+        const isPastWin = winners.some(w => w.teamName.toLowerCase().trim() === nameNorm);
+        if (onWheel) {
           showNomError('&#9888;&#65039; This school is already on the wheel!');
           btn.textContent = 'Submit to the Wheel'; btn.disabled = false;
           return;
         }
+        if (isPastWin) {
+          showNomError('&#127942;&#65039; This school has already been a past winner!');
+          btn.textContent = 'Submit to the Wheel'; btn.disabled = false;
+          return;
+        }
         const location = city + ', ' + state;
+        // Auto-fetch MaxPreps logo for the school
+        const logoUrl = await fetchMaxPrepsLogo(school, city, state);
         await addDoc(collection(db,'totw_nominees'), {
-          teamName: school, mascot, city, state, location, logoUrl: '', submittedAt: Date.now()
+          teamName: school, mascot, city, state, location, logoUrl, submittedAt: Date.now()
         });
         document.getElementById('nom-school').value = '';
         document.getElementById('nom-mascot').value = '';
