@@ -24,7 +24,7 @@
   setDoc(doc(db, 'pageviews', page + '_' + today), { page, date: today, views: increment(1), allTime: increment(1), newVisitors: increment(isNew ? 1 : 0) }, { merge: true });
   </script>
   <style>
-    .page-hero { padding: 120px 48px 80px; border-bottom: 1px solid var(--border); }
+    .page-hero { padding: 52px 48px 80px; border-bottom: 1px solid var(--border); }
     .page-hero h1 { font-family: var(--condensed); font-weight: 900; font-size: clamp(52px, 8vw, 96px); text-transform: uppercase; line-height: 0.88; letter-spacing: -0.01em; }
     .page-hero h1 span { color: var(--gold); }
     .page-hero .lead { color: var(--muted); font-size: 18px; line-height: 1.7; margin-top: 28px; max-width: 680px; }
