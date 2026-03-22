@@ -11,13 +11,21 @@
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getFirestore, doc, setDoc, increment }
     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-  const app = initializeApp({ /* your firebaseConfig */ });
-  const db  = getFirestore(app);
-  const page = window.location.pathname.replace(/\//g,'') || 'index';
+  const app = initializeApp({
+    apiKey: "AIzaSyB5EJMsZT4WsfJjaFQ-srIdNwAINr7Q2yY",
+    authDomain: "th-and-ward-b8f1c.firebaseapp.com",
+    projectId: "th-and-ward-b8f1c",
+    storageBucket: "th-and-ward-b8f1c.firebasestorage.app",
+    messagingSenderId: "499057353962",
+    appId: "1:499057353962:web:18f42748c242a6e0be2393"
+  });
+  const db    = getFirestore(app);
+  const page  = window.location.pathname.replace(/\//g,'') || 'index';
   const today = new Date().toISOString().slice(0,10);
-  setDoc(doc(db,'pageviews', page + '_' + today),
+  setDoc(doc(db, 'pageviews', page + '_' + today),
     { page, date: today, views: increment(1), allTime: increment(1) },
     { merge: true });
+</script>
 </script>
   <style>
     .page-hero { padding: 120px 48px 80px; border-bottom: 1px solid var(--border); }
