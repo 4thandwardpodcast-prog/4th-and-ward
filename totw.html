@@ -631,7 +631,11 @@
     function drawWheelOnCanvas(canvasId, wrapId) {
       const canvas = document.getElementById(canvasId);
       const wrap = document.getElementById(wrapId);
-      const size = wrap.offsetWidth;
+      let size = wrap.getBoundingClientRect().width || wrap.offsetWidth;
+      if (!size || size < 10) {
+        const vw = window.innerWidth;
+        size = vw <= 600 ? 280 : vw <= 900 ? 320 : Math.min(680, Math.floor(vw * 0.9));
+      }
       // High DPI for crisp text
       const dpr = window.devicePixelRatio || 1;
       canvas.width = size * dpr;
