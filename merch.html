@@ -89,13 +89,14 @@
     /* Product image area */
     .product-image-wrap {
       background: #0f0f0f;
-      aspect-ratio: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      min-height: 300px;
       border-bottom: 1px solid var(--border);
       overflow: hidden;
       position: relative;
+    }
+    .product-image-wrap .shopify-buy__product__variant-img {
+      width: 100%;
+      display: block;
     }
     .product-badge {
       position: absolute;
@@ -311,7 +312,7 @@
     <div class="shipping-inner">
       <div class="shipping-item">
         <span class="shipping-icon">&#128666;</span>
-        <span><strong>Ships Worldwide</strong> — Printed on demand</span>
+        <span><strong>Ships Worldwide</strong> — Fast &amp; reliable delivery</span>
       </div>
       <div class="shipping-item">
         <span class="shipping-icon">&#127775;</span>
@@ -319,7 +320,7 @@
       </div>
       <div class="shipping-item">
         <span class="shipping-icon">&#128274;</span>
-        <span><strong>Secure Checkout</strong> — Powered by Shopify</span>
+        <span><strong>Secure Checkout</strong> — Protected &amp; encrypted</span>
       </div>
     </div>
   </div>
@@ -330,15 +331,12 @@
 
       <!-- T-SHIRT -->
       <div class="product-card">
-        <div class="product-image-wrap">
-          <div class="product-badge">New</div>
-          <!-- Shopify renders the product image inside its component -->
-          <div id='product-component-1774155629920' style="width:100%;"></div>
-        </div>
-        <div class="product-info">
-          <div class="product-label">Apparel</div>
-          <div class="product-name">4th &amp; Ward<br>Official Tee</div>
-          <div class="product-price">$25</div>
+        <div class="product-label" style="padding:20px 32px 0;">Apparel</div>
+        <div class="product-name" style="padding:8px 32px 0;font-family:var(--condensed);font-weight:900;font-size:32px;text-transform:uppercase;line-height:1;">4th &amp; Ward Official Tee</div>
+        <div class="product-price" style="padding:8px 32px 0;font-family:var(--condensed);font-weight:900;font-size:28px;color:var(--gold);">$25</div>
+        <!-- Shopify renders image + options + button here -->
+        <div id="shirt-embed" style="padding:0 32px;"></div>
+        <div style="padding:0 32px 32px;">
           <p class="product-desc">The official 4th &amp; Ward Podcast tee — built for fans who love football and a great story. Bella Canvas 3001, the gold standard of premium tees.</p>
           <div class="product-specs">
             <span class="product-spec">Bella Canvas 3001</span>
@@ -347,19 +345,16 @@
             <span class="product-spec">Black</span>
           </div>
         </div>
-        <div class="shopify-embed" id="shirt-embed"></div>
       </div>
 
       <!-- SNAPBACK -->
       <div class="product-card">
-        <div class="product-image-wrap">
-          <div class="product-badge">New</div>
-          <div id='product-component-1774155669219' style="width:100%;"></div>
-        </div>
-        <div class="product-info">
-          <div class="product-label">Headwear</div>
-          <div class="product-name">4th &amp; Ward<br>Snapback Cap</div>
-          <div class="product-price">$30</div>
+        <div class="product-label" style="padding:20px 32px 0;">Headwear</div>
+        <div class="product-name" style="padding:8px 32px 0;font-family:var(--condensed);font-weight:900;font-size:32px;text-transform:uppercase;line-height:1;">4th &amp; Ward Snapback Cap</div>
+        <div class="product-price" style="padding:8px 32px 0;font-family:var(--condensed);font-weight:900;font-size:28px;color:var(--gold);">$30</div>
+        <!-- Shopify renders image + options + button here -->
+        <div id="hat-embed" style="padding:0 32px;"></div>
+        <div style="padding:0 32px 32px;">
           <p class="product-desc">The official 4th &amp; Ward Podcast snapback — sideline-ready and built to last. Richardson 112, the go-to trucker cap for coaches and fans alike.</p>
           <div class="product-specs">
             <span class="product-spec">Richardson 112</span>
@@ -368,7 +363,6 @@
             <span class="product-spec">One Size Fits Most</span>
           </div>
         </div>
-        <div class="shopify-embed" id="hat-embed"></div>
       </div>
 
     </div>
@@ -471,6 +465,7 @@
               },
               "contents": {
                 "img": false,
+                "imgWithCarousel": true,
                 "title": false,
                 "price": false,
                 "options": true,
@@ -571,6 +566,7 @@
               },
               "contents": {
                 "img": false,
+                "imgWithCarousel": true,
                 "title": false,
                 "price": false,
                 "options": true,
