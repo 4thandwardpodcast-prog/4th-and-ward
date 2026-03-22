@@ -183,10 +183,8 @@
 
     /* ── SHIPPING BANNER ───────────────────────────────────── */
     .shipping-banner {
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      padding: 20px 48px;
+      background: var(--gold);
+      padding: 18px 48px;
     }
     .shipping-inner {
       max-width: 1100px;
@@ -200,16 +198,20 @@
     .shipping-item {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      color: var(--muted);
+      gap: 0;
+      font-size: 15px;
+      color: #000;
       font-weight: 500;
     }
-    .shipping-icon {
-      font-size: 20px;
-    }
     .shipping-item strong {
-      color: var(--white);
+      color: #000;
+      font-weight: 800;
+    }
+    .shipping-divider {
+      width: 1px;
+      height: 20px;
+      background: rgba(0,0,0,0.2);
+      margin: 0 32px;
     }
 
     /* ── ABOUT SECTION ─────────────────────────────────────── */
@@ -314,18 +316,11 @@
   <!-- SHIPPING BANNER -->
   <div class="shipping-banner">
     <div class="shipping-inner">
-      <div class="shipping-item">
-        <span class="shipping-icon">&#128666;</span>
-        <span><strong>Ships Worldwide</strong> — Fast &amp; reliable delivery</span>
-      </div>
-      <div class="shipping-item">
-        <span class="shipping-icon">&#127775;</span>
-        <span><strong>Premium Quality</strong> — Bella Canvas &amp; Richardson</span>
-      </div>
-      <div class="shipping-item">
-        <span class="shipping-icon">&#128274;</span>
-        <span><strong>Secure Checkout</strong> — Protected &amp; encrypted</span>
-      </div>
+      <div class="shipping-item"><strong>Ships Worldwide</strong>&nbsp;&mdash;&nbsp;Fast &amp; reliable delivery</div>
+      <div class="shipping-divider"></div>
+      <div class="shipping-item"><strong>Premium Quality</strong>&nbsp;&mdash;&nbsp;Bella Canvas &amp; Richardson</div>
+      <div class="shipping-divider"></div>
+      <div class="shipping-item"><strong>Secure Checkout</strong>&nbsp;&mdash;&nbsp;Protected &amp; encrypted</div>
     </div>
   </div>
 
@@ -336,7 +331,7 @@
       <!-- T-SHIRT -->
       <div class="product-card">
         <div class="product-img-wrap">
-          <span class="product-badge-pill">New</span>
+          <span class="product-badge-pill">Coming Soon</span>
           <img src="merch-tee.jpg" alt="4th & Ward Official Tee" class="product-img">
         </div>
         <div class="product-card-top">
@@ -359,7 +354,7 @@
       <!-- SNAPBACK -->
       <div class="product-card">
         <div class="product-img-wrap">
-          <span class="product-badge-pill">New</span>
+          <span class="product-badge-pill">Coming Soon</span>
           <img src="merch-hat.jpg" alt="4th & Ward Snapback Cap" class="product-img">
         </div>
         <div class="product-card-top">
@@ -462,16 +457,17 @@
                   "font-size": "16px",
                   "letter-spacing": "0.08em",
                   "text-transform": "uppercase",
-                  "color": "#000000",
-                  "background-color": "#f5c518",
+                  "color": "#888888",
+                  "background-color": "#222222",
                   "border-radius": "6px",
                   "padding-top": "14px",
                   "padding-bottom": "14px",
                   "padding-left": "28px",
                   "padding-right": "28px",
                   "width": "100%",
-                  ":hover": { "background-color": "#ddb116", "color": "#000000" },
-                  ":focus": { "background-color": "#ddb116" }
+                  "cursor": "not-allowed",
+                  ":hover": { "background-color": "#222222", "color": "#888888" },
+                  ":focus": { "background-color": "#222222" }
                 },
                 "title": { "display": "none" },
                 "prices": { "display": "none" },
@@ -486,7 +482,7 @@
                 "quantity": false,
                 "button": true
               },
-              "text": { "button": "Add to Cart" },
+              "text": { "button": "Coming Soon" },
               "googleFonts": ["Barlow Condensed"]
             },
             "cart": {
@@ -497,14 +493,14 @@
                   "font-size": "16px",
                   "letter-spacing": "0.08em",
                   "text-transform": "uppercase",
-                  "color": "#000000",
-                  "background-color": "#f5c518",
+                  "color": "#888888",
+                  "background-color": "#222222",
                   "border-radius": "6px",
-                  ":hover": { "background-color": "#ddb116", "color": "#000000" },
-                  ":focus": { "background-color": "#ddb116" }
+                  ":hover": { "background-color": "#222222", "color": "#888888" },
+                  ":focus": { "background-color": "#222222" }
                 }
               },
-              "text": { "total": "Subtotal", "button": "Checkout" },
+              "text": { "total": "Subtotal", "button": "Coming Soon" },
               "googleFonts": ["Barlow Condensed"]
             },
             "toggle": {
@@ -563,16 +559,17 @@
                   "font-size": "16px",
                   "letter-spacing": "0.08em",
                   "text-transform": "uppercase",
-                  "color": "#000000",
-                  "background-color": "#f5c518",
+                  "color": "#888888",
+                  "background-color": "#222222",
                   "border-radius": "6px",
                   "padding-top": "14px",
                   "padding-bottom": "14px",
                   "padding-left": "28px",
                   "padding-right": "28px",
                   "width": "100%",
-                  ":hover": { "background-color": "#ddb116", "color": "#000000" },
-                  ":focus": { "background-color": "#ddb116" }
+                  "cursor": "not-allowed",
+                  ":hover": { "background-color": "#222222", "color": "#888888" },
+                  ":focus": { "background-color": "#222222" }
                 },
                 "title": { "display": "none" },
                 "prices": { "display": "none" },
@@ -587,7 +584,7 @@
                 "quantity": false,
                 "button": true
               },
-              "text": { "button": "Add to Cart" },
+              "text": { "button": "Coming Soon" },
               "googleFonts": ["Barlow Condensed"]
             },
             "cart": {
@@ -598,14 +595,14 @@
                   "font-size": "16px",
                   "letter-spacing": "0.08em",
                   "text-transform": "uppercase",
-                  "color": "#000000",
-                  "background-color": "#f5c518",
+                  "color": "#888888",
+                  "background-color": "#222222",
                   "border-radius": "6px",
-                  ":hover": { "background-color": "#ddb116", "color": "#000000" },
-                  ":focus": { "background-color": "#ddb116" }
+                  ":hover": { "background-color": "#222222", "color": "#888888" },
+                  ":focus": { "background-color": "#222222" }
                 }
               },
-              "text": { "total": "Subtotal", "button": "Checkout" },
+              "text": { "total": "Subtotal", "button": "Coming Soon" },
               "googleFonts": ["Barlow Condensed"]
             },
             "toggle": {
