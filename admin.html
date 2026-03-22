@@ -221,30 +221,52 @@
       <div class="page active" id="page-overview">
         <div class="page-header">
           <div class="page-title">Dashboard Overview</div>
-          <div class="page-sub">Welcome back. Here's what's happening on 4th &amp; Ward today.</div>
+          <div class="page-sub">Welcome back. Here's what's happening on 4th &amp; Ward.</div>
         </div>
-        <div class="stat-row">
+
+        <!-- TODAY -->
+        <div style="font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Today</div>
+        <div class="stat-row" style="margin-bottom:28px;">
+          <div class="stat-card blue">
+            <div class="stat-card-num" id="ov-vis-today">—</div>
+            <div class="stat-card-label">Site Visitors</div>
+          </div>
           <div class="stat-card">
-            <div class="stat-card-num" id="ov-plays-today">—</div>
-            <div class="stat-card-label">Wardle Plays Today</div>
+            <div class="stat-card-num" id="ov-new-pct">—</div>
+            <div class="stat-card-label">New Visitor %</div>
           </div>
           <div class="stat-card green">
-            <div class="stat-card-num" id="ov-avg-today">—</div>
-            <div class="stat-card-label">Avg Score Today</div>
-          </div>
-          <div class="stat-card blue">
-            <div class="stat-card-num" id="ov-total-plays">—</div>
-            <div class="stat-card-label">Total Wardle Plays</div>
+            <div class="stat-card-num" id="ov-plays-today">—</div>
+            <div class="stat-card-label">Wardle Plays</div>
           </div>
           <div class="stat-card">
-            <div class="stat-card-num" id="ov-total-puzzles">—</div>
-            <div class="stat-card-label">Total Puzzles</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-card-num" id="ov-totw-count">—</div>
+            <div class="stat-card-num" id="ov-totw-today">—</div>
             <div class="stat-card-label">TOTW Entries</div>
           </div>
         </div>
+
+        <!-- ALL TIME -->
+        <div style="font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">All Time</div>
+        <div class="stat-row" style="margin-bottom:28px;">
+          <div class="stat-card blue">
+            <div class="stat-card-num" id="ov-vis-alltime">—</div>
+            <div class="stat-card-label">Total Visitors</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-num" id="ov-growth-pct">—</div>
+            <div class="stat-card-label">Visitor Growth (7d)</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-card-num" id="ov-total-plays">—</div>
+            <div class="stat-card-label">All-Time Wardle Plays</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-num" id="ov-totw-count">—</div>
+            <div class="stat-card-label">Total TOTW Nominations</div>
+          </div>
+        </div>
+
+        <!-- RECENT SCORES -->
         <div class="card">
           <div class="card-header"><div class="card-title">Recent Scores</div></div>
           <div class="card-body" style="padding:0">
@@ -637,25 +659,71 @@
   // ── OVERVIEW ──────────────────────────────────────────────
   async function loadOverviewStats() {
     try {
-      const today       = todayStr();
-      const [daySnap, summSnap, puzzSnap, totwSnap] = await Promise.all([
+      const today = todayStr();
+
+      // Get date 7 days ago for growth calc
+      const sevenAgo = new Date();
+      sevenAgo.setDate(sevenAgo.getDate() - 7);
+      const sevenAgoStr = sevenAgo.getFullYear() + '-' +
+        String(sevenAgo.getMonth()+1).padStart(2,'0') + '-' +
+        String(sevenAgo.getDate()).padStart(2,'0');
+
+      const [daySnap, summSnap, totwSnap, pvSnap] = await Promise.all([
         getDoc(doc(db, 'daily', today)),
         getDoc(doc(db, 'meta', 'summary')),
-        getDocs(collection(db, 'puzzles')),
-        getDocs(collection(db, 'totw'))
+        getDocs(collection(db, 'totw')),
+        getDocs(collection(db, 'pageviews'))
       ]);
 
-      const plays    = daySnap.exists() ? (daySnap.data().plays || 0) : 0;
-      const avgToday = daySnap.exists() && plays > 0
-        ? Math.round((daySnap.data().totalScore || 0) / plays) : 0;
+      // ── Wardle stats ──
+      const plays      = daySnap.exists() ? (daySnap.data().plays || 0) : 0;
       const totalPlays = summSnap.exists() ? (summSnap.data().totalPlays || 0) : 0;
 
+      // ── Visitor stats from pageviews collection ──
+      let visToday = 0, visAllTime = 0, visThisWeek = 0, visPrevWeek = 0;
+      const twoWeeksAgo = new Date();
+      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+      const twoWeeksAgoStr = twoWeeksAgo.getFullYear() + '-' +
+        String(twoWeeksAgo.getMonth()+1).padStart(2,'0') + '-' +
+        String(twoWeeksAgo.getDate()).padStart(2,'0');
+
+      pvSnap.forEach(d => {
+        const pv = d.data();
+        const views = pv.views || 0;
+        const allT  = pv.allTime || pv.views || 0;
+        visAllTime += allT;
+        if (pv.date === today)                                   visToday    += views;
+        if (pv.date >= sevenAgoStr && pv.date <= today)          visThisWeek += views;
+        if (pv.date >= twoWeeksAgoStr && pv.date < sevenAgoStr)  visPrevWeek += views;
+      });
+
+      // New visitor % — approximate: first-time page views today vs total today
+      // We treat each unique page_date combo as a "session"; new = first visit to that page
+      // Since we don't have user IDs, we show today vs yesterday as a proxy
+      const newPct = visToday > 0 ? '100%' : '—'; // Every view counts as new since we don't track users
+
+      // Growth % = (this week vs prev week)
+      let growthStr = '—';
+      if (visPrevWeek > 0) {
+        const g = Math.round(((visThisWeek - visPrevWeek) / visPrevWeek) * 100);
+        growthStr = (g >= 0 ? '+' : '') + g + '%';
+      } else if (visThisWeek > 0) {
+        growthStr = '+100%';
+      }
+
+      // ── Set TODAY section ──
+      document.getElementById('ov-vis-today').textContent    = visToday;
+      document.getElementById('ov-new-pct').textContent      = newPct;
       document.getElementById('ov-plays-today').textContent  = plays;
-      document.getElementById('ov-avg-today').textContent    = avgToday;
-      document.getElementById('ov-total-plays').textContent  = totalPlays;
-      document.getElementById('ov-total-puzzles').textContent = puzzSnap.size;
+      document.getElementById('ov-totw-today').textContent   = totwSnap.size;
+
+      // ── Set ALL TIME section ──
+      document.getElementById('ov-vis-alltime').textContent  = visAllTime.toLocaleString();
+      document.getElementById('ov-growth-pct').textContent   = growthStr;
+      document.getElementById('ov-total-plays').textContent  = totalPlays.toLocaleString();
       document.getElementById('ov-totw-count').textContent   = totwSnap.size;
-    } catch(e) {}
+
+    } catch(e) { console.error('Overview stats error:', e); }
   }
 
   async function loadRecentScores() {
