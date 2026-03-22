@@ -41,18 +41,38 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 500; display: flex; a
 .platform-spotify { background: #1DB954; color: #000; }
 .platform-apple { background: #FC3C44; color: #fff; }
 .platform-youtube { background: #FF0000; color: #fff; }
+
+/* ── FOOTER ──────────────────────────────────────────────── */
 footer { padding: 48px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
 .footer-logo img { height: 32px; width: auto; opacity: 0.7; }
 .footer-links { display: flex; gap: 28px; list-style: none; }
 .footer-links a { text-decoration: none; color: var(--muted); font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.2s; }
 .footer-links a:hover { color: var(--gold); }
 .footer-copy { font-size: 12px; color: #444; }
+.footer-text-line { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+.footer-text-line a { color: var(--gold); font-weight: 700; text-decoration: none; letter-spacing: 0.05em; }
+.footer-text-line a:hover { text-decoration: underline; }
+.footer-text-disclaimer { font-size: 11px; color: var(--muted); opacity: 0.6; }
+
+/* ── TICKER ──────────────────────────────────────────────── */
+.text-ticker { background: var(--gold); overflow: hidden; padding: 13px 0; border-bottom: 1px solid rgba(0,0,0,0.15); }
+.text-ticker-track { display: flex; width: max-content; animation: ticker 22s linear infinite; }
+.text-ticker-track:hover { animation-play-state: paused; }
+.text-ticker-item { display: flex; align-items: center; gap: 12px; padding: 0 40px; font-family: var(--condensed); font-weight: 900; font-size: 17px; text-transform: uppercase; letter-spacing: 0.06em; color: #000; white-space: nowrap; }
+.text-ticker-item a { color: #000; text-decoration: none; border-bottom: 2px solid rgba(0,0,0,0.3); padding-bottom: 1px; }
+.text-ticker-item a:hover { border-color: #000; }
+.text-ticker-dot { width: 5px; height: 5px; background: rgba(0,0,0,0.4); border-radius: 50%; flex-shrink: 0; }
+@keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+/* ── ANIMATIONS ──────────────────────────────────────────── */
 @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 .fade-up { animation: fadeUp 0.6s ease forwards; }
 .fade-up-1 { animation-delay: 0.1s; opacity: 0; }
 .fade-up-2 { animation-delay: 0.25s; opacity: 0; }
 .fade-up-3 { animation-delay: 0.4s; opacity: 0; }
 .fade-up-4 { animation-delay: 0.55s; opacity: 0; }
+
+/* ── RESPONSIVE ──────────────────────────────────────────── */
 @media (max-width: 900px) {
   nav { padding: 0 16px; height: auto; min-height: 60px; flex-wrap: wrap; gap: 0; }
   .nav-logo img { height: 32px; }
@@ -69,66 +89,4 @@ footer { padding: 48px; border-top: 1px solid var(--border); display: flex; alig
   .nav-listen { display: none; }
   footer { padding: 24px 16px; }
   .footer-copy { font-size: 11px; }
-  .footer-text-line {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 16px;
-  font-size: 13px;
-  color: var(--muted);
-}
-.footer-text-line a {
-  color: var(--gold);
-  font-weight: 700;
-  text-decoration: none;
-  letter-spacing: 0.05em;
-}
-.footer-text-line a:hover { text-decoration: underline; }
-.footer-text-disclaimer {
-  font-size: 11px;
-  color: var(--muted);
-  opacity: 0.6;
-}
-.text-ticker {
-  background: var(--gold);
-  overflow: hidden;
-  padding: 13px 0;
-  border-bottom: 1px solid rgba(0,0,0,0.15);
-}
-.text-ticker-track {
-  display: flex;
-  width: max-content;
-  animation: ticker 22s linear infinite;
-}
-.text-ticker-track:hover { animation-play-state: paused; }
-.text-ticker-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 40px;
-  font-family: var(--condensed);
-  font-weight: 900;
-  font-size: 17px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #000;
-  white-space: nowrap;
-}
-.text-ticker-item a {
-  color: #000;
-  text-decoration: none;
-  border-bottom: 2px solid rgba(0,0,0,0.3);
-  padding-bottom: 1px;
-}
-.text-ticker-item a:hover { border-color: #000; }
-.text-ticker-dot {
-  width: 5px;
-  height: 5px;
-  background: rgba(0,0,0,0.4);
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-@keyframes ticker {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
 }
