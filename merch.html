@@ -184,7 +184,7 @@
     /* ── SHIPPING BANNER ───────────────────────────────────── */
     .shipping-banner {
       background: var(--gold);
-      padding: 18px 48px;
+      padding: 16px 48px;
     }
     .shipping-inner {
       max-width: 1100px;
@@ -192,16 +192,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 48px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      gap: 0;
     }
     .shipping-item {
-      display: flex;
-      align-items: center;
-      gap: 0;
-      font-size: 15px;
+      font-size: 13px;
       color: #000;
       font-weight: 500;
+      white-space: nowrap;
+      flex: 1;
+      text-align: center;
     }
     .shipping-item strong {
       color: #000;
@@ -209,9 +209,9 @@
     }
     .shipping-divider {
       width: 1px;
-      height: 20px;
-      background: rgba(0,0,0,0.2);
-      margin: 0 32px;
+      height: 18px;
+      background: rgba(0,0,0,0.25);
+      flex-shrink: 0;
     }
 
     /* ── ABOUT SECTION ─────────────────────────────────────── */
@@ -309,7 +309,7 @@
     <div class="merch-hero-inner">
       <div class="section-label">Official Store</div>
       <h1>4th <span>&</span> Ward<br>Merch</h1>
-      <p>Rep the pod. Quality gear for fans who love football, great stories, and a good laugh. Printed on demand and shipped straight to you.</p>
+      <p>Rep the pod. Quality gear for fans who love football, great stories, and a good laugh. Wear the brand. Tell the stories.</p>
     </div>
   </div>
 
