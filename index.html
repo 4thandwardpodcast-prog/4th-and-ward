@@ -20,9 +20,10 @@
     messagingSenderId: "499057353962",
     appId: "1:499057353962:web:18f42748c242a6e0be2393"
   });
-  const db    = getFirestore(app);
-  const page  = window.location.pathname.replace(/\//g,'') || 'index';
-  const today = new Date().toISOString().slice(0,10);
+  const db  = getFirestore(app);
+  const page = window.location.pathname.replace(/\//g,'').replace('.html','') || 'index';
+  const d   = new Date();
+  const today = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
   setDoc(doc(db, 'pageviews', page + '_' + today),
     { page, date: today, views: increment(1), allTime: increment(1) },
     { merge: true });
