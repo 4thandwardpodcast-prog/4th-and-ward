@@ -171,10 +171,11 @@
     <a href="index.html" class="nav-logo"><img src="logo.png" alt="4th & Ward Podcast"></a>
     <ul class="nav-links">
       <li><a href="index.html">Home</a></li>
-      <li><a href="about.html">About</a></li>
       <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="about.html">About</a></li>
       <li><a href="totw.html" class="active">Team of the Week</a></li>
       <li><a href="wardle.html">4th &amp; Wardle</a></li>
+      <li><a href="https://www.tiktok.com/@coachwardlaw" target="_blank" rel="noopener">TikTok</a></li>
       <li><a href="merch.html">Merch</a></li>
       <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
     </ul>
@@ -322,9 +323,6 @@
     <div class="modal-card">
       <div class="modal-trophy">🏈</div>
       <div class="modal-headline">Team of the Week</div>
-      <div id="modal-logo-wrap" style="display:none;margin:12px auto 4px;width:100px;height:100px;background:rgba(255,255,255,0.05);border-radius:50%;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;overflow:hidden;">
-        <img id="modal-logo" src="" alt="" style="width:84px;height:84px;object-fit:contain;">
-      </div>
       <div class="modal-school" id="modal-school">—</div>
       <div class="modal-meta" id="modal-meta">—</div>
       <div class="modal-ep" id="modal-ep">—</div>
@@ -353,8 +351,8 @@
   <footer>
     <div class="footer-logo"><img src="logo.png" alt="4th & Ward Podcast"></div>
     <ul class="footer-links">
-      <li><a href="about.html">About</a></li>
       <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="about.html">About</a></li>
       <li><a href="totw.html">TOTW</a></li>
       <li><a href="wardle.html">Wardle</a></li>
       <li><a href="merch.html">Merch</a></li>
@@ -364,7 +362,7 @@
 
   <script>
     // ── CONFIG ──────────────────────────────────────────────
-    const TOTW_URL = 'https://script.google.com/macros/s/AKfycbwJzTkXLXG7ALSvWRZ7lDHVgfx3K9u5NVGXgwfqp524FIjuL47PdWkbdCfr2yp5ex0Jpw/exec';
+    const TOTW_URL = 'https://script.google.com/macros/s/AKfycbzxVFSLguJuRZlAEdpvjiDl-fVbeOT1egHA2qO-KjS58UxufYN9ldJjvtWI9m0vHAW3Uw/exec';
     const HOST_PIN = '4WARD';
     // ────────────────────────────────────────────────────────
 
@@ -430,13 +428,7 @@
     // ── WINNERS ──
     let currentView = 'grid';
 
-    function setView(v) {
-      currentView = v;
-      document.getElementById('winners-grid').style.display = v === 'grid' ? 'grid' : 'none';
-      document.getElementById('winners-list-view').style.display = v === 'list' ? 'block' : 'none';
-      document.getElementById('view-grid-btn').classList.toggle('active', v === 'grid');
-      document.getElementById('view-list-btn').classList.toggle('active', v === 'list');
-    }
+
 
     // Extract dominant color from logo image using canvas
     function extractColors(img) {
@@ -538,8 +530,6 @@
       if (!count) {
         document.getElementById('winners-grid').innerHTML =
           '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted);">No winners yet.</div>';
-        document.getElementById('winners-tbody').innerHTML =
-          '<tr><td colspan="4" class="winners-loading">No winners yet.</td></tr>';
         return;
       }
 
@@ -577,14 +567,6 @@
         }
       });
 
-      // List view
-      document.getElementById('winners-tbody').innerHTML = winners.map(w => `
-        <tr>
-          <td><span class="ep-badge">Ep. ${w.episode}</span></td>
-          <td><div class="school-name">${w.team}</div></td>
-          <td style="color:var(--muted);font-size:13px;">${w.mascot || '—'}</td>
-          <td style="color:var(--muted);font-size:13px;">${w.location || '—'}</td>
-        </tr>`).join('');
     }
 
     // ── NOMINATION SUBMIT ──
@@ -628,10 +610,8 @@
             document.getElementById('wheel-area').style.display = 'none';
             document.getElementById('wheel-no-nominees').style.display = 'block';
           } else {
-            requestAnimationFrame(() => requestAnimationFrame(() => {
-              drawWheel();
-              drawCenterLogo('center-logo-canvas');
-            }));
+            drawWheel();
+            drawCenterLogo('center-logo-canvas');
             // Pre-fill episode number
             const epInput = document.getElementById('ep-number-input');
             if (epInput && !epInput.value) epInput.value = nextEpisode;
@@ -651,14 +631,7 @@
     function drawWheelOnCanvas(canvasId, wrapId) {
       const canvas = document.getElementById(canvasId);
       const wrap = document.getElementById(wrapId);
-      // Use offsetWidth if available, fallback to viewport calc
-      let size = wrap ? wrap.offsetWidth : 0;
-      if (!size || size < 10) {
-        const vw = window.innerWidth;
-        if (vw <= 600) size = 280;
-        else if (vw <= 900) size = 320;
-        else size = Math.min(680, Math.floor(vw * 0.42));
-      }
+      const size = wrap.offsetWidth;
       // High DPI for crisp text
       const dpr = window.devicePixelRatio || 1;
       canvas.width = size * dpr;
@@ -695,25 +668,15 @@
         ctx.arc(0, 0, outerR, start, end);
         ctx.arc(0, 0, innerR, end, start, true);
         ctx.closePath();
-        ctx.fillStyle = isEven ? '#1a1a1a' : '#F5C518';
+        ctx.fillStyle = isEven ? '#111111' : '#F5C518';
         ctx.fill();
-
-        // White outline on each slice
-        ctx.beginPath();
-        ctx.moveTo(innerR * Math.cos(start), innerR * Math.sin(start));
-        ctx.arc(0, 0, outerR, start, end);
-        ctx.arc(0, 0, innerR, end, start, true);
-        ctx.closePath();
-        ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
 
         // Divider lines
         ctx.beginPath();
         ctx.moveTo(innerR * Math.cos(start), innerR * Math.sin(start));
         ctx.lineTo(outerR * Math.cos(start), outerR * Math.sin(start));
-        ctx.strokeStyle = isEven ? '#F5C518' : 'rgba(255,255,255,0.5)';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = isEven ? '#F5C518' : '#111';
+        ctx.lineWidth = 1.5;
         ctx.stroke();
 
         // Text — school name only, clean
@@ -728,13 +691,13 @@
 
         // Font size scales with slice arc width
         const sliceWidth = 2 * outerR * Math.sin(arc / 2);
-        const baseFontSize = Math.min(22, Math.max(11, sliceWidth * 0.38));
+        const baseFontSize = Math.min(13, Math.max(8, sliceWidth * 0.28));
 
         ctx.save();
         ctx.rotate(mid);
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = isEven ? '#FFFFFF' : '#111111';
+        ctx.fillStyle = isEven ? '#F5C518' : '#111111';
         ctx.font = `700 ${baseFontSize}px 'Barlow Condensed', sans-serif`;
 
         // Truncate if needed
@@ -813,33 +776,30 @@
 
       function frame() {
         elapsed += 16;
-        const t = Math.min(elapsed / spinDuration, 1);
+        if (elapsed >= spinDuration) { stopSpin(); return; }
+        const t = elapsed / spinDuration;
         const eased = 1 - Math.pow(1 - t, 3);
         const speed = spinSpeed * (1 - eased);
         currentRotation += speed * Math.PI / 180;
 
-        const localAngle = ((-currentRotation) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
-        const idx = Math.floor(localAngle / (Math.PI * 2 / nominees.length)) % nominees.length;
+        const deg = ((currentRotation * 180 / Math.PI) % 360 + 360) % 360;
+        const idx = Math.floor((360 - deg + 270) % 360 / arcDeg) % nominees.length;
         if (idx !== lastSliceIndex) { playTick(); lastSliceIndex = idx; }
 
         drawWheel();
         if (document.getElementById('fullscreen-overlay').style.display !== 'none') {
           drawWheelOnCanvas('fs-wheel-canvas', 'fs-wheel-wrap');
         }
-
-        if (elapsed >= spinDuration) {
-          // Capture index NOW before anything else changes currentRotation
-          stopSpin(idx);
-          return;
-        }
         requestAnimationFrame(frame);
       }
       requestAnimationFrame(frame);
     }
 
-    async function stopSpin(winnerIdx) {
+    async function stopSpin() {
       isSpinning = false;
-      const idx = winnerIdx;
+      const arcDeg = 360 / nominees.length;
+      const deg = ((currentRotation * 180 / Math.PI) % 360 + 360) % 360;
+      const idx = Math.floor((360 - deg + 270) % 360 / arcDeg) % nominees.length;
       const winner = nominees[idx];
 
       document.getElementById('wheel-status').textContent = winner.text + ' 🏈';
@@ -871,16 +831,6 @@
       document.getElementById('modal-school').textContent = winner.fullName || winner.text;
       document.getElementById('modal-meta').textContent = winner.location || '';
       document.getElementById('modal-ep').textContent = 'Ep. ' + episodeLabel + ' — Team of the Week';
-      // Show logo if available
-      const logoWrap = document.getElementById('modal-logo-wrap');
-      const logoImg = document.getElementById('modal-logo');
-      if (winner.logoUrl) {
-        logoImg.src = '/api/proxy-image?url=' + encodeURIComponent(winner.logoUrl);
-        logoImg.alt = winner.fullName || winner.text;
-        logoWrap.style.display = 'flex';
-      } else {
-        logoWrap.style.display = 'none';
-      }
       document.getElementById('winner-modal').classList.add('open');
       document.getElementById('spin-btn').disabled = false;
       if (document.getElementById('fs-spin-btn')) document.getElementById('fs-spin-btn').disabled = false;
