@@ -69,4 +69,24 @@ footer { padding: 48px; border-top: 1px solid var(--border); display: flex; alig
   .nav-listen { display: none; }
   footer { padding: 24px 16px; }
   .footer-copy { font-size: 11px; }
+  .footer-text-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--muted);
 }
+.footer-text-line a {
+  color: var(--gold);
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: 0.05em;
+}
+.footer-text-line a:hover { text-decoration: underline; }
+.footer-text-disclaimer {
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
