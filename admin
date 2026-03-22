@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4th & Ward — Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@0,400;0,500;0,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #f5c518; --gold-hover: #e6b800;
+      --black: #0a0a0a; --surface: #111111; --surface2: #1a1a1a;
+      --border: #2a2a2a; --white: #ffffff; --muted: #888888;
+      --red: #e05555; --green: #4caf50; --blue: #2196f3;
+      --condensed: 'Barlow Condensed', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Barlow', sans-serif; background: var(--black); color: var(--white); min-height: 100vh; }
+
+    /* LOGIN SCREEN */
+    #login-screen {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; gap: 24px; text-align: center; padding: 40px;
+    }
+    .login-title { font-family: var(--condensed); font-weight: 900; font-size: 48px; color: var(--gold); text-transform: uppercase; }
+    .login-sub   { color: var(--muted); font-size: 16px; }
+    .google-btn  {
+      display: flex; align-items: center; gap: 12px; background: var(--white); color: #333;
+      border: none; border-radius: 8px; padding: 14px 28px; font-size: 16px; font-weight: 600;
+      cursor: pointer; transition: transform .15s, box-shadow .15s;
+    }
+    .google-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(245,197,24,.3); }
+    .google-btn img { width: 22px; height: 22px; }
+    .login-error { color: var(--red); font-size: 14px; display: none; }
+
+    /* DASHBOARD SHELL */
+    #dashboard { display: none; }
+    .dash-header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 32px; display: flex; align-items: center; gap: 20px;
+      height: 64px; position: sticky; top: 0; z-index: 100;
+    }
+    .dash-logo { font-family: var(--condensed); font-weight: 900; font-size: 22px; color: var(--gold); text-transform: uppercase; flex: 1; }
+    .dash-user  { font-size: 13px; color: var(--muted); }
+    .dash-signout {
+      background: transparent; border: 1px solid var(--border); color: var(--muted);
+      border-radius: 6px; padding: 6px 14px; font-size: 13px; cursor: pointer;
+      transition: border-color .2s, color .2s;
+    }
+    .dash-signout:hover { border-color: var(--red); color: var(--red); }
+
+    .dash-body  { display: flex; min-height: calc(100vh - 64px); }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px; background: var(--surface); border-right: 1px solid var(--border);
+      padding: 24px 0; flex-shrink: 0; position: sticky; top: 64px; height: calc(100vh - 64px); overflow-y: auto;
+    }
+    .sidebar-section { padding: 8px 20px 4px; font-size: 10px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); margin-top: 12px; }
+    .sidebar-section:first-child { margin-top: 0; }
+    .sidebar-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 20px; font-size: 14px; color: var(--muted);
+      cursor: pointer; transition: background .15s, color .15s; border: none; background: none; width: 100%; text-align: left;
+    }
+    .sidebar-item:hover { background: var(--surface2); color: var(--white); }
+    .sidebar-item.active { background: rgba(245,197,24,.1); color: var(--gold); border-right: 3px solid var(--gold); }
+    .sidebar-icon { font-size: 16px; width: 20px; text-align: center; }
+
+    /* MAIN CONTENT */
+    .main-content { flex: 1; padding: 32px; overflow-y: auto; }
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* PAGE HEADER */
+    .page-header { margin-bottom: 28px; }
+    .page-title  { font-family: var(--condensed); font-weight: 900; font-size: 36px; text-transform: uppercase; color: var(--white); }
+    .page-sub    { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+    /* STAT CARDS */
+    .stat-row  { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+    .stat-card-num   { font-family: var(--condensed); font-weight: 900; font-size: 36px; color: var(--gold); line-height: 1; }
+    .stat-card-label { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+    .stat-card.green .stat-card-num { color: var(--green); }
+    .stat-card.blue  .stat-card-num { color: var(--blue); }
+    .stat-card.red   .stat-card-num { color: var(--red); }
+
+    /* SECTION CARD */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 24px; overflow: hidden; }
+    .card-header { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .card-title  { font-family: var(--condensed); font-weight: 700; font-size: 18px; text-transform: uppercase; letter-spacing: .05em; }
+    .card-body   { padding: 24px; }
+
+    /* TABLE */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .data-table th { font-size: 10px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
+    .data-table td { padding: 12px; border-bottom: 1px solid #1a1a1a; vertical-align: middle; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: var(--surface2); }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+    .badge-gold  { background: rgba(245,197,24,.15); color: var(--gold); }
+    .badge-green { background: rgba(76,175,80,.15);  color: var(--green); }
+    .badge-red   { background: rgba(224,85,85,.15);  color: var(--red); }
+
+    /* FORMS */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-grid.full { grid-template-columns: 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.span2 { grid-column: span 2; }
+    .form-label { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+    .form-input, .form-select, .form-textarea {
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+      padding: 10px 14px; font-size: 14px; color: var(--white); font-family: 'Barlow', sans-serif;
+      outline: none; transition: border-color .2s; width: 100%;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--gold); }
+    .form-textarea { resize: vertical; min-height: 80px; }
+    .form-actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+
+    /* BUTTONS */
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; border: none; font-family: 'Barlow', sans-serif; transition: background .2s, transform .15s; white-space: nowrap; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-gold    { background: var(--gold); color: var(--black); }
+    .btn-gold:hover { background: var(--gold-hover); }
+    .btn-ghost   { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+    .btn-ghost:hover { border-color: var(--white); color: var(--white); }
+    .btn-danger  { background: transparent; border: 1px solid var(--red); color: var(--red); }
+    .btn-danger:hover { background: var(--red); color: var(--white); }
+    .btn-sm { padding: 6px 12px; font-size: 11px; }
+    .btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+    /* CHART PLACEHOLDER */
+    .chart-wrap { position: relative; height: 200px; display: flex; align-items: center; justify-content: center; background: var(--surface2); border-radius: 8px; color: var(--muted); font-size: 13px; }
+
+    /* TOAST */
+    #toast { position: fixed; bottom: 32px; right: 32px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 20px; font-size: 14px; z-index: 9999; opacity: 0; transform: translateY(8px); transition: opacity .3s, transform .3s; pointer-events: none; }
+    #toast.show { opacity: 1; transform: translateY(0); }
+    #toast.success { border-color: var(--green); color: var(--green); }
+    #toast.error   { border-color: var(--red);   color: var(--red); }
+
+    /* LOADING */
+    .loading-row { text-align: center; color: var(--muted); padding: 32px; font-size: 14px; }
+
+    /* PUZZLE CLUE FIELDS */
+    .clue-fields { display: flex; flex-direction: column; gap: 8px; }
+    .clue-field-row { display: flex; gap: 8px; align-items: center; }
+    .clue-field-label { font-size: 11px; color: var(--muted); width: 52px; flex-shrink: 0; }
+
+    /* MODAL */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 500; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 32px; max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .modal-title { font-family: var(--condensed); font-weight: 900; font-size: 24px; text-transform: uppercase; }
+    .modal-close { background: none; border: none; color: var(--muted); font-size: 24px; cursor: pointer; padding: 0 4px; }
+    .modal-close:hover { color: var(--white); }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.span2 { grid-column: span 1; }
+      .stat-row { grid-template-columns: 1fr 1fr; }
+      .main-content { padding: 20px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-title">4th &amp; Ward<br>Admin</div>
+  <p class="login-sub">Sign in with your authorized Google account to continue.</p>
+  <button class="google-btn" onclick="signInWithGoogle()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+    Sign in with Google
+  </button>
+  <p class="login-error" id="login-error">Access denied. Your account is not authorized.</p>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <header class="dash-header">
+    <div class="dash-logo">4th &amp; Ward Admin</div>
+    <span class="dash-user" id="dash-user-email"></span>
+    <button class="dash-signout" onclick="signOut()">Sign Out</button>
+  </header>
+  <div class="dash-body">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+      <div class="sidebar-section">Overview</div>
+      <button class="sidebar-item active" onclick="showPage('overview')">
+        <span class="sidebar-icon">&#128200;</span> Dashboard
+      </button>
+
+      <div class="sidebar-section">Wardle Game</div>
+      <button class="sidebar-item" onclick="showPage('wardle-analytics')">
+        <span class="sidebar-icon">&#127944;</span> Analytics
+      </button>
+      <button class="sidebar-item" onclick="showPage('wardle-puzzles')">
+        <span class="sidebar-icon">&#9998;</span> Puzzles
+      </button>
+      <button class="sidebar-item" onclick="showPage('wardle-leaderboard')">
+        <span class="sidebar-icon">&#127942;</span> Leaderboard
+      </button>
+
+      <div class="sidebar-section">Site</div>
+      <button class="sidebar-item" onclick="showPage('totw')">
+        <span class="sidebar-icon">&#127919;</span> Team of the Week
+      </button>
+      <button class="sidebar-item" onclick="showPage('visitors')">
+        <span class="sidebar-icon">&#128100;</span> Visitors
+      </button>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main-content">
+
+      <!-- ══ OVERVIEW ══ -->
+      <div class="page active" id="page-overview">
+        <div class="page-header">
+          <div class="page-title">Dashboard Overview</div>
+          <div class="page-sub">Welcome back. Here's what's happening on 4th &amp; Ward today.</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-card">
+            <div class="stat-card-num" id="ov-plays-today">—</div>
+            <div class="stat-card-label">Wardle Plays Today</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-card-num" id="ov-avg-today">—</div>
+            <div class="stat-card-label">Avg Score Today</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-card-num" id="ov-total-plays">—</div>
+            <div class="stat-card-label">Total Wardle Plays</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-num" id="ov-total-puzzles">—</div>
+            <div class="stat-card-label">Total Puzzles</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-num" id="ov-totw-count">—</div>
+            <div class="stat-card-label">TOTW Entries</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Recent Scores</div></div>
+          <div class="card-body" style="padding:0">
+            <table class="data-table">
+              <thead><tr><th>Player</th><th>Score</th><th>Puzzle #</th><th>Date</th></tr></thead>
+              <tbody id="recent-scores-body"><tr><td colspan="4" class="loading-row">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ WARDLE ANALYTICS ══ -->
+      <div class="page" id="page-wardle-analytics">
+        <div class="page-header">
+          <div class="page-title">Wardle Analytics</div>
+          <div class="page-sub">Game performance and player statistics.</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-card"><div class="stat-card-num" id="wa-plays-today">—</div><div class="stat-card-label">Plays Today</div></div>
+          <div class="stat-card green"><div class="stat-card-num" id="wa-avg-today">—</div><div class="stat-card-label">Avg Score Today</div></div>
+          <div class="stat-card blue"><div class="stat-card-num" id="wa-alltime-avg">—</div><div class="stat-card-label">All-Time Avg</div></div>
+          <div class="stat-card"><div class="stat-card-num" id="wa-total-plays">—</div><div class="stat-card-label">Total Plays</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Per-Puzzle Breakdown</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadPuzzleBreakdown()">&#8635; Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table class="data-table">
+              <thead><tr><th>Puzzle #</th><th>Date</th><th>Plays</th><th>Avg Score</th><th>Top Score</th></tr></thead>
+              <tbody id="puzzle-breakdown-body"><tr><td colspan="5" class="loading-row">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ WARDLE PUZZLES ══ -->
+      <div class="page" id="page-wardle-puzzles">
+        <div class="page-header">
+          <div class="page-title">Puzzle Manager</div>
+          <div class="page-sub">Add, edit, and manage all Wardle puzzles.</div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Add New Puzzle</div>
+          </div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Puzzle Number</label>
+                <input type="number" class="form-input" id="p-num" placeholder="e.g. 10" min="1">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Answer (School Name)</label>
+                <input type="text" class="form-input" id="p-answer" placeholder="e.g. St. John Bosco">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Mascot</label>
+                <input type="text" class="form-input" id="p-mascot" placeholder="e.g. Braves">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Stadium</label>
+                <input type="text" class="form-input" id="p-stadium" placeholder="e.g. Panish Family Stadium">
+              </div>
+              <div class="form-group">
+                <label class="form-label">City</label>
+                <input type="text" class="form-input" id="p-city" placeholder="e.g. Bellflower">
+              </div>
+              <div class="form-group">
+                <label class="form-label">State</label>
+                <input type="text" class="form-input" id="p-state" placeholder="e.g. CA">
+              </div>
+              <div class="form-group span2">
+                <label class="form-label">Clues (5 required — hardest to easiest)</label>
+                <div class="clue-fields">
+                  <div class="clue-field-row"><span class="clue-field-label">Clue 1</span><input type="text" class="form-input" id="p-clue1" placeholder="Hardest clue — most obscure fact"></div>
+                  <div class="clue-field-row"><span class="clue-field-label">Clue 2</span><input type="text" class="form-input" id="p-clue2" placeholder="Still hard"></div>
+                  <div class="clue-field-row"><span class="clue-field-label">Clue 3</span><input type="text" class="form-input" id="p-clue3" placeholder="Medium difficulty"></div>
+                  <div class="clue-field-row"><span class="clue-field-label">Clue 4</span><input type="text" class="form-input" id="p-clue4" placeholder="Getting easier"></div>
+                  <div class="clue-field-row"><span class="clue-field-label">Clue 5</span><input type="text" class="form-input" id="p-clue5" placeholder="Easiest — most obvious clue"></div>
+                </div>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-gold" onclick="savePuzzle()">Save Puzzle</button>
+              <button class="btn btn-ghost" onclick="clearPuzzleForm()">Clear</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">All Puzzles</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadPuzzleList()">&#8635; Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table class="data-table">
+              <thead><tr><th>#</th><th>Answer</th><th>City</th><th>State</th><th>Actions</th></tr></thead>
+              <tbody id="puzzle-list-body"><tr><td colspan="5" class="loading-row">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ LEADERBOARD ══ -->
+      <div class="page" id="page-wardle-leaderboard">
+        <div class="page-header">
+          <div class="page-title">Leaderboard</div>
+          <div class="page-sub">Top scores by puzzle.</div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">View Leaderboard</div>
+            <div style="display:flex;gap:10px;align-items:center">
+              <select class="form-select" id="lb-puzzle-select" style="width:180px">
+                <option value="">— Select Puzzle —</option>
+              </select>
+              <button class="btn btn-gold btn-sm" onclick="loadAdminLeaderboard()">Load</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table class="data-table">
+              <thead><tr><th>Rank</th><th>Player</th><th>Score</th><th>Date</th></tr></thead>
+              <tbody id="admin-lb-body"><tr><td colspan="4" class="loading-row">Select a puzzle above</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TEAM OF THE WEEK ══ -->
+      <div class="page" id="page-totw">
+        <div class="page-header">
+          <div class="page-title">Team of the Week</div>
+          <div class="page-sub">Manage featured team entries shown on totw.html.</div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Add New Entry</div></div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Team Name</label>
+                <input type="text" class="form-input" id="totw-team" placeholder="e.g. Allen Eagles">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Week / Date</label>
+                <input type="text" class="form-input" id="totw-week" placeholder="e.g. Week 8 — Oct 18, 2026">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Record / Result</label>
+                <input type="text" class="form-input" id="totw-record" placeholder="e.g. 8-0, beat Westlake 42-14">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Classification</label>
+                <input type="text" class="form-input" id="totw-class" placeholder="e.g. 6A Division I">
+              </div>
+              <div class="form-group span2">
+                <label class="form-label">Why They Won (description)</label>
+                <textarea class="form-textarea" id="totw-desc" placeholder="Brief write-up on why this team was selected..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Image URL (optional)</label>
+                <input type="text" class="form-input" id="totw-image" placeholder="https://...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">State</label>
+                <input type="text" class="form-input" id="totw-state" placeholder="e.g. TX">
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-gold" onclick="saveTOTW()">Save Entry</button>
+              <button class="btn btn-ghost" onclick="clearTOTWForm()">Clear</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">All TOTW Entries</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadTOTW()">&#8635; Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table class="data-table">
+              <thead><tr><th>Team</th><th>Week</th><th>State</th><th>Actions</th></tr></thead>
+              <tbody id="totw-list-body"><tr><td colspan="4" class="loading-row">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ VISITORS ══ -->
+      <div class="page" id="page-visitors">
+        <div class="page-header">
+          <div class="page-title">Site Visitors</div>
+          <div class="page-sub">Page view tracking across the 4th &amp; Ward site.</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-card blue"><div class="stat-card-num" id="vis-today">—</div><div class="stat-card-label">Page Views Today</div></div>
+          <div class="stat-card"><div class="stat-card-num" id="vis-week">—</div><div class="stat-card-label">This Week</div></div>
+          <div class="stat-card green"><div class="stat-card-num" id="vis-total">—</div><div class="stat-card-label">All-Time Views</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Views by Page (Today)</div></div>
+          <div class="card-body" style="padding:0">
+            <table class="data-table">
+              <thead><tr><th>Page</th><th>Views Today</th><th>All-Time</th></tr></thead>
+              <tbody id="page-views-body"><tr><td colspan="3" class="loading-row">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">How to Track Visitors</div></div>
+          <div class="card-body">
+            <p style="color:var(--muted);font-size:14px;line-height:1.7">
+              Add this snippet to the <code style="background:var(--surface2);padding:2px 6px;border-radius:4px">&lt;head&gt;</code> of every page you want to track.
+              It logs a page view to Firestore each time someone visits.
+            </p>
+            <pre style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:20px;margin-top:16px;font-size:13px;overflow-x:auto;color:#ccc;line-height:1.6">&lt;script type="module"&gt;
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getFirestore, doc, setDoc, increment }
+    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  const app = initializeApp({ /* your firebaseConfig */ });
+  const db  = getFirestore(app);
+  const page = window.location.pathname.replace(/\//g,'') || 'index';
+  const today = new Date().toISOString().slice(0,10);
+  setDoc(doc(db,'pageviews', page + '_' + today),
+    { page, date: today, views: increment(1), allTime: increment(1) },
+    { merge: true });
+&lt;/script&gt;</pre>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- EDIT PUZZLE MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Edit Puzzle</div>
+      <button class="modal-close" onclick="closeEditModal()">&#10005;</button>
+    </div>
+    <div class="form-grid">
+      <input type="hidden" id="edit-puzzle-id">
+      <div class="form-group">
+        <label class="form-label">Puzzle Number</label>
+        <input type="number" class="form-input" id="edit-p-num" disabled>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Answer</label>
+        <input type="text" class="form-input" id="edit-p-answer">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mascot</label>
+        <input type="text" class="form-input" id="edit-p-mascot">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Stadium</label>
+        <input type="text" class="form-input" id="edit-p-stadium">
+      </div>
+      <div class="form-group">
+        <label class="form-label">City</label>
+        <input type="text" class="form-input" id="edit-p-city">
+      </div>
+      <div class="form-group">
+        <label class="form-label">State</label>
+        <input type="text" class="form-input" id="edit-p-state">
+      </div>
+      <div class="form-group span2">
+        <label class="form-label">Clues</label>
+        <div class="clue-fields">
+          <div class="clue-field-row"><span class="clue-field-label">Clue 1</span><input type="text" class="form-input" id="edit-clue1"></div>
+          <div class="clue-field-row"><span class="clue-field-label">Clue 2</span><input type="text" class="form-input" id="edit-clue2"></div>
+          <div class="clue-field-row"><span class="clue-field-label">Clue 3</span><input type="text" class="form-input" id="edit-clue3"></div>
+          <div class="clue-field-row"><span class="clue-field-label">Clue 4</span><input type="text" class="form-input" id="edit-clue4"></div>
+          <div class="clue-field-row"><span class="clue-field-label">Clue 5</span><input type="text" class="form-input" id="edit-clue5"></div>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-gold" onclick="updatePuzzle()">Save Changes</button>
+      <button class="btn btn-ghost" onclick="closeEditModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp }                              from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getFirestore, collection, doc, getDoc,
+           getDocs, setDoc, addDoc, updateDoc,
+           deleteDoc, query, orderBy, limit, where,
+           increment }                                  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  import { getAuth, signInWithPopup, GoogleAuthProvider,
+           signOut as fbSignOut, onAuthStateChanged }   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+  // ── CONFIG — paste your Firebase config here ──────────────
+  const firebaseConfig = {
+    apiKey: "AIzaSyB5EJMsZT4WsfJjaFQ-srIdNwAINr7Q2yY",
+    authDomain: "th-and-ward-b8f1c.firebaseapp.com",
+    projectId: "th-and-ward-b8f1c",
+    storageBucket: "th-and-ward-b8f1c.firebasestorage.app",
+    messagingSenderId: "499057353962",
+    appId: "1:499057353962:web:18f42748c242a6e0be2393"
+  };
+  // Authorized admin email(s)
+  const ADMIN_EMAILS = ["4thandwardpodcast@gmail.com"];
+  const LAUNCH_DATE  = '2026-03-13';
+  // ─────────────────────────────────────────────────────────
+
+  const app  = initializeApp(firebaseConfig);
+  const db   = getFirestore(app);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  // ── AUTH ──────────────────────────────────────────────────
+  onAuthStateChanged(auth, user => {
+    if (user && ADMIN_EMAILS.includes(user.email)) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard').style.display    = 'block';
+      document.getElementById('dash-user-email').textContent = user.email;
+      initDashboard();
+    } else if (user) {
+      fbSignOut(auth);
+      document.getElementById('login-error').style.display = 'block';
+    }
+  });
+
+  window.signInWithGoogle = async () => {
+    try { await signInWithPopup(auth, provider); }
+    catch(e) { document.getElementById('login-error').style.display = 'block'; }
+  };
+  window.signOut = () => fbSignOut(auth).then(() => location.reload());
+
+  // ── NAVIGATION ────────────────────────────────────────────
+  window.showPage = function(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    document.querySelectorAll('.sidebar-item').forEach(b => {
+      if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + id + "'"))
+        b.classList.add('active');
+    });
+    // Lazy load data per section
+    if (id === 'wardle-analytics')    { loadWardleStats(); loadPuzzleBreakdown(); }
+    if (id === 'wardle-puzzles')      { window.loadPuzzleList(); }
+    if (id === 'wardle-leaderboard')  { loadLBPuzzleSelect(); }
+    if (id === 'totw')                { loadTOTW(); }
+    if (id === 'visitors')            { loadVisitors(); }
+  };
+
+  // ── INIT ──────────────────────────────────────────────────
+  async function initDashboard() {
+    loadOverviewStats();
+    loadRecentScores();
+  }
+
+  // ── HELPERS ───────────────────────────────────────────────
+  function todayStr() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function todayPuzzleNumber() {
+    const launch = new Date(LAUNCH_DATE + 'T00:00:00');
+    const now    = new Date(); now.setHours(0,0,0,0);
+    return Math.max(1, Math.floor((now - launch) / 86400000) + 1);
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function toast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className   = 'show ' + type;
+    setTimeout(() => t.className = '', 3000);
+  }
+
+  function escapeHtml(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── OVERVIEW ──────────────────────────────────────────────
+  async function loadOverviewStats() {
+    try {
+      const today       = todayStr();
+      const [daySnap, summSnap, puzzSnap, totwSnap] = await Promise.all([
+        getDoc(doc(db, 'daily', today)),
+        getDoc(doc(db, 'meta', 'summary')),
+        getDocs(collection(db, 'puzzles')),
+        getDocs(collection(db, 'totw'))
+      ]);
+
+      const plays    = daySnap.exists() ? (daySnap.data().plays || 0) : 0;
+      const avgToday = daySnap.exists() && plays > 0
+        ? Math.round((daySnap.data().totalScore || 0) / plays) : 0;
+      const totalPlays = summSnap.exists() ? (summSnap.data().totalPlays || 0) : 0;
+
+      document.getElementById('ov-plays-today').textContent  = plays;
+      document.getElementById('ov-avg-today').textContent    = avgToday;
+      document.getElementById('ov-total-plays').textContent  = totalPlays;
+      document.getElementById('ov-total-puzzles').textContent = puzzSnap.size;
+      document.getElementById('ov-totw-count').textContent   = totwSnap.size;
+    } catch(e) {}
+  }
+
+  async function loadRecentScores() {
+    try {
+      const q    = query(collection(db,'scores'), orderBy('timestamp','desc'), limit(10));
+      const snap = await getDocs(q);
+      const tbody = document.getElementById('recent-scores-body');
+      if (snap.empty) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row">No scores yet.</td></tr>'; return; }
+      let html = '';
+      snap.forEach(d => {
+        const s = d.data();
+        const name = s.playerName === 'Anonymous'
+          ? '<span style="color:var(--muted)">Anonymous</span>'
+          : escapeHtml(s.playerName);
+        html += `<tr>
+          <td>${name}</td>
+          <td><span class="badge badge-gold">${s.score}</span></td>
+          <td>#${s.puzzleNum}</td>
+          <td>${formatDate(s.date)}</td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    } catch(e) {}
+  }
+
+  // ── WARDLE ANALYTICS ─────────────────────────────────────
+  async function loadWardleStats() {
+    try {
+      const today   = todayStr();
+      const [daySnap, summSnap] = await Promise.all([
+        getDoc(doc(db,'daily',today)),
+        getDoc(doc(db,'meta','summary'))
+      ]);
+      const plays    = daySnap.exists() ? (daySnap.data().plays || 0) : 0;
+      const avgToday = daySnap.exists() && plays > 0
+        ? Math.round((daySnap.data().totalScore||0) / plays) : 0;
+      const totalPlays = summSnap.exists() ? (summSnap.data().totalPlays||0) : 0;
+      const allAvg     = summSnap.exists() && totalPlays > 0
+        ? Math.round((summSnap.data().totalScore||0) / totalPlays) : 0;
+
+      document.getElementById('wa-plays-today').textContent  = plays;
+      document.getElementById('wa-avg-today').textContent    = avgToday;
+      document.getElementById('wa-alltime-avg').textContent  = allAvg;
+      document.getElementById('wa-total-plays').textContent  = totalPlays;
+    } catch(e) {}
+  }
+
+  window.loadPuzzleBreakdown = async function() {
+    const tbody = document.getElementById('puzzle-breakdown-body');
+    tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Loading...</td></tr>';
+    try {
+      const scoresSnap = await getDocs(collection(db,'scores'));
+      const byPuzzle   = {};
+      scoresSnap.forEach(d => {
+        const s  = d.data();
+        const n  = s.puzzleNum;
+        if (!byPuzzle[n]) byPuzzle[n] = { plays: 0, totalScore: 0, top: 0 };
+        byPuzzle[n].plays++;
+        byPuzzle[n].totalScore += (s.score || 0);
+        if ((s.score||0) > byPuzzle[n].top) byPuzzle[n].top = s.score;
+      });
+
+      const launch = new Date(LAUNCH_DATE + 'T00:00:00');
+      const keys   = Object.keys(byPuzzle).map(Number).sort((a,b) => b-a);
+
+      if (keys.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="loading-row">No data yet.</td></tr>'; return; }
+
+      let html = '';
+      keys.forEach(n => {
+        const d = new Date(launch); d.setDate(d.getDate() + (n - 1));
+        const dateStr = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+        const avg     = byPuzzle[n].plays > 0 ? Math.round(byPuzzle[n].totalScore / byPuzzle[n].plays) : 0;
+        html += `<tr>
+          <td><span class="badge badge-gold">#${n}</span></td>
+          <td>${dateStr}</td>
+          <td>${byPuzzle[n].plays}</td>
+          <td>${avg}</td>
+          <td>${byPuzzle[n].top}</td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    } catch(e) { tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Error loading data.</td></tr>'; }
+  };
+
+  // ── PUZZLE MANAGER ────────────────────────────────────────
+  window.loadPuzzleList = async function() {
+    const tbody = document.getElementById('puzzle-list-body');
+    tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Loading...</td></tr>';
+    try {
+      const snap = await getDocs(query(collection(db,'puzzles'), orderBy('__name__')));
+      if (snap.empty) { tbody.innerHTML = '<tr><td colspan="5" class="loading-row">No puzzles yet. Add one above.</td></tr>'; return; }
+      const rows = [];
+      snap.forEach(d => rows.push({ id: d.id, ...d.data() }));
+      rows.sort((a,b) => Number(a.id) - Number(b.id));
+      let html = '';
+      rows.forEach(p => {
+        html += `<tr>
+          <td><span class="badge badge-gold">#${p.id}</span></td>
+          <td>${escapeHtml(p.answer)}</td>
+          <td>${escapeHtml(p.city||'')}</td>
+          <td>${escapeHtml(p.state||'')}</td>
+          <td>
+            <button class="btn btn-ghost btn-sm" onclick="openEditModal('${p.id}')">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deletePuzzle('${p.id}')">Delete</button>
+          </td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+
+      // Also populate leaderboard select
+      const lbSel = document.getElementById('lb-puzzle-select');
+      const current = lbSel.value;
+      lbSel.innerHTML = '<option value="">— Select Puzzle —</option>';
+      rows.reverse().forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = 'Puzzle #' + p.id + ' — ' + escapeHtml(p.answer);
+        lbSel.appendChild(opt);
+      });
+      if (current) lbSel.value = current;
+    } catch(e) { tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Error loading puzzles.</td></tr>'; }
+  };
+
+  window.savePuzzle = async function() {
+    const num = document.getElementById('p-num').value.trim();
+    const answer = document.getElementById('p-answer').value.trim();
+    if (!num || !answer) { toast('Puzzle number and answer are required.', 'error'); return; }
+    const clues = [
+      document.getElementById('p-clue1').value.trim(),
+      document.getElementById('p-clue2').value.trim(),
+      document.getElementById('p-clue3').value.trim(),
+      document.getElementById('p-clue4').value.trim(),
+      document.getElementById('p-clue5').value.trim()
+    ];
+    if (clues.some(c => !c)) { toast('All 5 clues are required.', 'error'); return; }
+    try {
+      await setDoc(doc(db, 'puzzles', String(num)), {
+        answer:  answer,
+        mascot:  document.getElementById('p-mascot').value.trim(),
+        stadium: document.getElementById('p-stadium').value.trim(),
+        city:    document.getElementById('p-city').value.trim(),
+        state:   document.getElementById('p-state').value.trim(),
+        clues:   clues
+      });
+      toast('Puzzle #' + num + ' saved!');
+      clearPuzzleForm();
+      window.loadPuzzleList();
+    } catch(e) { toast('Error saving puzzle: ' + e.message, 'error'); }
+  };
+
+  window.clearPuzzleForm = function() {
+    ['p-num','p-answer','p-mascot','p-stadium','p-city','p-state','p-clue1','p-clue2','p-clue3','p-clue4','p-clue5']
+      .forEach(id => document.getElementById(id).value = '');
+  };
+
+  window.openEditModal = async function(id) {
+    try {
+      const snap = await getDoc(doc(db,'puzzles',String(id)));
+      if (!snap.exists()) { toast('Puzzle not found.','error'); return; }
+      const p = snap.data();
+      document.getElementById('edit-puzzle-id').value = id;
+      document.getElementById('edit-p-num').value     = id;
+      document.getElementById('edit-p-answer').value  = p.answer  || '';
+      document.getElementById('edit-p-mascot').value  = p.mascot  || '';
+      document.getElementById('edit-p-stadium').value = p.stadium || '';
+      document.getElementById('edit-p-city').value    = p.city    || '';
+      document.getElementById('edit-p-state').value   = p.state   || '';
+      (p.clues || []).forEach((c, i) => {
+        const el = document.getElementById('edit-clue' + (i+1));
+        if (el) el.value = c;
+      });
+      document.getElementById('edit-modal').classList.add('open');
+    } catch(e) { toast('Error loading puzzle.','error'); }
+  };
+
+  window.closeEditModal = function() {
+    document.getElementById('edit-modal').classList.remove('open');
+  };
+
+  window.updatePuzzle = async function() {
+    const id = document.getElementById('edit-puzzle-id').value;
+    const clues = [1,2,3,4,5].map(i => document.getElementById('edit-clue'+i).value.trim());
+    if (clues.some(c => !c)) { toast('All 5 clues are required.','error'); return; }
+    try {
+      await setDoc(doc(db,'puzzles',String(id)), {
+        answer:  document.getElementById('edit-p-answer').value.trim(),
+        mascot:  document.getElementById('edit-p-mascot').value.trim(),
+        stadium: document.getElementById('edit-p-stadium').value.trim(),
+        city:    document.getElementById('edit-p-city').value.trim(),
+        state:   document.getElementById('edit-p-state').value.trim(),
+        clues:   clues
+      });
+      toast('Puzzle #' + id + ' updated!');
+      closeEditModal();
+      window.loadPuzzleList();
+    } catch(e) { toast('Error updating: ' + e.message,'error'); }
+  };
+
+  window.deletePuzzle = async function(id) {
+    if (!confirm('Delete Puzzle #' + id + '? This cannot be undone.')) return;
+    try {
+      await deleteDoc(doc(db,'puzzles',String(id)));
+      toast('Puzzle #' + id + ' deleted.','error');
+      window.loadPuzzleList();
+    } catch(e) { toast('Error deleting.','error'); }
+  };
+
+  // ── LEADERBOARD ADMIN ─────────────────────────────────────
+  async function loadLBPuzzleSelect() {
+    // Populated by loadPuzzleList — call it to fill the dropdown
+    const snap = await getDocs(query(collection(db,'puzzles'),orderBy('__name__')));
+    const sel  = document.getElementById('lb-puzzle-select');
+    sel.innerHTML = '<option value="">— Select Puzzle —</option>';
+    const rows = [];
+    snap.forEach(d => rows.push({ id: d.id, ...d.data() }));
+    rows.sort((a,b) => Number(b.id)-Number(a.id));
+    rows.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = 'Puzzle #' + p.id + ' — ' + escapeHtml(p.answer);
+      sel.appendChild(opt);
+    });
+  }
+
+  window.loadAdminLeaderboard = async function() {
+    const puzzleNum = parseInt(document.getElementById('lb-puzzle-select').value);
+    const tbody     = document.getElementById('admin-lb-body');
+    if (!puzzleNum) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Select a puzzle above.</td></tr>'; return; }
+    tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Loading...</td></tr>';
+    try {
+      const q    = query(collection(db,'scores'), where('puzzleNum','==',puzzleNum), where('named','==',true), orderBy('score','desc'), limit(20));
+      const snap = await getDocs(q);
+      if (snap.empty) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row">No named scores for this puzzle.</td></tr>'; return; }
+      let html = '', rank = 1;
+      snap.forEach(d => {
+        const s = d.data();
+        html += `<tr>
+          <td>${rank++}</td>
+          <td>${escapeHtml(s.playerName)}</td>
+          <td><span class="badge badge-gold">${s.score}</span></td>
+          <td>${formatDate(s.date)}</td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    } catch(e) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Error loading.</td></tr>'; }
+  };
+
+  // ── TEAM OF THE WEEK ──────────────────────────────────────
+  window.saveTOTW = async function() {
+    const team = document.getElementById('totw-team').value.trim();
+    const week = document.getElementById('totw-week').value.trim();
+    if (!team || !week) { toast('Team name and week are required.','error'); return; }
+    try {
+      await addDoc(collection(db,'totw'), {
+        team:      team,
+        week:      week,
+        record:    document.getElementById('totw-record').value.trim(),
+        classi:    document.getElementById('totw-class').value.trim(),
+        desc:      document.getElementById('totw-desc').value.trim(),
+        image:     document.getElementById('totw-image').value.trim(),
+        state:     document.getElementById('totw-state').value.trim(),
+        timestamp: Date.now()
+      });
+      toast('TOTW entry saved!');
+      clearTOTWForm();
+      loadTOTW();
+    } catch(e) { toast('Error: ' + e.message,'error'); }
+  };
+
+  window.clearTOTWForm = function() {
+    ['totw-team','totw-week','totw-record','totw-class','totw-desc','totw-image','totw-state']
+      .forEach(id => document.getElementById(id).value = '');
+  };
+
+  async function loadTOTW() {
+    const tbody = document.getElementById('totw-list-body');
+    tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Loading...</td></tr>';
+    try {
+      const snap = await getDocs(query(collection(db,'totw'), orderBy('timestamp','desc')));
+      if (snap.empty) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row">No entries yet.</td></tr>'; return; }
+      let html = '';
+      snap.forEach(d => {
+        const t = d.data();
+        html += `<tr>
+          <td>${escapeHtml(t.team)}</td>
+          <td>${escapeHtml(t.week)}</td>
+          <td>${escapeHtml(t.state||'')}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="deleteTOTW('${d.id}')">Delete</button></td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    } catch(e) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Error.</td></tr>'; }
+  }
+
+  window.deleteTOTW = async function(id) {
+    if (!confirm('Delete this TOTW entry?')) return;
+    try {
+      await deleteDoc(doc(db,'totw',id));
+      toast('Entry deleted.','error');
+      loadTOTW();
+    } catch(e) { toast('Error deleting.','error'); }
+  };
+
+  // ── VISITORS ──────────────────────────────────────────────
+  async function loadVisitors() {
+    try {
+      const tbody = document.getElementById('page-views-body');
+      const today = todayStr();
+
+      // Get the last 7 days for "this week"
+      const snap = await getDocs(collection(db,'pageviews'));
+      let todayTotal = 0, weekTotal = 0, allTotal = 0;
+      const pageMap  = {};
+      const sevenDaysAgo = new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      snap.forEach(d => {
+        const pv = d.data();
+        const views   = pv.views   || 0;
+        const allTime = pv.allTime || pv.views || 0;
+        allTotal += allTime;
+        if (pv.date === today) todayTotal += views;
+        if (pv.date && new Date(pv.date) >= sevenDaysAgo) weekTotal += views;
+        if (!pageMap[pv.page]) pageMap[pv.page] = { today: 0, allTime: 0 };
+        if (pv.date === today) pageMap[pv.page].today += views;
+        pageMap[pv.page].allTime += allTime;
+      });
+
+      document.getElementById('vis-today').textContent = todayTotal;
+      document.getElementById('vis-week').textContent  = weekTotal;
+      document.getElementById('vis-total').textContent = allTotal;
+
+      const pages = Object.entries(pageMap).sort((a,b) => b[1].today - a[1].today);
+      if (pages.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="loading-row">No visitor data yet. Add the tracking snippet to your pages.</td></tr>';
+        return;
+      }
+      let html = '';
+      pages.forEach(([page, data]) => {
+        html += `<tr>
+          <td>${escapeHtml(page || 'index')}</td>
+          <td>${data.today}</td>
+          <td>${data.allTime}</td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    } catch(e) {}
+  }
+</script>
+</body>
+</html>
