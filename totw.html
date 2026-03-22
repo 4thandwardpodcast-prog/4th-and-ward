@@ -240,6 +240,7 @@
           </div>
         </div>
         <div class="form-success" id="nom-success">🏈 Submitted! Your team is on the wheel.</div>
+        <div id="nom-error" style="display:none;background:rgba(224,85,85,0.1);border:1px solid rgba(224,85,85,0.3);border-radius:6px;padding:14px;text-align:center;color:#e05555;font-size:14px;font-weight:600;margin-top:12px;"></div>
       </div>
 
       <!-- NOMINEES — scrollable list below form -->
@@ -583,14 +584,23 @@
       btn.textContent = 'Submitting...';
       btn.disabled = true;
       try {
-        await callTOTW('submitNomination', { teamName: school, mascot, location: city + ', ' + state });
-        document.getElementById('nom-school').value = '';
-        document.getElementById('nom-mascot').value = '';
-        document.getElementById('nom-city').value = '';
-        document.getElementById('nom-state').value = '';
-        document.getElementById('nom-success').style.display = 'block';
-        setTimeout(() => document.getElementById('nom-success').style.display = 'none', 4000);
-        await loadData();
+        const result = await callTOTW('submitNomination', { teamName: school, mascot, location: city + ', ' + state });
+        if (result && result.duplicate) {
+          // Show duplicate error
+          const errEl = document.getElementById('nom-error');
+          errEl.textContent = '⚠️ ' + (result.message || 'This school is already on the wheel!');
+          errEl.style.display = 'block';
+          setTimeout(() => errEl.style.display = 'none', 4000);
+        } else {
+          // Clear form and show success
+          document.getElementById('nom-school').value = '';
+          document.getElementById('nom-mascot').value = '';
+          document.getElementById('nom-city').value = '';
+          document.getElementById('nom-state').value = '';
+          document.getElementById('nom-success').style.display = 'block';
+          setTimeout(() => document.getElementById('nom-success').style.display = 'none', 4000);
+          await loadData();
+        }
       } catch(e) {
         alert('Submission failed. Please try again.');
       }
