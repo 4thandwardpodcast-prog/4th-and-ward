@@ -624,7 +624,7 @@
       try {
         const count     = await callScript('getPreviousPuzzleCount');
         const select    = document.getElementById('puzzleSelect');
-        const startDate = new Date('2026-03-12T00:00:00');
+        const startDate = new Date('2026-03-14T00:00:00');
         for (let i = count; i >= 1; i--) {
           const d   = new Date(startDate);
           d.setDate(d.getDate() + (i - 1));
