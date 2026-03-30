@@ -4,17 +4,27 @@
  * when a team is nominated for Team of the Week.
  */
 
-const { onDocumentCreated } = require('firebase-functions/v2/firestore');
-const { initializeApp }     = require('firebase-admin/app');
-const { getFirestore }      = require('firebase-admin/firestore');
-const Anthropic             = require('@anthropic-ai/sdk');
-const fetch                 = require('node-fetch');
+const { onDocumentCreated }  = require('firebase-functions/v2/firestore');
+const { initializeApp }      = require('firebase-admin/app');
+const { getFirestore }       = require('firebase-admin/firestore');
+const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
+const Anthropic              = require('@anthropic-ai/sdk');
+const fetch                  = require('node-fetch');
 
 initializeApp();
-const db = getFirestore();
+const db            = getFirestore();
+const secretClient  = new SecretManagerServiceClient();
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
-const LAUNCH_DATE = '2026-03-14'; // Must match wardle.html
+const LAUNCH_DATE   = '2026-03-14'; // Must match wardle.html
+const PROJECT_ID    = 'th-and-ward-b8f1c';
+
+// Fetch secret directly from Secret Manager — most reliable approach
+async function getAnthropicKey() {
+  const name = `projects/${PROJECT_ID}/secrets/ANTHROPIC_API_KEY/versions/latest`;
+  const [version] = await secretClient.accessSecretVersion({ name });
+  return version.payload.data.toString('utf8');
+}
 
 // ── HELPER: Get next unoccupied puzzle number ─────────────────────────────────
 async function getNextPuzzleNumber() {
@@ -220,12 +230,12 @@ function applyVerificationFixes(puzzleData, verification) {
 
 // ── MAIN TRIGGER: New nomination added ───────────────────────────────────────
 exports.generatePuzzleOnNomination = onDocumentCreated(
-  { document: 'totw_nominees/{nomineeId}', timeoutSeconds: 300, memory: '512MiB', secrets: ['ANTHROPIC_API_KEY'] },
+  { document: 'totw_nominees/{nomineeId}', timeoutSeconds: 300, memory: '512MiB' },
   async (event) => {
     const nominee   = event.data.data();
     const nomineeId = event.params.nomineeId;
 
-    const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+    const ANTHROPIC_API_KEY = await getAnthropicKey();
     const teamName = nominee.teamName || '';
     const city     = nominee.city     || '';
     const state    = nominee.state    || '';
