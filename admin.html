@@ -204,6 +204,9 @@
       <button class="sidebar-item" onclick="showPage('wardle-leaderboard')">
         <span class="sidebar-icon">&#127942;</span> Leaderboard
       </button>
+      <button class="sidebar-item" onclick="showPage('puzzle-queue')">
+        <span class="sidebar-icon">&#9881;</span> Puzzle Queue
+      </button>
 
       <div class="sidebar-section">Team of the Week</div>
       <button class="sidebar-item" onclick="showPage('totw-nominees')">
@@ -435,6 +438,31 @@
             <table class="data-table">
               <thead><tr><th>Puzzle</th><th>Player</th><th>Score</th><th>Date</th><th>Type</th><th>Action</th></tr></thead>
               <tbody id="admin-lb-body"><tr><td colspan="6" class="loading-row">Select a puzzle or search above</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PUZZLE QUEUE ══ -->
+      <div class="page" id="page-puzzle-queue">
+        <div class="page-header">
+          <div class="page-title">Puzzle Queue</div>
+          <div class="page-sub">Auto-generated puzzles from TOTW nominations. Approved ones go live automatically. Review failed or rejected ones here.</div>
+        </div>
+        <div class="stat-row" style="margin-bottom:24px;">
+          <div class="stat-card green"><div class="stat-card-num" id="pq-approved">—</div><div class="stat-card-label">Auto-Approved</div></div>
+          <div class="stat-card"><div class="stat-card-num" id="pq-failed">—</div><div class="stat-card-label">Failed / Needs Review</div></div>
+          <div class="stat-card red"><div class="stat-card-num" id="pq-rejected">—</div><div class="stat-card-label">Rejected by AI</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">All Generated Puzzles</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadPuzzleQueue()">&#8635; Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table class="data-table">
+              <thead><tr><th>School</th><th>Puzzle #</th><th>Status</th><th>Verdict</th><th>Generated</th><th>Actions</th></tr></thead>
+              <tbody id="puzzle-queue-body"><tr><td colspan="6" class="loading-row">Loading...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -718,6 +746,7 @@
     if (id === 'wardle-analytics')    { loadWardleStats(); loadPuzzleBreakdown(); }
     if (id === 'wardle-puzzles')      { window.loadPuzzleList(); }
     if (id === 'wardle-leaderboard')  { loadLBPuzzleSelect(); }
+    if (id === 'puzzle-queue')         { loadPuzzleQueue(); }
     if (id === 'totw-nominees')       { loadNomineesAdmin(); }
     if (id === 'totw-winners')         { loadWinnersAdmin(); }
     if (id === 'visitors')            { loadVisitors(); }
@@ -1087,6 +1116,93 @@
       });
       tbody.innerHTML = html;
     } catch(e) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Error loading.</td></tr>'; }
+  };
+
+  // ── PUZZLE QUEUE ─────────────────────────────────────────
+  async function loadPuzzleQueue() {
+    const tbody = document.getElementById('puzzle-queue-body');
+    tbody.innerHTML = '<tr><td colspan="6" class="loading-row">Loading...</td></tr>';
+    try {
+      const snap = await getDocs(collection(db, 'puzzle_queue'));
+      const rows = [];
+      snap.forEach(d => rows.push({ id: d.id, ...d.data() }));
+      rows.sort((a,b) => (b.generatedAt||0) - (a.generatedAt||0));
+
+      let approved=0, failed=0, rejected=0;
+      rows.forEach(r => {
+        if (r.status==='approved') approved++;
+        else if (r.status==='rejected') rejected++;
+        else failed++;
+      });
+      document.getElementById('pq-approved').textContent = approved;
+      document.getElementById('pq-failed').textContent   = failed;
+      document.getElementById('pq-rejected').textContent = rejected;
+
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="loading-row">No auto-generated puzzles yet. They appear here when teams are nominated.</td></tr>';
+        return;
+      }
+
+      let html = '';
+      rows.forEach(r => {
+        const date = r.generatedAt ? new Date(r.generatedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
+        const statusColor = r.status==='approved'?'badge-green':r.status==='rejected'?'badge-red':'badge-gold';
+        const verdictColor = r.verificationVerdict==='approve'?'badge-green':r.verificationVerdict==='fix'?'badge-gold':'badge-red';
+        const puzzleNum = r.scheduledPuzzleNum ? `#${r.scheduledPuzzleNum}` : '—';
+        const errorNote = r.error ? `<div style="font-size:11px;color:#e05555;margin-top:2px;">${escapeHtml(r.error.substring(0,60))}</div>` : '';
+        const rejection = r.rejectionReason ? `<div style="font-size:11px;color:#e05555;margin-top:2px;">${escapeHtml(r.rejectionReason.substring(0,60))}</div>` : '';
+
+        html += `<tr>
+          <td>
+            <strong>${escapeHtml(r.answer||r.teamName||'Unknown')}</strong>
+            <div style="font-size:11px;color:var(--muted);">${escapeHtml((r.city||'')+(r.state?', '+r.state:''))}</div>
+            ${errorNote}${rejection}
+          </td>
+          <td>${puzzleNum}</td>
+          <td><span class="badge ${statusColor}">${r.status||'unknown'}</span></td>
+          <td>${r.verificationVerdict?'<span class="badge '+verdictColor+'">'+r.verificationVerdict+'</span>':'—'}</td>
+          <td style="color:var(--muted);font-size:12px;">${date}</td>
+          <td style="white-space:nowrap;">
+            ${r.status!=='approved' && r.clues ? `<button class="btn btn-ghost btn-sm" onclick="retryQueuePuzzle('${r.id}')">&#8635; Retry</button>` : ''}
+            <button class="btn btn-danger btn-sm" onclick="deleteQueueItem('${r.id}')">Delete</button>
+          </td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    } catch(e) { tbody.innerHTML = '<tr><td colspan="6" class="loading-row">Error: '+e.message+'</td></tr>'; }
+  }
+
+  window.deleteQueueItem = async function(id) {
+    if (!confirm('Delete this queue entry?')) return;
+    try {
+      await deleteDoc(doc(db, 'puzzle_queue', id));
+      toast('Deleted.', 'error');
+      loadPuzzleQueue();
+    } catch(e) { toast('Error: '+e.message, 'error'); }
+  };
+
+  window.retryQueuePuzzle = async function(id) {
+    // Pull the failed puzzle data and open the Puzzle Manager form pre-filled
+    // so the host can manually fix and save it
+    try {
+      const snap = await getDoc(doc(db, 'puzzle_queue', id));
+      if (!snap.exists()) { toast('Not found.', 'error'); return; }
+      const d = snap.data();
+      showPage('wardle-puzzles');
+      setTimeout(() => {
+        document.getElementById('p-num').value    = '';
+        document.getElementById('p-answer').value = d.answer||d.teamName||'';
+        document.getElementById('p-mascot').value = d.mascot||'';
+        document.getElementById('p-stadium').value= d.stadium||'';
+        document.getElementById('p-city').value   = d.city||'';
+        document.getElementById('p-state').value  = d.state||'';
+        (d.clues||[]).forEach((c,i) => {
+          const el=document.getElementById('p-clue'+(i+1));
+          if (el) el.value=c;
+        });
+        toast('Pre-filled from queue — assign a puzzle number and save.');
+      }, 200);
+    } catch(e) { toast('Error: '+e.message, 'error'); }
   };
 
   // ── TEAM OF THE WEEK — NOMINEES ──────────────────────────
