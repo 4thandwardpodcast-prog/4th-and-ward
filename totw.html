@@ -480,7 +480,9 @@
 
     // ── NOMINATION SUBMIT ──────────────────────────────────
     window.submitNomination = async function() {
-      const school = document.getElementById('nom-school').value.trim();
+      const rawSchool = document.getElementById('nom-school').value.trim();
+      // Strip any existing "High School" / "HS" suffix then re-append consistently
+      const school = rawSchool.replace(/\s+(High\s+School|HS)\s*$/i, '').trim() + ' High School';
       const mascot = document.getElementById('nom-mascot').value.trim();
       const city   = document.getElementById('nom-city').value.trim();
       const state  = document.getElementById('nom-state').value;
