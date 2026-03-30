@@ -32,17 +32,15 @@ jobs:
 
       - name: Set Anthropic API key as Firebase secret
         run: |
-          firebase functions:secrets:set ANTHROPIC_API_KEY \
-            --project th-and-ward-b8f1c \
-            --force <<< "${{ secrets.ANTHROPIC_API_KEY }}"
+          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json
+          printf '%s' "$ANTHROPIC_API_KEY" | firebase functions:secrets:set ANTHROPIC_API_KEY --project th-and-ward-b8f1c --force
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: /tmp/sa.json
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - name: Deploy Cloud Functions
         run: |
+          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json
           firebase deploy --only functions --project th-and-ward-b8f1c
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: /tmp/sa.json
 
       - name: Clean up credentials
         if: always()
