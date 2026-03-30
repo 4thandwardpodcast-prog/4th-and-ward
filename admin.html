@@ -205,10 +205,15 @@
         <span class="sidebar-icon">&#127942;</span> Leaderboard
       </button>
 
-      <div class="sidebar-section">Site</div>
-      <button class="sidebar-item" onclick="showPage('totw')">
-        <span class="sidebar-icon">&#127919;</span> Team of the Week
+      <div class="sidebar-section">Team of the Week</div>
+      <button class="sidebar-item" onclick="showPage('totw-nominees')">
+        <span class="sidebar-icon">&#127919;</span> Nominees
       </button>
+      <button class="sidebar-item" onclick="showPage('totw-winners')">
+        <span class="sidebar-icon">&#127942;</span> Past Winners
+      </button>
+
+      <div class="sidebar-section">Site</div>
       <button class="sidebar-item" onclick="showPage('visitors')">
         <span class="sidebar-icon">&#128100;</span> Visitors
       </button>
@@ -282,14 +287,39 @@
       <div class="page" id="page-wardle-analytics">
         <div class="page-header">
           <div class="page-title">Wardle Analytics</div>
-          <div class="page-sub">Game performance and player statistics.</div>
+          <div class="page-sub">Game performance, player statistics, and score distribution.</div>
         </div>
+
+        <!-- STAT CARDS -->
         <div class="stat-row">
           <div class="stat-card"><div class="stat-card-num" id="wa-plays-today">—</div><div class="stat-card-label">Plays Today</div></div>
           <div class="stat-card green"><div class="stat-card-num" id="wa-avg-today">—</div><div class="stat-card-label">Avg Score Today</div></div>
           <div class="stat-card blue"><div class="stat-card-num" id="wa-alltime-avg">—</div><div class="stat-card-label">All-Time Avg</div></div>
           <div class="stat-card"><div class="stat-card-num" id="wa-total-plays">—</div><div class="stat-card-label">Total Plays</div></div>
+          <div class="stat-card green"><div class="stat-card-num" id="wa-win-rate">—</div><div class="stat-card-label">Win Rate</div></div>
+          <div class="stat-card"><div class="stat-card-num" id="wa-named-pct">—</div><div class="stat-card-label">% Named Players</div></div>
         </div>
+
+        <!-- TODAY'S PUZZLE CALLOUT -->
+        <div class="card" style="margin-bottom:24px;">
+          <div class="card-header">
+            <div class="card-title">&#128197; Today's Scheduled Puzzle</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadTodayPuzzleInfo()">&#8635; Refresh</button>
+          </div>
+          <div class="card-body" id="today-puzzle-info" style="font-size:14px;color:var(--muted);">Loading...</div>
+        </div>
+
+        <!-- SCORE DISTRIBUTION -->
+        <div class="card" style="margin-bottom:24px;">
+          <div class="card-header">
+            <div class="card-title">Score Distribution (All Time)</div>
+          </div>
+          <div class="card-body">
+            <div id="score-dist-wrap" style="display:flex;flex-direction:column;gap:8px;"></div>
+          </div>
+        </div>
+
+        <!-- PER-PUZZLE BREAKDOWN -->
         <div class="card">
           <div class="card-header">
             <div class="card-title">Per-Puzzle Breakdown</div>
@@ -297,8 +327,8 @@
           </div>
           <div class="card-body" style="padding:0">
             <table class="data-table">
-              <thead><tr><th>Puzzle #</th><th>Date</th><th>Plays</th><th>Avg Score</th><th>Top Score</th></tr></thead>
-              <tbody id="puzzle-breakdown-body"><tr><td colspan="5" class="loading-row">Loading...</td></tr></tbody>
+              <thead><tr><th>Puzzle #</th><th>Date</th><th>Answer</th><th>Plays</th><th>Avg Score</th><th>Top Score</th><th>Win Rate</th></tr></thead>
+              <tbody id="puzzle-breakdown-body"><tr><td colspan="7" class="loading-row">Loading...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -360,96 +390,167 @@
         <div class="card">
           <div class="card-header">
             <div class="card-title">All Puzzles</div>
-            <button class="btn btn-ghost btn-sm" onclick="loadPuzzleList()">&#8635; Refresh</button>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-ghost btn-sm" onclick="loadPuzzleList()">&#8635; Refresh</button>
+            </div>
           </div>
           <div class="card-body" style="padding:0">
             <table class="data-table">
-              <thead><tr><th>#</th><th>Answer</th><th>City</th><th>State</th><th>Actions</th></tr></thead>
-              <tbody id="puzzle-list-body"><tr><td colspan="5" class="loading-row">Loading...</td></tr></tbody>
+              <thead><tr><th>#</th><th>Scheduled Date</th><th>Answer</th><th>City</th><th>State</th><th>Actions</th></tr></thead>
+              <tbody id="puzzle-list-body"><tr><td colspan="6" class="loading-row">Loading...</td></tr></tbody>
             </table>
           </div>
+        </div>
+      </div>
+
+      <!-- PUZZLE PREVIEW MODAL -->
+      <div class="modal-overlay" id="preview-modal">
+        <div class="modal" style="max-width:560px;">
+          <div class="modal-header">
+            <div class="modal-title">&#128065; Puzzle Preview</div>
+            <button class="modal-close" onclick="document.getElementById('preview-modal').classList.remove('open')">&#10005;</button>
+          </div>
+          <div id="preview-content" style="font-size:14px;line-height:1.7;"></div>
         </div>
       </div>
 
       <!-- ══ LEADERBOARD ══ -->
       <div class="page" id="page-wardle-leaderboard">
         <div class="page-header">
-          <div class="page-title">Leaderboard</div>
-          <div class="page-sub">Top scores by puzzle.</div>
+          <div class="page-title">Leaderboard Manager</div>
+          <div class="page-sub">View, search, and delete scores by puzzle. Remove spam or test entries.</div>
         </div>
         <div class="card">
           <div class="card-header">
-            <div class="card-title">View Leaderboard</div>
-            <div style="display:flex;gap:10px;align-items:center">
-              <select class="form-select" id="lb-puzzle-select" style="width:180px">
-                <option value="">— Select Puzzle —</option>
+            <div class="card-title">Filter Scores</div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+              <select class="form-select" id="lb-puzzle-select" style="width:200px">
+                <option value="">— All Puzzles —</option>
               </select>
+              <input type="text" class="form-input" id="lb-search" placeholder="Search player name..." style="width:180px;padding:8px 12px;">
               <button class="btn btn-gold btn-sm" onclick="loadAdminLeaderboard()">Load</button>
             </div>
           </div>
           <div class="card-body" style="padding:0">
             <table class="data-table">
-              <thead><tr><th>Rank</th><th>Player</th><th>Score</th><th>Date</th></tr></thead>
-              <tbody id="admin-lb-body"><tr><td colspan="4" class="loading-row">Select a puzzle above</td></tr></tbody>
+              <thead><tr><th>Puzzle</th><th>Player</th><th>Score</th><th>Date</th><th>Type</th><th>Action</th></tr></thead>
+              <tbody id="admin-lb-body"><tr><td colspan="6" class="loading-row">Select a puzzle or search above</td></tr></tbody>
             </table>
           </div>
         </div>
       </div>
 
-      <!-- ══ TEAM OF THE WEEK ══ -->
-      <div class="page" id="page-totw">
+      <!-- ══ TOTW NOMINEES ══ -->
+      <div class="page" id="page-totw-nominees">
         <div class="page-header">
-          <div class="page-title">Team of the Week</div>
-          <div class="page-sub">Manage featured team entries shown on totw.html.</div>
+          <div class="page-title">Wheel Nominees</div>
+          <div class="page-sub">All teams currently on the wheel. Edit names, delete bad submissions, or manually add a team.</div>
         </div>
-        <div class="card">
-          <div class="card-header"><div class="card-title">Add New Entry</div></div>
+
+        <!-- STAT ROW -->
+        <div class="stat-row" style="margin-bottom:28px;">
+          <div class="stat-card"><div class="stat-card-num" id="nom-count-stat">—</div><div class="stat-card-label">On the Wheel</div></div>
+          <div class="stat-card green"><div class="stat-card-num" id="nom-states-stat">—</div><div class="stat-card-label">States Represented</div></div>
+        </div>
+
+        <!-- MANUAL ADD -->
+        <div class="card" style="margin-bottom:24px;">
+          <div class="card-header"><div class="card-title">Manually Add Nominee</div></div>
           <div class="card-body">
             <div class="form-grid">
               <div class="form-group">
-                <label class="form-label">Team Name</label>
-                <input type="text" class="form-input" id="totw-team" placeholder="e.g. Allen Eagles">
+                <label class="form-label">School Name (without "High School")</label>
+                <input type="text" class="form-input" id="mnom-school" placeholder="e.g. Ozona">
               </div>
               <div class="form-group">
-                <label class="form-label">Week / Date</label>
-                <input type="text" class="form-input" id="totw-week" placeholder="e.g. Week 8 — Oct 18, 2026">
+                <label class="form-label">Mascot</label>
+                <input type="text" class="form-input" id="mnom-mascot" placeholder="e.g. Lions">
               </div>
               <div class="form-group">
-                <label class="form-label">Record / Result</label>
-                <input type="text" class="form-input" id="totw-record" placeholder="e.g. 8-0, beat Westlake 42-14">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Classification</label>
-                <input type="text" class="form-input" id="totw-class" placeholder="e.g. 6A Division I">
-              </div>
-              <div class="form-group span2">
-                <label class="form-label">Why They Won (description)</label>
-                <textarea class="form-textarea" id="totw-desc" placeholder="Brief write-up on why this team was selected..."></textarea>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Image URL (optional)</label>
-                <input type="text" class="form-input" id="totw-image" placeholder="https://...">
+                <label class="form-label">City</label>
+                <input type="text" class="form-input" id="mnom-city" placeholder="e.g. Ozona">
               </div>
               <div class="form-group">
                 <label class="form-label">State</label>
-                <input type="text" class="form-input" id="totw-state" placeholder="e.g. TX">
+                <input type="text" class="form-input" id="mnom-state" placeholder="e.g. TX">
               </div>
             </div>
             <div class="form-actions">
-              <button class="btn btn-gold" onclick="saveTOTW()">Save Entry</button>
-              <button class="btn btn-ghost" onclick="clearTOTWForm()">Clear</button>
+              <button class="btn btn-gold" onclick="addNomineeAdmin()">Add to Wheel</button>
             </div>
           </div>
         </div>
+
+        <!-- NOMINEES LIST -->
         <div class="card">
           <div class="card-header">
-            <div class="card-title">All TOTW Entries</div>
-            <button class="btn btn-ghost btn-sm" onclick="loadTOTW()">&#8635; Refresh</button>
+            <div class="card-title">Current Nominees</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadNomineesAdmin()">&#8635; Refresh</button>
           </div>
           <div class="card-body" style="padding:0">
             <table class="data-table">
-              <thead><tr><th>Team</th><th>Week</th><th>State</th><th>Actions</th></tr></thead>
-              <tbody id="totw-list-body"><tr><td colspan="4" class="loading-row">Loading...</td></tr></tbody>
+              <thead><tr><th>School</th><th>Mascot</th><th>Location</th><th>Submitted</th><th>Actions</th></tr></thead>
+              <tbody id="nominees-admin-body"><tr><td colspan="5" class="loading-row">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TOTW WINNERS ══ -->
+      <div class="page" id="page-totw-winners">
+        <div class="page-header">
+          <div class="page-title">Past Winners</div>
+          <div class="page-sub">All Team of the Week winners. Edit corrections, fix episode numbers, or manually log a winner.</div>
+        </div>
+
+        <!-- STAT ROW -->
+        <div class="stat-row" style="margin-bottom:28px;">
+          <div class="stat-card"><div class="stat-card-num" id="win-count-stat">—</div><div class="stat-card-label">Total Winners</div></div>
+          <div class="stat-card green"><div class="stat-card-num" id="win-next-ep">—</div><div class="stat-card-label">Next Episode #</div></div>
+        </div>
+
+        <!-- MANUAL LOG -->
+        <div class="card" style="margin-bottom:24px;">
+          <div class="card-header"><div class="card-title">Manually Log a Winner</div></div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">School Name (without "High School")</label>
+                <input type="text" class="form-input" id="mwin-school" placeholder="e.g. Canal Winchester">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Mascot</label>
+                <input type="text" class="form-input" id="mwin-mascot" placeholder="e.g. Indians">
+              </div>
+              <div class="form-group">
+                <label class="form-label">City</label>
+                <input type="text" class="form-input" id="mwin-city" placeholder="e.g. Canal Winchester">
+              </div>
+              <div class="form-group">
+                <label class="form-label">State</label>
+                <input type="text" class="form-input" id="mwin-state" placeholder="e.g. OH">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Episode #</label>
+                <input type="number" class="form-input" id="mwin-ep" placeholder="e.g. 52" min="1">
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-gold" onclick="addWinnerAdmin()">Log Winner</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- WINNERS LIST -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">All Winners</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadWinnersAdmin()">&#8635; Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table class="data-table">
+              <thead><tr><th>Ep.</th><th>School</th><th>Mascot</th><th>Location</th><th>Actions</th></tr></thead>
+              <tbody id="winners-admin-body"><tr><td colspan="5" class="loading-row">Loading...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -617,7 +718,8 @@
     if (id === 'wardle-analytics')    { loadWardleStats(); loadPuzzleBreakdown(); }
     if (id === 'wardle-puzzles')      { window.loadPuzzleList(); }
     if (id === 'wardle-leaderboard')  { loadLBPuzzleSelect(); }
-    if (id === 'totw')                { loadTOTW(); }
+    if (id === 'totw-nominees')       { loadNomineesAdmin(); }
+    if (id === 'totw-winners')         { loadWinnersAdmin(); }
     if (id === 'visitors')            { loadVisitors(); }
   };
 
@@ -978,60 +1080,194 @@
     } catch(e) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Error loading.</td></tr>'; }
   };
 
-  // ── TEAM OF THE WEEK ──────────────────────────────────────
-  window.saveTOTW = async function() {
-    const team = document.getElementById('totw-team').value.trim();
-    const week = document.getElementById('totw-week').value.trim();
-    if (!team || !week) { toast('Team name and week are required.','error'); return; }
-    try {
-      await addDoc(collection(db,'totw'), {
-        team:      team,
-        week:      week,
-        record:    document.getElementById('totw-record').value.trim(),
-        classi:    document.getElementById('totw-class').value.trim(),
-        desc:      document.getElementById('totw-desc').value.trim(),
-        image:     document.getElementById('totw-image').value.trim(),
-        state:     document.getElementById('totw-state').value.trim(),
-        timestamp: Date.now()
-      });
-      toast('TOTW entry saved!');
-      clearTOTWForm();
-      loadTOTW();
-    } catch(e) { toast('Error: ' + e.message,'error'); }
-  };
+  // ── TEAM OF THE WEEK — NOMINEES ──────────────────────────
+  function normalizeName(raw) {
+    return raw.replace(/\s+(High\s+School|HS)\s*$/i, '').trim() + ' High School';
+  }
 
-  window.clearTOTWForm = function() {
-    ['totw-team','totw-week','totw-record','totw-class','totw-desc','totw-image','totw-state']
-      .forEach(id => document.getElementById(id).value = '');
-  };
-
-  async function loadTOTW() {
-    const tbody = document.getElementById('totw-list-body');
-    tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Loading...</td></tr>';
+  async function loadNomineesAdmin() {
+    const tbody = document.getElementById('nominees-admin-body');
+    tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Loading...</td></tr>';
     try {
-      const snap = await getDocs(query(collection(db,'totw'), orderBy('timestamp','desc')));
-      if (snap.empty) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row">No entries yet.</td></tr>'; return; }
+      const snap = await getDocs(collection(db, 'totw_nominees'));
+      const rows = [];
+      snap.forEach(d => rows.push({ id: d.id, ...d.data() }));
+      rows.sort((a,b) => a.teamName.localeCompare(b.teamName));
+
+      document.getElementById('nom-count-stat').textContent = rows.length;
+      const states = new Set(rows.map(r => r.state).filter(Boolean));
+      document.getElementById('nom-states-stat').textContent = states.size;
+
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="loading-row">No nominees on the wheel.</td></tr>';
+        return;
+      }
       let html = '';
-      snap.forEach(d => {
-        const t = d.data();
+      rows.forEach(r => {
+        const date = r.submittedAt ? new Date(r.submittedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
         html += `<tr>
-          <td>${escapeHtml(t.team)}</td>
-          <td>${escapeHtml(t.week)}</td>
-          <td>${escapeHtml(t.state||'')}</td>
-          <td><button class="btn btn-danger btn-sm" onclick="deleteTOTW('${d.id}')">Delete</button></td>
+          <td><strong>${escapeHtml(r.teamName)}</strong></td>
+          <td>${escapeHtml(r.mascot||'—')}</td>
+          <td>${escapeHtml(r.location||'')}</td>
+          <td style="color:var(--muted);font-size:12px">${date}</td>
+          <td style="white-space:nowrap">
+            <button class="btn btn-ghost btn-sm" onclick="editNomineeAdmin('${r.id}','${escapeHtml(r.teamName).replace(/'/g,"\\'")}','${escapeHtml(r.mascot||'').replace(/'/g,"\\'")}','${escapeHtml(r.city||'').replace(/'/g,"\\'")}','${escapeHtml(r.state||'')}')">Edit</button>
+            <button class="btn btn-ghost btn-sm" style="border-color:rgba(245,197,24,.4);color:var(--gold)" onclick="promoteToWinner('${r.id}','${escapeHtml(r.teamName).replace(/'/g,"\\'")}','${escapeHtml(r.mascot||'').replace(/'/g,"\\'")}','${escapeHtml(r.location||'').replace(/'/g,"\\'")}','${escapeHtml(r.city||'').replace(/'/g,"\\'")}','${escapeHtml(r.state||'')}','${escapeHtml(r.logoUrl||'')}')">&#127942; Make Winner</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteNomineeAdmin('${r.id}','${escapeHtml(r.teamName).replace(/'/g,"\\'")}')">Delete</button>
+          </td>
         </tr>`;
       });
       tbody.innerHTML = html;
-    } catch(e) { tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Error.</td></tr>'; }
+    } catch(e) { tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Error: ' + e.message + '</td></tr>'; }
   }
 
-  window.deleteTOTW = async function(id) {
-    if (!confirm('Delete this TOTW entry?')) return;
+  window.addNomineeAdmin = async function() {
+    const raw    = document.getElementById('mnom-school').value.trim();
+    const mascot = document.getElementById('mnom-mascot').value.trim();
+    const city   = document.getElementById('mnom-city').value.trim();
+    const state  = document.getElementById('mnom-state').value.trim();
+    if (!raw||!mascot||!city||!state) { toast('All fields required.','error'); return; }
+    const teamName = normalizeName(raw);
     try {
-      await deleteDoc(doc(db,'totw',id));
-      toast('Entry deleted.','error');
-      loadTOTW();
-    } catch(e) { toast('Error deleting.','error'); }
+      await addDoc(collection(db,'totw_nominees'), {
+        teamName, mascot, city, state, location: city+', '+state, logoUrl: '', submittedAt: Date.now()
+      });
+      toast(teamName + ' added to wheel!');
+      ['mnom-school','mnom-mascot','mnom-city','mnom-state'].forEach(id => document.getElementById(id).value = '');
+      loadNomineesAdmin();
+    } catch(e) { toast('Error: '+e.message,'error'); }
+  };
+
+  window.editNomineeAdmin = function(id, teamName, mascot, city, state) {
+    const newName   = prompt('School name:', teamName);
+    if (newName === null) return;
+    const newMascot = prompt('Mascot:', mascot);
+    if (newMascot === null) return;
+    const newCity   = prompt('City:', city);
+    if (newCity === null) return;
+    const newState  = prompt('State:', state);
+    if (newState === null) return;
+    const normalized = normalizeName(newName);
+    updateDoc(doc(db,'totw_nominees',id), {
+      teamName: normalized, mascot: newMascot,
+      city: newCity, state: newState, location: newCity+', '+newState
+    }).then(() => { toast('Updated!'); loadNomineesAdmin(); })
+      .catch(e => toast('Error: '+e.message,'error'));
+  };
+
+  window.deleteNomineeAdmin = async function(id, name) {
+    if (!confirm('Remove "'+name+'" from the wheel? This cannot be undone.')) return;
+    try {
+      await deleteDoc(doc(db,'totw_nominees',id));
+      toast(name+' removed.','error');
+      loadNomineesAdmin();
+    } catch(e) { toast('Error: '+e.message,'error'); }
+  };
+
+  window.promoteToWinner = async function(id, teamName, mascot, location, city, state, logoUrl) {
+    const epNum = prompt('Episode number for this winner:');
+    if (!epNum || !epNum.trim()) return;
+    if (!confirm('Mark "'+teamName+'" as Ep. '+epNum+' winner and remove from wheel?')) return;
+    try {
+      await addDoc(collection(db,'totw_winners'), {
+        teamName, mascot, location, city, state, logoUrl: logoUrl||'',
+        episode: epNum.trim(), wonAt: Date.now()
+      });
+      await deleteDoc(doc(db,'totw_nominees',id));
+      toast(teamName+' logged as Ep. '+epNum+' winner!');
+      loadNomineesAdmin();
+    } catch(e) { toast('Error: '+e.message,'error'); }
+  };
+
+  // ── TEAM OF THE WEEK — WINNERS ────────────────────────────
+  async function loadWinnersAdmin() {
+    const tbody = document.getElementById('winners-admin-body');
+    tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Loading...</td></tr>';
+    try {
+      const snap = await getDocs(collection(db,'totw_winners'));
+      const rows = [];
+      snap.forEach(d => rows.push({ id: d.id, ...d.data() }));
+      rows.sort((a,b) => {
+        const na = parseInt(String(a.episode).replace(/\D/g,''))||0;
+        const nb = parseInt(String(b.episode).replace(/\D/g,''))||0;
+        return nb - na;
+      });
+
+      document.getElementById('win-count-stat').textContent = rows.length;
+      let maxEp = 0;
+      rows.forEach(w => {
+        const n = parseInt(String(w.episode).replace(/\D/g,''))||0;
+        if (n > maxEp) maxEp = n;
+      });
+      document.getElementById('win-next-ep').textContent = maxEp > 0 ? maxEp + 1 : '—';
+
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="loading-row">No winners logged yet.</td></tr>';
+        return;
+      }
+      let html = '';
+      rows.forEach(w => {
+        html += `<tr>
+          <td><span class="badge badge-gold">Ep. ${escapeHtml(String(w.episode||'—'))}</span></td>
+          <td><strong>${escapeHtml(w.teamName||'—')}</strong></td>
+          <td>${escapeHtml(w.mascot||'—')}</td>
+          <td>${escapeHtml(w.location||'')}</td>
+          <td style="white-space:nowrap">
+            <button class="btn btn-ghost btn-sm" onclick="editWinnerAdmin('${w.id}','${escapeHtml(w.teamName||'').replace(/'/g,"\\'")}','${escapeHtml(w.mascot||'').replace(/'/g,"\\'")}','${escapeHtml(w.city||'').replace(/'/g,"\\'")}','${escapeHtml(w.state||'')}','${escapeHtml(String(w.episode||''))}')">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteWinnerAdmin('${w.id}','${escapeHtml(w.teamName||'').replace(/'/g,"\\'")}')">Delete</button>
+          </td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    } catch(e) { tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Error: '+e.message+'</td></tr>'; }
+  }
+
+  window.addWinnerAdmin = async function() {
+    const raw    = document.getElementById('mwin-school').value.trim();
+    const mascot = document.getElementById('mwin-mascot').value.trim();
+    const city   = document.getElementById('mwin-city').value.trim();
+    const state  = document.getElementById('mwin-state').value.trim();
+    const ep     = document.getElementById('mwin-ep').value.trim();
+    if (!raw||!mascot||!city||!state||!ep) { toast('All fields required.','error'); return; }
+    const teamName = normalizeName(raw);
+    try {
+      await addDoc(collection(db,'totw_winners'), {
+        teamName, mascot, city, state, location: city+', '+state,
+        logoUrl: '', episode: ep, wonAt: Date.now()
+      });
+      toast('Ep. '+ep+' winner logged!');
+      ['mwin-school','mwin-mascot','mwin-city','mwin-state','mwin-ep'].forEach(id => document.getElementById(id).value = '');
+      loadWinnersAdmin();
+    } catch(e) { toast('Error: '+e.message,'error'); }
+  };
+
+  window.editWinnerAdmin = function(id, teamName, mascot, city, state, episode) {
+    const newName    = prompt('School name:', teamName);
+    if (newName === null) return;
+    const newMascot  = prompt('Mascot:', mascot);
+    if (newMascot === null) return;
+    const newCity    = prompt('City:', city);
+    if (newCity === null) return;
+    const newState   = prompt('State:', state);
+    if (newState === null) return;
+    const newEp      = prompt('Episode #:', episode);
+    if (newEp === null) return;
+    const normalized = normalizeName(newName);
+    updateDoc(doc(db,'totw_winners',id), {
+      teamName: normalized, mascot: newMascot,
+      city: newCity, state: newState, location: newCity+', '+newState,
+      episode: newEp.trim()
+    }).then(() => { toast('Winner updated!'); loadWinnersAdmin(); })
+      .catch(e => toast('Error: '+e.message,'error'));
+  };
+
+  window.deleteWinnerAdmin = async function(id, name) {
+    if (!confirm('Delete "'+name+'" from winners? This cannot be undone.')) return;
+    try {
+      await deleteDoc(doc(db,'totw_winners',id));
+      toast(name+' deleted.','error');
+      loadWinnersAdmin();
+    } catch(e) { toast('Error: '+e.message,'error'); }
   };
 
   // ── VISITORS ──────────────────────────────────────────────
