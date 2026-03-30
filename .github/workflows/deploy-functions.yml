@@ -27,21 +27,15 @@ jobs:
       - name: Install function dependencies
         run: cd functions && npm install
 
-      - name: Write service account to disk
-        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/sa.json
-
       - name: Set Anthropic API key as Firebase secret
         run: |
-          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json
-          printf '%s' "$ANTHROPIC_API_KEY" | firebase functions:secrets:set ANTHROPIC_API_KEY --project th-and-ward-b8f1c --force
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          printf '%s' "${{ secrets.ANTHROPIC_API_KEY }}" | firebase functions:secrets:set ANTHROPIC_API_KEY \
+            --project th-and-ward-b8f1c \
+            --force \
+            --token "${{ secrets.FIREBASE_TOKEN }}"
 
       - name: Deploy Cloud Functions
         run: |
-          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json
-          firebase deploy --only functions --project th-and-ward-b8f1c
-
-      - name: Clean up credentials
-        if: always()
-        run: rm -f /tmp/sa.json
+          firebase deploy --only functions \
+            --project th-and-ward-b8f1c \
+            --token "${{ secrets.FIREBASE_TOKEN }}"
