@@ -770,16 +770,19 @@
         String(sevenAgo.getMonth()+1).padStart(2,'0') + '-' +
         String(sevenAgo.getDate()).padStart(2,'0');
 
-      const [daySnap, summSnap, totwSnap, pvSnap] = await Promise.all([
+      const [daySnap, summSnap, nomSnap, winSnap, pvSnap, scoresSnap] = await Promise.all([
         getDoc(doc(db, 'daily', today)),
         getDoc(doc(db, 'meta', 'summary')),
-        getDocs(collection(db, 'totw')),
-        getDocs(collection(db, 'pageviews'))
+        getDocs(collection(db, 'totw_nominees')),
+        getDocs(collection(db, 'totw_winners')),
+        getDocs(collection(db, 'pageviews')),
+        getDocs(query(collection(db, 'scores'), orderBy('timestamp', 'desc'), limit(500)))
       ]);
 
       // ── Wardle stats ──
       const plays      = daySnap.exists() ? (daySnap.data().plays || 0) : 0;
-      const totalPlays = summSnap.exists() ? (summSnap.data().totalPlays || 0) : 0;
+      const totalPlays = summSnap.exists() ? (summSnap.data().totalPlays || 0)
+        : scoresSnap.size; // fallback: count score docs if summary doesn't exist yet
 
       // ── Visitor stats from pageviews collection ──
       let visToday = 0, visAllTime = 0, visThisWeek = 0, visPrevWeek = 0;
@@ -816,17 +819,23 @@
         growthStr = '+100%';
       }
 
+      // ── Wardle plays today fallback: count from scores if daily doc missing ──
+      let playsToday = plays;
+      if (playsToday === 0) {
+        scoresSnap.forEach(d => { if (d.data().date === today) playsToday++; });
+      }
+
       // ── Set TODAY section ──
-      document.getElementById('ov-vis-today').textContent    = visToday;
+      document.getElementById('ov-vis-today').textContent    = visToday || '0';
       document.getElementById('ov-new-pct').textContent      = newPct;
-      document.getElementById('ov-plays-today').textContent  = plays;
-      document.getElementById('ov-totw-today').textContent   = totwSnap.size;
+      document.getElementById('ov-plays-today').textContent  = playsToday;
+      document.getElementById('ov-totw-today').textContent   = nomSnap.size;
 
       // ── Set ALL TIME section ──
-      document.getElementById('ov-vis-alltime').textContent  = visAllTime.toLocaleString();
+      document.getElementById('ov-vis-alltime').textContent  = visAllTime.toLocaleString() || '0';
       document.getElementById('ov-growth-pct').textContent   = growthStr;
       document.getElementById('ov-total-plays').textContent  = totalPlays.toLocaleString();
-      document.getElementById('ov-totw-count').textContent   = totwSnap.size;
+      document.getElementById('ov-totw-count').textContent   = nomSnap.size + winSnap.size;
 
     } catch(e) { console.error('Overview stats error:', e); }
   }
