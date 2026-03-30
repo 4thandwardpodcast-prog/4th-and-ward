@@ -411,7 +411,8 @@
       const ct = document.getElementById('nom-count');
       if (ct) ct.textContent = nominees.length + ' team' + (nominees.length!==1?'s':'') + ' on the wheel';
       if (!nominees.length) { el.innerHTML = '<div class="nominees-loading">No nominees yet — be the first!</div>'; return; }
-      el.innerHTML = nominees.map(n => `
+      const sorted = [...nominees].sort((a,b) => a.teamName.localeCompare(b.teamName));
+      el.innerHTML = sorted.map(n => `
         <div class="nominee-row">
           <div>
             <div class="nominee-name">${escHtml(n.teamName)}</div>
