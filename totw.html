@@ -596,14 +596,15 @@
     }
 
     // ── POINTER INDEX (single source of truth) ────────────
-    // Wheel is drawn with rotate(currentRotation - π/2).
-    // Pointer sits at the top. Derive which slice is under it
-    // directly from the same transform so tick sounds and the
-    // final winner are always in sync.
+    // The wheel is drawn with ctx.rotate(currentRotation - π/2).
+    // The pointer is at the top of the screen = global canvas angle -π/2.
+    // In the rotated local frame the pointer sits at:
+    //   localAngle = -π/2 - (currentRotation - π/2) = -currentRotation
+    // Normalise to [0, 2π) and divide by arc size to get slice index.
     function getPointerIndex() {
       const arc = (Math.PI * 2) / nominees.length;
-      const pointerAngle = ((Math.PI / 2 - currentRotation) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
-      return Math.floor(pointerAngle / arc) % nominees.length;
+      const localAngle = ((-currentRotation) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+      return Math.floor(localAngle / arc) % nominees.length;
     }
 
     window.spinWheel = function(fromFS) {
