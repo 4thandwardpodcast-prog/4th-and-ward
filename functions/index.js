@@ -4,27 +4,17 @@
  * when a team is nominated for Team of the Week.
  */
 
-const { onDocumentCreated }  = require('firebase-functions/v2/firestore');
-const { initializeApp }      = require('firebase-admin/app');
-const { getFirestore }       = require('firebase-admin/firestore');
-const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
-const Anthropic              = require('@anthropic-ai/sdk');
-const fetch                  = require('node-fetch');
+const { onDocumentCreated } = require('firebase-functions/v2/firestore');
+const { initializeApp }     = require('firebase-admin/app');
+const { getFirestore }      = require('firebase-admin/firestore');
+const Anthropic             = require('@anthropic-ai/sdk');
+const fetch                 = require('node-fetch');
 
 initializeApp();
-const db            = getFirestore();
-const secretClient  = new SecretManagerServiceClient();
+const db = getFirestore();
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
-const LAUNCH_DATE   = '2026-03-14'; // Must match wardle.html
-const PROJECT_ID    = 'th-and-ward-b8f1c';
-
-// Fetch secret directly from Secret Manager — most reliable approach
-async function getAnthropicKey() {
-  const name = `projects/${PROJECT_ID}/secrets/ANTHROPIC_API_KEY/versions/latest`;
-  const [version] = await secretClient.accessSecretVersion({ name });
-  return version.payload.data.toString('utf8');
-}
+const LAUNCH_DATE = '2026-03-14'; // Must match wardle.html
 
 // ── HELPER: Get next unoccupied puzzle number ─────────────────────────────────
 async function getNextPuzzleNumber() {
@@ -59,11 +49,11 @@ async function fetchMaxPrepsLogo(teamName, city, state) {
 }
 
 // ── HELPER: Try to find a stadium image via web search ───────────────────────
-async function fetchStadiumImage(stadiumName, city, state) {
+async function fetchStadiumImage(stadiumName, city, state, apiKey) {
   // We ask Claude to web-search for an image URL — returns empty if none found
   // This is best-effort; puzzles work fine without stadium images
   try {
-    const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
+    const client = new Anthropic({ apiKey });
     const res = await client.messages.create({
       model:      'claude-opus-4-5',
       max_tokens: 200,
@@ -84,8 +74,8 @@ async function fetchStadiumImage(stadiumName, city, state) {
 }
 
 // ── CORE: Generate puzzle via Claude with web search grounding ────────────────
-async function generatePuzzle(teamName, city, state, mascot, logoUrl) {
-  const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
+async function generatePuzzle(teamName, city, state, mascot, logoUrl, apiKey) {
+  const client = new Anthropic({ apiKey });
 
   const generationPrompt = `You are generating a puzzle for "4th & Wardle", a daily guessing game about high school football programs, similar to Wordle. Players guess the school name from 5 clues revealed one at a time.
 
@@ -157,8 +147,8 @@ Return ONLY a valid JSON object with NO markdown, NO backticks, NO explanation:
 }
 
 // ── CORE: Self-verify puzzle accuracy ─────────────────────────────────────────
-async function verifyPuzzle(puzzleData) {
-  const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
+async function verifyPuzzle(puzzleData, apiKey) {
+  const client = new Anthropic({ apiKey });
 
   const verifyPrompt = `You are a fact-checker for a trivia game. Verify these clues about ${puzzleData.answer} in ${puzzleData.city}, ${puzzleData.state}.
 
@@ -230,12 +220,12 @@ function applyVerificationFixes(puzzleData, verification) {
 
 // ── MAIN TRIGGER: New nomination added ───────────────────────────────────────
 exports.generatePuzzleOnNomination = onDocumentCreated(
-  { document: 'totw_nominees/{nomineeId}', timeoutSeconds: 300, memory: '512MiB' },
+  { document: 'totw_nominees/{nomineeId}', timeoutSeconds: 300, memory: '512MiB', secrets: ['ANTHROPIC_API_KEY'] },
   async (event) => {
     const nominee   = event.data.data();
     const nomineeId = event.params.nomineeId;
 
-    const ANTHROPIC_API_KEY = await getAnthropicKey();
+    const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
     const teamName = nominee.teamName || '';
     const city     = nominee.city     || '';
     const state    = nominee.state    || '';
@@ -259,11 +249,11 @@ exports.generatePuzzleOnNomination = onDocumentCreated(
 
     try {
       // ── Step 1: Generate ──────────────────────────────────────────────────
-      let puzzleData = await generatePuzzle(teamName, city, state, mascot, logoUrl);
+      let puzzleData = await generatePuzzle(teamName, city, state, mascot, logoUrl, ANTHROPIC_API_KEY);
       puzzleData.logoUrl = logoUrl; // attach logo from MaxPreps fetch already done at nomination
 
       // ── Step 2: Verify ────────────────────────────────────────────────────
-      const verification = await verifyPuzzle(puzzleData);
+      const verification = await verifyPuzzle(puzzleData, ANTHROPIC_API_KEY);
       console.log('Verification verdict:', verification.overallVerdict, 'for', teamName);
 
       // ── Step 3: Handle verdict ────────────────────────────────────────────
