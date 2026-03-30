@@ -137,8 +137,11 @@ Return ONLY a valid JSON object with NO markdown, NO backticks, NO explanation:
 
   let puzzleData;
   try {
-    const clean = textBlock.text.replace(/```json|```/g, '').trim();
-    puzzleData = JSON.parse(clean);
+    const raw = textBlock.text;
+    // Extract JSON object even if surrounded by text
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON object found in response');
+    puzzleData = JSON.parse(jsonMatch[0]);
   } catch (e) {
     throw new Error('Failed to parse puzzle JSON: ' + textBlock.text.substring(0, 200));
   }
@@ -187,8 +190,10 @@ Verdict rules:
   if (!textBlock) throw new Error('No text block in verification response');
 
   try {
-    const clean = textBlock.text.replace(/```json|```/g, '').trim();
-    return JSON.parse(clean);
+    const raw = textBlock.text;
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON in verify response');
+    return JSON.parse(jsonMatch[0]);
   } catch (e) {
     // If verification JSON fails to parse, default to requiring review
     return {
