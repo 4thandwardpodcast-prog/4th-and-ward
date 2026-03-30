@@ -5,7 +5,6 @@
  */
 
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
-const { defineSecret }      = require('firebase-functions/params');
 const { initializeApp }     = require('firebase-admin/app');
 const { getFirestore }      = require('firebase-admin/firestore');
 const Anthropic             = require('@anthropic-ai/sdk');
@@ -15,8 +14,7 @@ initializeApp();
 const db = getFirestore();
 
 // ── CONFIG ────────────────────────────────────────────────────────────────────
-const ANTHROPIC_SECRET = defineSecret('ANTHROPIC_API_KEY');
-const LAUNCH_DATE      = '2026-03-14'; // Must match wardle.html
+const LAUNCH_DATE = '2026-03-14'; // Must match wardle.html
 
 // ── HELPER: Get next unoccupied puzzle number ─────────────────────────────────
 async function getNextPuzzleNumber() {
@@ -222,12 +220,12 @@ function applyVerificationFixes(puzzleData, verification) {
 
 // ── MAIN TRIGGER: New nomination added ───────────────────────────────────────
 exports.generatePuzzleOnNomination = onDocumentCreated(
-  { document: 'totw_nominees/{nomineeId}', timeoutSeconds: 300, memory: '512MiB', secrets: [ANTHROPIC_SECRET] },
+  { document: 'totw_nominees/{nomineeId}', timeoutSeconds: 300, memory: '512MiB', secrets: ['ANTHROPIC_API_KEY'] },
   async (event) => {
     const nominee   = event.data.data();
     const nomineeId = event.params.nomineeId;
 
-    const ANTHROPIC_API_KEY = ANTHROPIC_SECRET.value();
+    const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
     const teamName = nominee.teamName || '';
     const city     = nominee.city     || '';
     const state    = nominee.state    || '';
