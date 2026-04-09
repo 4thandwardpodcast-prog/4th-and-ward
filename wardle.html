@@ -466,6 +466,16 @@
     function startGame() {
       document.getElementById('clue-text').classList.remove('loading');
       showClue();
+      // Dim any unlock buttons that have no data for this puzzle
+      ['colors','stadium','alumni'].forEach(type => {
+        if (!hintHasData(type)) {
+          const btn = document.getElementById('unlock-'+type);
+          if (btn) {
+            btn.style.opacity = '0.4';
+            btn.querySelector('.unlock-cost').textContent = 'N/A';
+          }
+        }
+      });
       document.getElementById('guess-input').focus();
     }
 
@@ -527,13 +537,36 @@
     }
 
     // ── UNLOCK HINTS ──────────────────────────────────────────────────────────
+    // Check if a hint type has real data available for the current puzzle
+    function hintHasData(type) {
+      switch(type) {
+        case 'location': return !!(puzzle.city && puzzle.state);
+        case 'colors':   return !!(puzzle.colors);
+        case 'mascot':   return !!(puzzle.mascot);
+        case 'stadium':  return !!(puzzle.stadium);
+        case 'alumni':   return !!(puzzle.famousAlumni);
+        case 'letter':
+        case 'vowels':   return !!(puzzle.answer);
+        default: return false;
+      }
+    }
+
     window.useUnlock = function(type) {
       if (gameOver || !puzzle || usedUnlocks.has(type)) return;
+
+      const btn    = document.getElementById('unlock-'+type);
+      const reveal = document.getElementById('unlock-reveal');
+
+      // If data isn't available, show a free "not available" message — no cost, no mark as used
+      if (!hintHasData(type)) {
+        reveal.innerHTML = `<span style="color:var(--muted);">ℹ️ This hint isn't available for this puzzle — no points deducted.</span>`;
+        reveal.className = 'unlock-reveal show';
+        return;
+      }
+
       const cost = UNLOCK_COSTS[type];
       if (score - cost < 0) { alert("Not enough points to use this hint!"); return; }
 
-      const btn = document.getElementById('unlock-'+type);
-      const reveal = document.getElementById('unlock-reveal');
       usedUnlocks.add(type);
       score = Math.max(0, score - cost);
       document.getElementById('score-display').textContent = score;
@@ -547,27 +580,20 @@
           content = `📍 <strong>Location:</strong> ${escapeHtml(puzzle.city)}, ${escapeHtml(puzzle.state)}`;
           break;
         case 'colors':
-          content = puzzle.colors
-            ? `🎨 <strong>Colors:</strong> ${escapeHtml(puzzle.colors)}`
-            : `🎨 <strong>Colors:</strong> Check the school's website — not available for this puzzle.`;
+          content = `🎨 <strong>Colors:</strong> ${escapeHtml(puzzle.colors)}`;
           break;
         case 'mascot':
-          content = `🐉 <strong>Mascot:</strong> ${escapeHtml(puzzle.mascot||'Not available')}`;
+          content = `🐉 <strong>Mascot:</strong> ${escapeHtml(puzzle.mascot)}`;
           break;
         case 'stadium':
-          content = puzzle.stadium
-            ? `🏟️ <strong>Stadium:</strong> ${escapeHtml(puzzle.stadium)}`
-            : `🏟️ <strong>Stadium:</strong> Not available for this puzzle.`;
+          content = `🏟️ <strong>Stadium:</strong> ${escapeHtml(puzzle.stadium)}`;
           break;
         case 'alumni':
-          content = puzzle.famousAlumni
-            ? `⭐ <strong>Famous Alumni:</strong> ${escapeHtml(puzzle.famousAlumni)}`
-            : `⭐ <strong>Famous Alumni:</strong> Not in this puzzle's data — check the other clues!`;
+          content = `⭐ <strong>Famous Alumni:</strong> ${escapeHtml(puzzle.famousAlumni)}`;
           break;
         case 'letter': {
-          const answer  = puzzle.answer.toUpperCase().replace(/HIGH SCHOOL/i,'').trim();
-          const letters = answer.replace(/[^A-Z]/g,'').split('');
-          const consonants = letters.filter(l=>!'AEIOU'.includes(l));
+          const answer     = puzzle.answer.toUpperCase().replace(/HIGH SCHOOL/i,'').trim();
+          const consonants = answer.replace(/[^A-Z]/g,'').split('').filter(l=>!'AEIOU'.includes(l));
           if (consonants.length===0) { content='No consonants to reveal!'; break; }
           const pick = consonants[Math.floor(Math.random()*consonants.length)];
           updateAnswerBlanks(pick, false);
