@@ -1,10 +1,35 @@
+/**
+ * /api/proxy-image
+ * Proxies school logo / stadium images from approved domains.
+ * This is needed because MaxPreps and CDN images block direct browser requests
+ * but allow server-to-server fetches with the right headers.
+ */
 export default async function handler(req, res) {
   const { url } = req.query;
   if (!url) return res.status(400).send('Missing url');
 
-  // Only allow maxpreps image domains
-  if (!url.includes('maxpreps') && !url.includes('maxpreps.io')) {
-    return res.status(403).send('Domain not allowed');
+  // Expanded allowlist — MaxPreps uses multiple CDN domains
+  const ALLOWED = [
+    'maxpreps.com',
+    'maxpreps.io',
+    'images.maxpreps.com',
+    'fastly.net',        // MaxPreps CDN
+    'akamaihd.net',      // MaxPreps CDN
+    'cloudfront.net',    // AWS CDN (many school sites)
+    'postimg.cc',        // Used for 4th & Ward logo
+    'i.postimg.cc',
+    'postimages.org',
+  ];
+
+  let parsedUrl;
+  try { parsedUrl = new URL(url); } catch (_) {
+    return res.status(400).send('Invalid URL');
+  }
+
+  const hostname = parsedUrl.hostname.toLowerCase();
+  const allowed  = ALLOWED.some(d => hostname === d || hostname.endsWith('.' + d));
+  if (!allowed) {
+    return res.status(403).json({ error: 'Domain not allowed', hostname });
   }
 
   res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate');
@@ -13,8 +38,9 @@ export default async function handler(req, res) {
   try {
     const response = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
-        'Referer': 'https://www.maxpreps.com/',
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Referer':    'https://www.maxpreps.com/',
+        'Accept':     'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
       }
     });
 
@@ -25,7 +51,7 @@ export default async function handler(req, res) {
 
     const buffer = await response.arrayBuffer();
     res.send(Buffer.from(buffer));
-  } catch(e) {
+  } catch (e) {
     res.status(500).send('Proxy error: ' + e.message);
   }
 }
