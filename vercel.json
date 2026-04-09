@@ -1,8 +1,9 @@
 {
   "routes": [
-    { "src": "/api/episodes", "dest": "/api/episodes.js" },
-    { "src": "/api/school-logo", "dest": "/api/school-logo.js" },
-    { "src": "/api/proxy-image", "dest": "/api/proxy-image.js" },
+    { "src": "/api/episodes",      "dest": "/api/episodes.js" },
+    { "src": "/api/school-logo",   "dest": "/api/school-logo.js" },
+    { "src": "/api/maxpreps-logo", "dest": "/api/school-logo.js" },
+    { "src": "/api/proxy-image",   "dest": "/api/proxy-image.js" },
     { "src": "/episodes", "dest": "/episodes.html" },
     { "src": "/about", "dest": "/about.html" },
     { "src": "/totw", "dest": "/totw.html" },
