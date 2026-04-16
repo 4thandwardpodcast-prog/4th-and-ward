@@ -8,6 +8,8 @@
     { "src": "/about", "dest": "/about.html" },
     { "src": "/totw", "dest": "/totw.html" },
     { "src": "/merch", "dest": "/merch.html" },
+    { "src": "/wardlev2", "dest": "/wardlev2.html" },
+    { "src": "/totwv2", "dest": "/totwv2.html" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }

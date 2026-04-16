@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team of the Week v2 — 4th & Ward Podcast</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Page view tracking -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, doc, setDoc, increment } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    const app = initializeApp({
+      apiKey:"AIzaSyB5EJMsZT4WsfJjaFQ-srIdNwAINr7Q2yY",authDomain:"th-and-ward-b8f1c.firebaseapp.com",
+      projectId:"th-and-ward-b8f1c",storageBucket:"th-and-ward-b8f1c.firebasestorage.app",
+      messagingSenderId:"499057353962",appId:"1:499057353962:web:18f42748c242a6e0be2393"
+    });
+    const db=getFirestore(app);
+    const page='totwv2';
+    const d=new Date();
+    const today=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    let vid=localStorage.getItem('4ward_vid'),isNew=false;
+    if(!vid){vid='v_'+Math.random().toString(36).slice(2)+Date.now();localStorage.setItem('4ward_vid',vid);isNew=true;}
+    setDoc(doc(db,'pageviews',page+'_'+today),{page,date:today,views:increment(1),allTime:increment(1),newVisitors:increment(isNew?1:0)},{merge:true});
+  </script>
+
+  <style>
+    /* ── GLASSMORPHISM & THEME ─────────────────────────────── */
+    .glass {
+      background: rgba(17,17,17,0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(245,197,24,0.08);
+      border-radius: 14px;
+    }
+    .glass-strong {
+      background: rgba(17,17,17,0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(245,197,24,0.12);
+      border-radius: 14px;
+    }
+
+    /* ── PAGE HERO ─────────────────────────────────────────── */
+    .page-hero { padding: 120px 48px 60px; border-bottom: 1px solid var(--border); }
+    .page-hero h1 { font-family: var(--condensed); font-weight: 900; font-size: clamp(52px, 8vw, 96px); text-transform: uppercase; line-height: 0.88; }
+    .page-hero h1 span { color: var(--gold); }
+    .page-hero p { color: var(--muted); font-size: 17px; margin-top: 20px; max-width: 600px; line-height: 1.65; }
+    .beta-badge {
+      display: inline-block;
+      background: rgba(245,197,24,0.12);
+      border: 1px solid rgba(245,197,24,0.35);
+      color: var(--gold);
+      font-family: var(--body);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 4px;
+      vertical-align: super;
+      margin-left: 12px;
+      animation: betaPulse 2.5s ease-in-out infinite;
+    }
+    @keyframes betaPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    /* ── TABS ──────────────────────────────────────────────── */
+    .tab-bar { display: flex; gap: 4px; padding: 32px 48px 0; border-bottom: 1px solid var(--border); background: var(--black); position: sticky; top: 68px; z-index: 100; }
+    .tab-btn { padding: 12px 24px; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; background: none; border: none; border-bottom: 3px solid transparent; color: var(--muted); cursor: pointer; font-family: var(--body); transition: color 0.2s, border-color 0.2s; margin-bottom: -1px; }
+    .tab-btn:hover { color: var(--white); }
+    .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+    /* ── BODY ──────────────────────────────────────────────── */
+    .totw-body { padding: 48px 48px 100px; max-width: 1100px; margin: 0 auto; }
+
+    /* ── NOMINATION FORM ───────────────────────────────────── */
+    .nom-form-card { padding: 36px; margin-bottom: 24px; }
+    .nom-form-card h2 { font-family: var(--condensed); font-weight: 900; font-size: 28px; text-transform: uppercase; margin-bottom: 6px; }
+    .nom-form-card p { color: var(--muted); font-size: 14px; margin-bottom: 28px; line-height: 1.6; }
+    .nom-inline-form { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .form-input, .form-select {
+      width: 100%; background: rgba(24,24,24,0.8); border: 1px solid var(--border); border-radius: 8px;
+      padding: 12px 16px; font-size: 15px; color: var(--white); font-family: var(--body);
+      outline: none; transition: border-color 0.25s, box-shadow 0.25s; box-sizing: border-box;
+    }
+    .form-input:focus, .form-select:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(245,197,24,0.1); }
+    .submit-btn {
+      background: var(--gold); color: var(--black); border: none; border-radius: 8px;
+      padding: 14px 24px; font-size: 14px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; cursor: pointer; font-family: var(--body);
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s; white-space: nowrap;
+    }
+    .submit-btn:hover { background: var(--gold-hover); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(245,197,24,0.25); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .form-success { background: rgba(29,185,84,0.1); border: 1px solid rgba(29,185,84,0.3); border-radius: 8px; padding: 14px; text-align: center; color: #1DB954; font-size: 14px; font-weight: 600; margin-top: 12px; display: none; }
+    .form-error { display: none; background: rgba(224,85,85,0.1); border: 1px solid rgba(224,85,85,0.3); border-radius: 8px; padding: 14px; text-align: center; color: #e05555; font-size: 14px; font-weight: 600; margin-top: 12px; }
+
+    /* ── NOMINEES LIST ──────────────────────────────────────── */
+    .nominees-section { padding: 36px; }
+    .nominees-section h2 { font-family: var(--condensed); font-weight: 900; font-size: 28px; text-transform: uppercase; margin-bottom: 24px; }
+    .your-noms-label {
+      display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 16px;
+      padding: 4px 10px; background: rgba(245,197,24,0.08); border: 1px solid rgba(245,197,24,0.2);
+      border-radius: 4px;
+    }
+    .nominee-card {
+      display: flex; align-items: center; gap: 14px; padding: 16px 18px;
+      background: rgba(24,24,24,0.5); border: 1px solid var(--border); border-radius: 10px;
+      margin-bottom: 10px; transition: border-color 0.25s, transform 0.2s, box-shadow 0.25s;
+    }
+    .nominee-card:hover { border-color: rgba(245,197,24,0.25); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+    .nominee-card.yours { border-left: 3px solid var(--gold); }
+    .nominee-info { flex: 1; min-width: 0; }
+    .nominee-name { font-size: 15px; font-weight: 600; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .nominee-loc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .nominee-you-badge {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--gold); background: rgba(245,197,24,0.1); border: 1px solid rgba(245,197,24,0.25);
+      border-radius: 3px; padding: 2px 6px; margin-left: 8px; vertical-align: middle;
+    }
+    .nominee-mascot {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--gold); background: rgba(245,197,24,0.08); border: 1px solid rgba(245,197,24,0.2);
+      border-radius: 4px; padding: 4px 8px; white-space: nowrap; flex-shrink: 0;
+    }
+    .nominee-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .vote-btn {
+      display: flex; align-items: center; gap: 5px; background: rgba(245,197,24,0.06);
+      border: 1px solid rgba(245,197,24,0.15); border-radius: 20px; padding: 6px 12px;
+      color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: all 0.25s; font-family: var(--body);
+    }
+    .vote-btn:hover { color: var(--gold); border-color: rgba(245,197,24,0.4); background: rgba(245,197,24,0.1); }
+    .vote-btn.voted { color: var(--gold); border-color: var(--gold); background: rgba(245,197,24,0.12); }
+    .vote-btn.voted:hover { cursor: default; }
+    .vote-btn svg { width: 16px; height: 16px; transition: transform 0.25s; }
+    .vote-btn:not(.voted):hover svg { transform: scale(1.2); }
+    .share-btn {
+      display: flex; align-items: center; justify-content: center; width: 32px; height: 32px;
+      background: none; border: 1px solid rgba(255,255,255,0.08); border-radius: 50%;
+      color: var(--muted); cursor: pointer; transition: all 0.25s;
+    }
+    .share-btn:hover { color: var(--gold); border-color: rgba(245,197,24,0.3); background: rgba(245,197,24,0.06); }
+    .share-btn svg { width: 14px; height: 14px; }
+    .share-toast {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--gold); color: var(--black); padding: 12px 24px; border-radius: 8px;
+      font-size: 13px; font-weight: 700; letter-spacing: 0.05em; z-index: 999;
+      opacity: 0; transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none;
+    }
+    .share-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .nominees-loading { color: var(--muted); font-size: 14px; text-align: center; padding: 32px 0; }
+
+    /* ── WINNERS ────────────────────────────────────────────── */
+    .winners-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .winner-card {
+      overflow: hidden; transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+      opacity: 0; transform: translateY(20px);
+      animation: winnerFadeIn 0.5s ease forwards;
+    }
+    .winner-card:hover { border-color: rgba(245,197,24,0.4); transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    @keyframes winnerFadeIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .winner-card-header { padding: 28px 24px 20px; display: flex; align-items: center; gap: 18px; border-bottom: 1px solid rgba(245,197,24,0.06); }
+    .school-badge {
+      width: 64px; height: 64px; border-radius: 12px; display: flex; align-items: center;
+      justify-content: center; font-family: var(--condensed); font-weight: 900; font-size: 22px;
+      flex-shrink: 0; overflow: hidden; background: rgba(24,24,24,0.8); color: var(--gold);
+      border: 1px solid rgba(245,197,24,0.15);
+    }
+    .school-badge img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+    .winner-card-title { font-family: var(--condensed); font-weight: 900; font-size: 20px; text-transform: uppercase; line-height: 1.1; }
+    .winner-card-mascot { font-size: 13px; color: var(--muted); margin-top: 4px; }
+    .winner-card-body { padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+    .winner-card-loc { font-size: 13px; color: var(--muted); font-weight: 500; }
+    .winner-card-ep {
+      background: rgba(245,197,24,0.1); border: 1px solid rgba(245,197,24,0.2);
+      border-radius: 4px; padding: 5px 10px; font-size: 11px; font-weight: 700;
+      color: var(--gold); white-space: nowrap;
+    }
+    .winner-card-footer { padding: 0 24px 20px; }
+    .listen-link {
+      display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
+      color: var(--muted); text-decoration: none; letter-spacing: 0.06em; text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .listen-link:hover { color: var(--gold); }
+    .listen-link svg { width: 14px; height: 14px; }
+    .winners-loading { text-align: center; padding: 60px; color: var(--muted); }
+
+    /* ── WHEEL ──────────────────────────────────────────────── */
+    .wheel-section { text-align: center; }
+    .wheel-wrap { position: relative; width: min(680px, 92vw); height: min(680px, 92vw); margin: 0 auto 32px; }
+    .wheel-canvas { border-radius: 50%; display: block; width: 100% !important; height: 100% !important; }
+    .wheel-pointer { position: absolute; top: -28px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 38px solid var(--gold); z-index: 20; filter: drop-shadow(0 3px 8px rgba(245,197,24,0.4)); }
+    .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 20%; height: 20%; background: var(--black); border-radius: 50%; border: 3px solid var(--gold); z-index: 10; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 0 20px rgba(245,197,24,0.15); }
+    .wheel-center img { width: 85%; height: 85%; object-fit: contain; border-radius: 50%; }
+    .spin-btn {
+      background: var(--gold); color: var(--black); border: none; border-radius: 10px;
+      padding: 18px 60px; font-size: 22px; font-weight: 900; letter-spacing: 0.1em;
+      text-transform: uppercase; cursor: pointer; font-family: var(--condensed);
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 6px 24px rgba(245,197,24,0.3);
+    }
+    .spin-btn:hover { background: var(--gold-hover); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(245,197,24,0.4); }
+    .spin-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
+    .wheel-status { margin-top: 20px; font-family: var(--condensed); font-size: 24px; font-weight: 900; text-transform: uppercase; color: var(--gold); min-height: 36px; }
+
+    /* ── HOST AUTH ──────────────────────────────────────────── */
+    .wheel-locked { padding: 40px; text-align: center; margin-bottom: 32px; }
+    .wheel-locked h3 { font-family: var(--condensed); font-size: 24px; text-transform: uppercase; margin-bottom: 8px; }
+    .wheel-locked p { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+    .google-auth-btn { display: inline-flex; align-items: center; gap: 12px; background: var(--white); color: #333; border: none; border-radius: 8px; padding: 14px 28px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform .15s, box-shadow .15s; }
+    .google-auth-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(245,197,24,.3); }
+    .google-auth-btn img { width: 22px; height: 22px; }
+    .auth-error { color: #e05555; font-size: 13px; margin-top: 12px; display: none; }
+    .wheel-controls-bar { display: flex; gap: 12px; align-items: stretch; margin-bottom: 24px; flex-wrap: wrap; }
+    .ep-input-bar {
+      display: flex; align-items: center; gap: 16px; padding: 16px 24px;
+      margin-bottom: 0; flex-wrap: wrap; flex: 1;
+    }
+    .ep-input-label { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); white-space: nowrap; }
+    .ep-number-input {
+      width: 100px; background: rgba(24,24,24,0.8); border: 2px solid var(--gold);
+      border-radius: 8px; padding: 10px 16px; font-size: 20px; font-weight: 900;
+      color: var(--gold); font-family: var(--condensed); outline: none; text-align: center;
+    }
+    .ep-input-hint { font-size: 12px; color: var(--muted); }
+    .fullscreen-btn {
+      display: inline-flex; align-items: center; gap: 8px; background: none;
+      border: 1px solid var(--gold); color: var(--gold); padding: 12px 20px;
+      border-radius: 8px; font-size: 13px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; cursor: pointer; font-family: var(--body);
+      transition: background 0.2s; white-space: nowrap;
+    }
+    .fullscreen-btn:hover { background: rgba(245,197,24,0.1); }
+    .wheel-no-nominees { text-align: center; padding: 60px; color: var(--muted); font-size: 16px; }
+
+    /* ── MODAL ──────────────────────────────────────────────── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(12px); }
+    .modal-overlay.open { display: flex; }
+    .modal-card {
+      background: rgba(17,17,17,0.95); border: 2px solid var(--gold); border-radius: 16px;
+      padding: 48px 40px; max-width: 500px; width: 90%; text-align: center;
+      box-shadow: 0 0 80px rgba(245,197,24,0.2); animation: modalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes modalIn { from { opacity: 0; transform: scale(0.88); } to { opacity: 1; transform: scale(1); } }
+    .modal-trophy { font-size: 56px; margin-bottom: 8px; }
+    .modal-headline { font-family: var(--condensed); font-weight: 900; font-size: 18px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+    .modal-school { font-family: var(--condensed); font-weight: 900; font-size: 44px; text-transform: uppercase; line-height: 1; margin-bottom: 8px; }
+    .modal-meta { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+    .modal-ep { font-family: var(--condensed); font-size: 20px; font-weight: 900; color: var(--gold); margin-bottom: 24px; }
+    .modal-close { background: var(--gold); color: var(--black); border: none; border-radius: 8px; padding: 12px 32px; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; font-family: var(--body); transition: background 0.2s; }
+    .modal-close:hover { background: var(--gold-hover); }
+
+    /* ── RESPONSIVE ─────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .page-hero { padding: 90px 24px 48px; }
+      .tab-bar { padding: 24px 24px 0; overflow-x: auto; top: 68px; }
+      .tab-btn { padding: 10px 16px; font-size: 11px; white-space: nowrap; }
+      .totw-body { padding: 32px 24px 80px; }
+      .winners-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+      .wheel-wrap { width: 320px; height: 320px; }
+    }
+    @media (max-width: 600px) {
+      .page-hero { padding: 80px 16px 36px; }
+      .tab-bar { padding: 16px 16px 0; }
+      .totw-body { padding: 24px 16px 60px; }
+      .nom-form-card, .nominees-section { padding: 24px 18px; }
+      .nominee-card { flex-wrap: wrap; gap: 10px; padding: 14px; }
+      .nominee-mascot { display: none; }
+      .winners-grid { grid-template-columns: 1fr; }
+      .wheel-wrap { width: 280px; height: 280px; }
+      .spin-btn { font-size: 18px; padding: 14px 40px; }
+      .winner-card-header { padding: 20px 18px 16px; }
+      .winner-card-body { padding: 14px 18px; }
+      .winner-card-footer { padding: 0 18px 16px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo"><img src="logo.png" alt="4th & Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="totw.html" class="active">Team of the Week</a></li>
+      <li><a href="wardle.html">4th &amp; Wardle</a></li>
+      <li><a href="https://www.tiktok.com/@coachwardlaw" target="_blank" rel="noopener">TikTok</a></li>
+      <li><a href="merch.html">Merch</a></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-hero">
+    <div style="max-width:1100px;margin:0 auto;">
+      <div class="section-label">Recurring Segment</div>
+      <h1>Team of<br>the <span>Week</span><span class="beta-badge">V2 Beta</span></h1>
+      <p>Listeners nominate high school programs. Jack and Adam spin the wheel live on the pod. Every week a new team gets the spotlight.</p>
+    </div>
+  </div>
+
+  <div class="tab-bar" id="tab-bar"></div>
+
+  <div class="totw-body">
+
+    <!-- NOMINATE TAB -->
+    <div id="tab-nominate">
+      <div class="nom-form-card glass">
+        <h2>Submit Your Team</h2>
+        <p>Know a great high school program with an awesome tradition, wild mascot, or untold story? Your school goes straight onto the wheel.</p>
+        <div class="nom-inline-form">
+          <div class="form-group" style="flex:2;min-width:160px;">
+            <label class="form-label">School Name *</label>
+            <input type="text" class="form-input" id="nom-school" placeholder="e.g. Lone Pine High School" autocomplete="off">
+          </div>
+          <div class="form-group" style="flex:1;min-width:120px;">
+            <label class="form-label">Mascot *</label>
+            <input type="text" class="form-input" id="nom-mascot" placeholder="e.g. Eagles" autocomplete="off">
+          </div>
+          <div class="form-group" style="flex:1;min-width:120px;">
+            <label class="form-label">City *</label>
+            <input type="text" class="form-input" id="nom-city" placeholder="City" autocomplete="off">
+          </div>
+          <div class="form-group" style="flex:0 0 90px;">
+            <label class="form-label">State *</label>
+            <select class="form-select" id="nom-state">
+              <option value="" disabled selected>ST</option>
+              <option>AL</option><option>AK</option><option>AZ</option><option>AR</option><option>CA</option>
+              <option>CO</option><option>CT</option><option>DE</option><option>FL</option><option>GA</option>
+              <option>HI</option><option>ID</option><option>IL</option><option>IN</option><option>IA</option>
+              <option>KS</option><option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+              <option>MA</option><option>MI</option><option>MN</option><option>MS</option><option>MO</option>
+              <option>MT</option><option>NE</option><option>NV</option><option>NH</option><option>NJ</option>
+              <option>NM</option><option>NY</option><option>NC</option><option>ND</option><option>OH</option>
+              <option>OK</option><option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+              <option>SD</option><option>TN</option><option>TX</option><option>UT</option><option>VT</option>
+              <option>VA</option><option>WA</option><option>WV</option><option>WI</option><option>WY</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:0 0 auto;align-self:flex-end;">
+            <label class="form-label" style="opacity:0;">Submit</label>
+            <button class="submit-btn" id="nom-btn">Submit to the Wheel</button>
+          </div>
+        </div>
+        <div class="form-success" id="nom-success">&#127944; Submitted! Your team is on the wheel.</div>
+        <div class="form-error" id="nom-error"></div>
+      </div>
+
+      <div class="nominees-section glass">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px;">
+          <h2 style="margin-bottom:0;">On the Wheel</h2>
+          <span id="nom-count" style="font-size:12px;color:var(--muted);font-weight:600;"></span>
+        </div>
+        <div id="your-noms-area" style="display:none;margin-bottom:16px;">
+          <span class="your-noms-label">Your Nominations</span>
+          <div id="your-noms-list"></div>
+        </div>
+        <div id="all-noms-divider" style="display:none;margin-bottom:12px;">
+          <span style="font-size:10px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);">All Nominations</span>
+        </div>
+        <div id="nominees-list" style="max-height:480px;overflow-y:auto;">
+          <div class="nominees-loading">Loading nominees...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WINNERS TAB -->
+    <div id="tab-winners" style="display:none;">
+      <div class="section-label" style="margin-bottom:32px;">All-Time Archive &mdash; <span style="color:var(--white);" id="winners-count">loading...</span></div>
+      <div id="winners-grid" class="winners-grid"><div class="winners-loading">Loading winners...</div></div>
+    </div>
+
+    <!-- WHEEL TAB -->
+    <div id="tab-wheel" style="display:none;">
+      <div id="wheel-locked" class="wheel-locked glass-strong">
+        <h3>Host Access Required</h3>
+        <p>The wheel is controlled by Jack &amp; Adam during recording. Sign in with the authorized Google account to spin.</p>
+        <button class="google-auth-btn" data-action="sign-in">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+          Sign in with Google
+        </button>
+        <div class="auth-error" id="auth-error">Access denied. Use the authorized host account.</div>
+      </div>
+
+      <div id="wheel-area" class="wheel-section" style="display:none;">
+        <div class="wheel-controls-bar">
+          <div class="ep-input-bar glass" style="margin-bottom:0;">
+            <div class="ep-input-label">Episode #:</div>
+            <input type="number" class="ep-number-input" id="ep-number-input" placeholder="52" min="1">
+            <div class="ep-input-hint">Set before spinning</div>
+          </div>
+          <button class="fullscreen-btn" data-action="fullscreen">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+            Fullscreen
+          </button>
+        </div>
+        <div class="wheel-wrap" id="wheel-wrap">
+          <div class="wheel-pointer"></div>
+          <canvas id="wheel-canvas" class="wheel-canvas"></canvas>
+          <div class="wheel-center"><canvas id="center-logo-canvas"></canvas></div>
+        </div>
+        <button class="spin-btn" id="spin-btn" data-action="spin">Spin the Wheel</button>
+        <div class="wheel-status" id="wheel-status"></div>
+      </div>
+      <div id="wheel-no-nominees" class="wheel-no-nominees" style="display:none;">
+        <p>No nominees on the wheel yet. Tell your listeners to submit!</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- WINNER MODAL -->
+  <div class="modal-overlay" id="winner-modal">
+    <div class="modal-card">
+      <div class="modal-trophy">&#127944;</div>
+      <div class="modal-headline">Team of the Week</div>
+      <div class="modal-school" id="modal-school">&mdash;</div>
+      <div class="modal-meta" id="modal-meta">&mdash;</div>
+      <div class="modal-ep" id="modal-ep">&mdash;</div>
+      <button class="modal-close" data-action="close-modal">Done</button>
+    </div>
+  </div>
+
+  <!-- FULLSCREEN OVERLAY -->
+  <div id="fullscreen-overlay" style="display:none;position:fixed;inset:0;background:#000;z-index:2000;flex-direction:column;align-items:center;justify-content:center;">
+    <button data-action="exit-fullscreen" style="position:absolute;top:20px;right:20px;background:rgba(245,197,24,0.15);border:1px solid var(--gold);color:var(--gold);padding:10px 20px;border-radius:6px;font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;font-family:var(--body);z-index:10;">&#10005; Exit</button>
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-family:var(--condensed);font-weight:900;font-size:18px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);">Team of the Week</div>
+      <div style="font-size:13px;color:var(--muted);">4th &amp; Ward Podcast</div>
+    </div>
+    <div id="fs-wheel-wrap" style="position:relative;width:min(80vh,80vw);height:min(80vh,80vw);">
+      <div class="wheel-pointer"></div>
+      <canvas id="fs-wheel-canvas" style="border-radius:50%;display:block;width:100%;height:100%;"></canvas>
+      <div class="wheel-center" id="fs-center"><canvas id="fs-center-logo-canvas"></canvas></div>
+    </div>
+    <button class="spin-btn" id="fs-spin-btn" data-action="spin-fs" style="margin-top:24px;">Spin the Wheel</button>
+    <div class="wheel-status" id="fs-wheel-status" style="margin-top:12px;"></div>
+  </div>
+
+  <!-- SHARE TOAST -->
+  <div class="share-toast" id="share-toast">Copied to clipboard!</div>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.png" alt="4th & Ward Podcast"></div>
+    <ul class="footer-links">
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="totw.html">TOTW</a></li>
+      <li><a href="wardle.html">Wardle</a></li>
+      <li><a href="merch.html">Merch</a></li>
+    </ul>
+    <div class="footer-text-line">
+      <span>Text us:</span>
+      <a href="sms:4697269875">469-726-9875</a>
+      <span class="footer-text-disclaimer">Standard message rates apply</span>
+    </div>
+    <p class="footer-copy">&#169; 2026 4th &amp; Ward Podcast. All rights reserved.</p>
+  </footer>
+
+  <script type="module">
+    import { initializeApp }                              from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, collection, addDoc, getDocs,
+             doc, deleteDoc, query, orderBy, where,
+             getDoc, setDoc, increment as fbIncrement,
+             updateDoc }                                  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getAuth, signInWithPopup, GoogleAuthProvider,
+             onAuthStateChanged }                         from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+    const FIREBASE_CONFIG = {
+      apiKey:"AIzaSyB5EJMsZT4WsfJjaFQ-srIdNwAINr7Q2yY",authDomain:"th-and-ward-b8f1c.firebaseapp.com",
+      projectId:"th-and-ward-b8f1c",storageBucket:"th-and-ward-b8f1c.firebasestorage.app",
+      messagingSenderId:"499057353962",appId:"1:499057353962:web:18f42748c242a6e0be2393"
+    };
+    const ADMIN_EMAIL = ['4thandwardpodcast@gmail.com', 'jmackwardlaw@gmail.com', 'coachwardlawsocial@gmail.com'];
+    let nextEpNumber = 52;
+
+    const app  = initializeApp(FIREBASE_CONFIG);
+    const db   = getFirestore(app);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    // ── VISITOR ID ────────────────────────────────────────────
+    let visitorId = localStorage.getItem('4ward_vid');
+    if (!visitorId) {
+      visitorId = 'v_' + Math.random().toString(36).slice(2) + Date.now();
+      localStorage.setItem('4ward_vid', visitorId);
+    }
+
+    // ── STATE ─────────────────────────────────────────────────
+    let nominees = [];
+    let winners  = [];
+    let votedSet = new Set();   // nominee IDs this visitor has voted for
+    let currentRotation = 0;
+    let isSpinning = false;
+    let isHost = false;
+    let lastSliceIndex = -1;
+    let audioCtx = null;
+
+    // ── TABS (event delegation) ───────────────────────────────
+    const TABS = ['nominate', 'winners', 'wheel'];
+    const tabBar = document.getElementById('tab-bar');
+    TABS.forEach((t, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'tab-btn' + (i === 0 ? ' active' : '');
+      btn.dataset.tab = t;
+      if (t === 'nominate') btn.textContent = 'Nominate a Team';
+      else if (t === 'winners') btn.textContent = 'Past Winners';
+      else {
+        btn.innerHTML = '&#128274; Host';
+        btn.style.opacity = '0.5';
+        btn.style.fontSize = '10px';
+        btn.title = 'Host only';
+      }
+      tabBar.appendChild(btn);
+    });
+
+    tabBar.addEventListener('click', e => {
+      const btn = e.target.closest('.tab-btn');
+      if (!btn) return;
+      const tab = btn.dataset.tab;
+      TABS.forEach(t => {
+        document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
+        tabBar.querySelector('[data-tab="' + t + '"]').classList.toggle('active', t === tab);
+      });
+      if (tab === 'winners' && winners.length === 0) loadData();
+      if (tab === 'wheel' && nominees.length === 0) loadData();
+    });
+
+    // ── GLOBAL EVENT DELEGATION ───────────────────────────────
+    document.addEventListener('click', e => {
+      const action = e.target.closest('[data-action]');
+      if (!action) return;
+      const act = action.dataset.action;
+      if (act === 'sign-in') signInHost();
+      else if (act === 'spin') spinWheel(false);
+      else if (act === 'spin-fs') spinWheel(true);
+      else if (act === 'fullscreen') enterFullscreen();
+      else if (act === 'exit-fullscreen') exitFullscreen();
+      else if (act === 'close-modal') document.getElementById('winner-modal').classList.remove('open');
+      else if (act === 'submit-nom') submitNomination();
+      else if (act === 'vote') handleVote(action);
+      else if (act === 'share') handleShare(action);
+    });
+
+    // Wire up the submit button
+    document.getElementById('nom-btn').dataset.action = 'submit-nom';
+
+    // ── AUTH ──────────────────────────────────────────────────
+    onAuthStateChanged(auth, user => {
+      if (user && ADMIN_EMAIL.includes(user.email)) {
+        isHost = true;
+        document.getElementById('wheel-locked').style.display = 'none';
+        document.getElementById('wheel-area').style.display = 'block';
+        loadData().then(() => {
+          if (nominees.length === 0) {
+            document.getElementById('wheel-area').style.display = 'none';
+            document.getElementById('wheel-no-nominees').style.display = 'block';
+          } else {
+            drawWheel();
+            drawCenterLogo('center-logo-canvas');
+            document.getElementById('ep-number-input').value = nextEpNumber;
+          }
+        });
+      }
+    });
+
+    async function signInHost() {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        if (!ADMIN_EMAIL.includes(result.user.email)) {
+          auth.signOut();
+          document.getElementById('auth-error').style.display = 'block';
+        }
+      } catch (e) {
+        document.getElementById('auth-error').style.display = 'block';
+      }
+    }
+
+    // ── LOAD DATA ─────────────────────────────────────────────
+    async function loadData() {
+      try {
+        const [nomSnap, winSnap, voteSnap] = await Promise.all([
+          getDocs(collection(db, 'totw_v2_nominees')),
+          getDocs(query(collection(db, 'totw_v2_winners'), orderBy('episode', 'asc'))),
+          getDocs(query(collection(db, 'totw_v2_votes'), where('visitorId', '==', visitorId)))
+        ]);
+
+        nominees = [];
+        nomSnap.forEach(d => nominees.push({ id: d.id, ...d.data() }));
+
+        winners = [];
+        winSnap.forEach(d => winners.push({ id: d.id, ...d.data() }));
+
+        // Track which nominees this visitor already voted for
+        votedSet.clear();
+        voteSnap.forEach(d => votedSet.add(d.data().nomineeId));
+
+        // Sort winners by episode desc
+        winners.sort((a, b) => {
+          const na = parseInt(String(a.episode).replace(/\D/g, '')) || 0;
+          const nb = parseInt(String(b.episode).replace(/\D/g, '')) || 0;
+          return nb - na;
+        });
+
+        // Auto-calc next episode
+        let maxEp = 0;
+        winners.forEach(w => {
+          const n = parseInt(String(w.episode).replace(/\D/g, '')) || 0;
+          if (n > maxEp) maxEp = n;
+        });
+        if (maxEp > 0) nextEpNumber = maxEp + 1;
+
+        renderNominees();
+        renderWinners();
+        if (isHost) drawWheel();
+      } catch (e) { console.error('loadData error', e); }
+    }
+
+    // ── NOMINEES ──────────────────────────────────────────────
+    function renderNominees() {
+      const listEl = document.getElementById('nominees-list');
+      const countEl = document.getElementById('nom-count');
+      const yourArea = document.getElementById('your-noms-area');
+      const yourList = document.getElementById('your-noms-list');
+      const allDivider = document.getElementById('all-noms-divider');
+
+      countEl.textContent = nominees.length + ' team' + (nominees.length !== 1 ? 's' : '') + ' on the wheel';
+
+      if (!nominees.length) {
+        listEl.innerHTML = '<div class="nominees-loading">No nominees yet &mdash; be the first!</div>';
+        yourArea.style.display = 'none';
+        allDivider.style.display = 'none';
+        return;
+      }
+
+      // Sort by votes (desc), then alphabetical
+      const sorted = [...nominees].sort((a, b) => {
+        const va = a.votes || 0, vb = b.votes || 0;
+        if (vb !== va) return vb - va;
+        return a.teamName.localeCompare(b.teamName);
+      });
+
+      // Separate "your" nominations
+      const yours = sorted.filter(n => n.submittedBy === visitorId);
+      const all = sorted;
+
+      if (yours.length > 0) {
+        yourArea.style.display = 'block';
+        allDivider.style.display = 'block';
+        yourList.innerHTML = yours.map(n => nomineeCardHtml(n, true)).join('');
+      } else {
+        yourArea.style.display = 'none';
+        allDivider.style.display = 'none';
+      }
+
+      listEl.innerHTML = all.map(n => nomineeCardHtml(n, false)).join('');
+    }
+
+    function nomineeCardHtml(n, isYoursSection) {
+      const isYours = n.submittedBy === visitorId;
+      const hasVoted = votedSet.has(n.id);
+      const voteCount = n.votes || 0;
+      const youBadge = (isYours && !isYoursSection) ? '<span class="nominee-you-badge">You</span>' : '';
+
+      return '<div class="nominee-card' + (isYours ? ' yours' : '') + '">' +
+        '<div class="nominee-info">' +
+          '<div class="nominee-name">' + escHtml(n.teamName) + youBadge + '</div>' +
+          '<div class="nominee-loc">' + escHtml(n.location || '') + '</div>' +
+        '</div>' +
+        '<span class="nominee-mascot">' + escHtml(n.mascot || '\u2014') + '</span>' +
+        '<div class="nominee-actions">' +
+          '<button class="vote-btn' + (hasVoted ? ' voted' : '') + '" data-action="vote" data-nominee-id="' + escAttr(n.id) + '" data-team="' + escAttr(n.teamName) + '"' + (hasVoted ? ' disabled' : '') + '>' +
+            '<svg viewBox="0 0 24 24" fill="' + (hasVoted ? 'currentColor' : 'none') + '" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>' +
+            '<span>' + voteCount + '</span>' +
+          '</button>' +
+          '<button class="share-btn" data-action="share" data-team="' + escAttr(n.teamName) + '" title="Share">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    }
+
+    // ── VOTING ────────────────────────────────────────────────
+    async function handleVote(btn) {
+      const nomineeId = btn.dataset.nomineeId;
+      if (!nomineeId || votedSet.has(nomineeId)) return;
+
+      // Optimistic UI
+      btn.classList.add('voted');
+      btn.disabled = true;
+      const countSpan = btn.querySelector('span');
+      const heartSvg = btn.querySelector('svg');
+      if (countSpan) countSpan.textContent = parseInt(countSpan.textContent || '0') + 1;
+      if (heartSvg) heartSvg.setAttribute('fill', 'currentColor');
+
+      try {
+        const voteDocId = visitorId + '_' + nomineeId;
+        await setDoc(doc(db, 'totw_v2_votes', voteDocId), {
+          nomineeId: nomineeId,
+          visitorId: visitorId,
+          timestamp: Date.now()
+        });
+        await updateDoc(doc(db, 'totw_v2_nominees', nomineeId), {
+          votes: fbIncrement(1)
+        });
+        votedSet.add(nomineeId);
+      } catch (e) {
+        // Revert optimistic UI on error
+        btn.classList.remove('voted');
+        btn.disabled = false;
+        if (countSpan) countSpan.textContent = parseInt(countSpan.textContent || '1') - 1;
+        if (heartSvg) heartSvg.setAttribute('fill', 'none');
+        console.error('vote error', e);
+      }
+    }
+
+    // ── SHARING ───────────────────────────────────────────────
+    function handleShare(btn) {
+      const team = btn.dataset.team || 'a team';
+      const text = 'I nominated ' + team + ' for Team of the Week on @4thandward! \uD83C\uDFC8 Vote at 4thandward.com/totwv2';
+      navigator.clipboard.writeText(text).then(() => {
+        const toast = document.getElementById('share-toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+      }).catch(() => {
+        // Fallback
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+        document.body.removeChild(ta);
+        const toast = document.getElementById('share-toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+      });
+    }
+
+    // ── WINNERS ───────────────────────────────────────────────
+    function getInitials(name) {
+      return name.replace(/High School/gi, '').replace(/\bHS\b/gi, '').trim()
+        .split(' ').filter(w => w.length > 1).slice(0, 2).map(w => w[0].toUpperCase()).join('') || name[0].toUpperCase();
+    }
+
+    function renderWinners() {
+      const ct = document.getElementById('winners-count');
+      ct.textContent = winners.length + ' team' + (winners.length !== 1 ? 's' : '') + ' featured';
+      const grid = document.getElementById('winners-grid');
+      if (!winners.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--muted);">No winners yet.</div>';
+        return;
+      }
+      grid.innerHTML = winners.map((w, i) =>
+        '<div class="winner-card glass" id="wcard-' + i + '" style="animation-delay:' + (i * 0.08) + 's;">' +
+          '<div class="winner-card-header">' +
+            '<div class="school-badge" id="wbadge-' + i + '">' + getInitials(w.teamName) + '</div>' +
+            '<div>' +
+              '<div class="winner-card-title">' + escHtml(w.teamName) + '</div>' +
+              '<div class="winner-card-mascot">' + escHtml(w.mascot || '') + (w.location ? ' &middot; ' + escHtml(w.location) : '') + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="winner-card-body">' +
+            '<span class="winner-card-loc">' + escHtml(w.location || '') + '</span>' +
+            '<span class="winner-card-ep">Ep. ' + escHtml(String(w.episode || '')) + '</span>' +
+          '</div>' +
+          '<div class="winner-card-footer">' +
+            '<a href="episodes.html" class="listen-link">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>' +
+              'Listen to Episode' +
+            '</a>' +
+          '</div>' +
+        '</div>'
+      ).join('');
+
+      // Load logos async
+      winners.forEach((w, i) => { if (w.logoUrl) setLogo(i, w.logoUrl, w.teamName); });
+    }
+
+    function setLogo(i, logoUrl, name) {
+      const badge = document.getElementById('wbadge-' + i);
+      if (!badge) return;
+      const proxied = '/api/proxy-image?url=' + encodeURIComponent(logoUrl);
+      const img = document.createElement('img');
+      img.src = proxied;
+      img.alt = name;
+      img.style.cssText = 'width:100%;height:100%;object-fit:contain;border-radius:8px;padding:4px;';
+      img.onload = () => { badge.innerHTML = ''; badge.appendChild(img); };
+    }
+
+    // ── MAXPREPS LOGO FETCH ───────────────────────────────────
+    async function fetchMaxPrepsLogo(teamName, city, state) {
+      try {
+        const q = encodeURIComponent(teamName + ' ' + city + ' ' + state);
+        const res = await fetch('/api/maxpreps-logo?q=' + q);
+        if (!res.ok) return '';
+        const data = await res.json();
+        return data.logoUrl || '';
+      } catch (e) { return ''; }
+    }
+
+    // ── NOMINATION SUBMIT ─────────────────────────────────────
+    async function submitNomination() {
+      const rawSchool = document.getElementById('nom-school').value.trim();
+      const school = rawSchool.replace(/\s+(High\s+School|HS)\s*$/i, '').trim() + ' High School';
+      const mascot = document.getElementById('nom-mascot').value.trim();
+      const city   = document.getElementById('nom-city').value.trim();
+      const state  = document.getElementById('nom-state').value;
+      if (!school || !mascot || !city || !state) { showNomError('Please fill in all fields.'); return; }
+
+      const btn = document.getElementById('nom-btn');
+      btn.textContent = 'Submitting...'; btn.disabled = true;
+
+      try {
+        const nameNorm = school.toLowerCase().trim();
+        const onWheel = nominees.some(n => n.teamName.toLowerCase().trim() === nameNorm);
+        const isPastWin = winners.some(w => w.teamName.toLowerCase().trim() === nameNorm);
+        if (onWheel) {
+          showNomError('&#9888;&#65039; This school is already on the wheel!');
+          btn.textContent = 'Submit to the Wheel'; btn.disabled = false;
+          return;
+        }
+        if (isPastWin) {
+          showNomError('&#127942; This school has already been a past winner!');
+          btn.textContent = 'Submit to the Wheel'; btn.disabled = false;
+          return;
+        }
+
+        const location = city + ', ' + state;
+        const logoUrl = await fetchMaxPrepsLogo(school, city, state);
+        await addDoc(collection(db, 'totw_v2_nominees'), {
+          teamName: school, mascot, city, state, location, logoUrl,
+          submittedAt: Date.now(),
+          submittedBy: visitorId,
+          votes: 0
+        });
+
+        document.getElementById('nom-school').value = '';
+        document.getElementById('nom-mascot').value = '';
+        document.getElementById('nom-city').value   = '';
+        document.getElementById('nom-state').value  = '';
+        document.getElementById('nom-success').style.display = 'block';
+        setTimeout(() => document.getElementById('nom-success').style.display = 'none', 4000);
+        await loadData();
+      } catch (e) { showNomError('Submission failed. Please try again.'); }
+      btn.textContent = 'Submit to the Wheel'; btn.disabled = false;
+    }
+
+    function showNomError(msg) {
+      const el = document.getElementById('nom-error');
+      el.innerHTML = msg; el.style.display = 'block';
+      setTimeout(() => el.style.display = 'none', 4000);
+    }
+
+    // ── WHEEL DRAWING ─────────────────────────────────────────
+    function drawWheel() { drawWheelOnCanvas('wheel-canvas', 'wheel-wrap'); }
+
+    function drawWheelOnCanvas(canvasId, wrapId) {
+      const canvas = document.getElementById(canvasId);
+      const wrap   = document.getElementById(wrapId);
+      let size = wrap.getBoundingClientRect().width || wrap.offsetWidth;
+      if (!size || size < 10) {
+        const vw = window.innerWidth;
+        size = vw <= 600 ? 280 : vw <= 900 ? 320 : Math.min(680, Math.floor(vw * 0.9));
+      }
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = size * dpr; canvas.height = size * dpr;
+      canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      const cx = size / 2, cy = size / 2, outerR = size / 2 - 8, innerR = outerR * 0.2;
+      const n = nominees.length;
+      ctx.clearRect(0, 0, size, size);
+      if (!n) return;
+      const arc = (Math.PI * 2) / n;
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(currentRotation - Math.PI / 2);
+      for (let i = 0; i < n; i++) {
+        const start = i * arc, end = start + arc, mid = start + arc / 2, isEven = i % 2 === 0;
+        ctx.beginPath();
+        ctx.moveTo(innerR * Math.cos(start), innerR * Math.sin(start));
+        ctx.arc(0, 0, outerR, start, end);
+        ctx.arc(0, 0, innerR, end, start, true);
+        ctx.closePath();
+        ctx.fillStyle = isEven ? '#111111' : '#F5C518'; ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(innerR * Math.cos(start), innerR * Math.sin(start));
+        ctx.lineTo(outerR * Math.cos(start), outerR * Math.sin(start));
+        ctx.strokeStyle = isEven ? '#F5C518' : '#111'; ctx.lineWidth = 1.5; ctx.stroke();
+        const rawName = nominees[i].teamName.replace(/High School/gi, '').replace(/\bHS\b/gi, '').trim();
+        const maxW = (outerR - innerR) * 0.82;
+        const sliceW = 2 * outerR * Math.sin(arc / 2);
+        const fs = Math.min(13, Math.max(8, sliceW * 0.28));
+        ctx.save(); ctx.rotate(mid); ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = isEven ? '#F5C518' : '#111111';
+        ctx.font = '700 ' + fs + "px 'Barlow Condensed',sans-serif";
+        let label = rawName;
+        while (ctx.measureText(label).width > maxW && label.length > 2) label = label.slice(0, -1);
+        if (label.length < rawName.length) label = label.trimEnd() + '\u2026';
+        ctx.fillText(label, outerR - 10, 0); ctx.restore();
+      }
+      ctx.beginPath(); ctx.arc(0, 0, outerR, 0, Math.PI * 2);
+      ctx.strokeStyle = '#F5C518'; ctx.lineWidth = 8; ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, 0, innerR + 2, 0, Math.PI * 2);
+      ctx.fillStyle = '#0a0a0a'; ctx.fill();
+      ctx.strokeStyle = '#F5C518'; ctx.lineWidth = 4; ctx.stroke();
+      ctx.restore();
+    }
+
+    // ── TICK SOUND ─────────────────────────────────────────────
+    function playTick() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.type = 'triangle'; osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.04);
+      } catch (e) {}
+    }
+
+    // ── POINTER INDEX ─────────────────────────────────────────
+    function getPointerIndex() {
+      const arc = (Math.PI * 2) / nominees.length;
+      const localAngle = ((-currentRotation) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+      return Math.floor(localAngle / arc) % nominees.length;
+    }
+
+    // ── SPIN (cubic easing for smoother deceleration) ─────────
+    function spinWheel(fromFS) {
+      if (isSpinning || !nominees.length || !isHost) return;
+      const epInput = document.getElementById('ep-number-input');
+      if (!epInput.value.trim()) {
+        epInput.style.borderColor = '#e05555'; epInput.focus();
+        setTimeout(() => epInput.style.borderColor = 'var(--gold)', 2000); return;
+      }
+      isSpinning = true;
+      document.getElementById('spin-btn').disabled = true;
+      const fsSpin = document.getElementById('fs-spin-btn');
+      if (fsSpin) fsSpin.disabled = true;
+      document.getElementById('wheel-status').textContent = '';
+      const fsStatus = document.getElementById('fs-wheel-status');
+      if (fsStatus) fsStatus.textContent = '';
+
+      const totalSpin = Math.random() * 8 + 22;  // more total radians
+      const duration = Math.random() * 3000 + 5500;
+      let startTime = null;
+
+      function frame(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+        if (elapsed >= duration) { stopSpin(); return; }
+
+        // Cubic ease-out for physics-like deceleration
+        const t = elapsed / duration;
+        const eased = 1 - Math.pow(1 - t, 3);
+        const speed = totalSpin * (1 - eased);
+        currentRotation += speed * Math.PI / 180;
+
+        const idx = getPointerIndex();
+        if (idx !== lastSliceIndex) { playTick(); lastSliceIndex = idx; }
+
+        drawWheel();
+        if (document.getElementById('fullscreen-overlay').style.display !== 'none')
+          drawWheelOnCanvas('fs-wheel-canvas', 'fs-wheel-wrap');
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    }
+
+    async function stopSpin() {
+      isSpinning = false;
+      const idx = getPointerIndex();
+      const winner = nominees[idx];
+      const epNum = document.getElementById('ep-number-input').value.trim();
+
+      document.getElementById('wheel-status').textContent = winner.teamName + ' \uD83C\uDFC8';
+      const fsStatus = document.getElementById('fs-wheel-status');
+      if (fsStatus) fsStatus.textContent = winner.teamName + ' \uD83C\uDFC8';
+
+      // Bigger confetti burst
+      triggerConfetti();
+
+      try {
+        await addDoc(collection(db, 'totw_v2_winners'), {
+          teamName: winner.teamName, mascot: winner.mascot, location: winner.location,
+          city: winner.city, state: winner.state, logoUrl: winner.logoUrl || '',
+          episode: epNum, wonAt: Date.now()
+        });
+        await deleteDoc(doc(db, 'totw_v2_nominees', winner.id));
+        nominees = nominees.filter((_, i) => i !== idx);
+        drawWheel();
+        if (nominees.length === 0) {
+          document.getElementById('wheel-area').style.display = 'none';
+          document.getElementById('wheel-no-nominees').style.display = 'block';
+        }
+        await loadData();
+      } catch (e) { console.error('saveWinner error', e); }
+
+      document.getElementById('modal-school').textContent = winner.teamName;
+      document.getElementById('modal-meta').textContent = (winner.mascot || '') + (winner.location ? ' \u00B7 ' + winner.location : '');
+      document.getElementById('modal-ep').textContent = 'Ep. ' + epNum + ' \u2014 Team of the Week';
+      document.getElementById('winner-modal').classList.add('open');
+      document.getElementById('spin-btn').disabled = false;
+      const fsSpin = document.getElementById('fs-spin-btn');
+      if (fsSpin) fsSpin.disabled = false;
+    }
+
+    // ── CONFETTI (bigger burst) ───────────────────────────────
+    function triggerConfetti() {
+      const end = Date.now() + 4500;
+      const colors = ['#F5C518', '#ffffff', '#000000', '#FFD740'];
+      (function fire() {
+        if (Date.now() > end) return;
+        confetti({ particleCount: 60, spread: 80, origin: { x: 0.15, y: 0.5 }, colors, startVelocity: 40 });
+        confetti({ particleCount: 60, spread: 80, origin: { x: 0.85, y: 0.5 }, colors, startVelocity: 40 });
+        confetti({ particleCount: 30, spread: 120, origin: { x: 0.5, y: 0.3 }, colors, startVelocity: 50 });
+        setTimeout(fire, 180);
+      })();
+    }
+
+    // ── CENTER LOGO ───────────────────────────────────────────
+    function drawCenterLogo(canvasId) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+      const size = canvas.parentElement.offsetWidth || 130, dpr = window.devicePixelRatio || 1;
+      canvas.width = size * dpr; canvas.height = size * dpr;
+      canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      const img = new Image(); img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        ctx.clearRect(0, 0, size, size);
+        ctx.beginPath(); ctx.arc(size / 2, size / 2, size / 2 - 2, 0, Math.PI * 2); ctx.clip();
+        ctx.drawImage(img, 0, 0, size, size);
+        ctx.globalCompositeOperation = 'color'; ctx.fillStyle = '#F5C518'; ctx.fillRect(0, 0, size, size);
+        ctx.globalCompositeOperation = 'source-over';
+      };
+      img.onerror = () => {
+        ctx.fillStyle = '#F5C518'; ctx.font = '900 ' + (size * 0.2) + "px 'Barlow Condensed',sans-serif";
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('4TH &', size / 2, size / 2 - 8); ctx.fillText('WARD', size / 2, size / 2 + 12);
+      };
+      img.src = '/api/proxy-image?url=' + encodeURIComponent('https://i.postimg.cc/VNLjTgMG/4th_and_Ward_Logos_(2).png');
+    }
+
+    // ── FULLSCREEN ─────────────────────────────────────────────
+    function enterFullscreen() {
+      const overlay = document.getElementById('fullscreen-overlay');
+      overlay.style.display = 'flex';
+      setTimeout(() => {
+        drawWheelOnCanvas('fs-wheel-canvas', 'fs-wheel-wrap');
+        drawCenterLogo('fs-center-logo-canvas');
+      }, 50);
+      overlay.requestFullscreen?.() ?? overlay.webkitRequestFullscreen?.();
+    }
+
+    function exitFullscreen() {
+      document.getElementById('fullscreen-overlay').style.display = 'none';
+      document.exitFullscreen?.() ?? document.webkitExitFullscreen?.();
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement) document.getElementById('fullscreen-overlay').style.display = 'none';
+    });
+
+    // ── RESIZE ─────────────────────────────────────────────────
+    window.addEventListener('resize', () => {
+      if (isHost && nominees.length) {
+        drawWheel();
+        if (document.getElementById('fullscreen-overlay').style.display !== 'none')
+          drawWheelOnCanvas('fs-wheel-canvas', 'fs-wheel-wrap');
+      }
+    });
+
+    // ── UTILS ──────────────────────────────────────────────────
+    function escHtml(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function escAttr(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // ── INIT ───────────────────────────────────────────────────
+    loadData();
+  </script>
+</body>
+</html>

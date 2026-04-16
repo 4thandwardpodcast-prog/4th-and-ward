@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4th & Wardle V2 — 4th & Ward Podcast</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+
+  <!-- Page view tracking -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, doc, setDoc, increment } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    const app = initializeApp({
+      apiKey:"AIzaSyB5EJMsZT4WsfJjaFQ-srIdNwAINr7Q2yY",authDomain:"th-and-ward-b8f1c.firebaseapp.com",
+      projectId:"th-and-ward-b8f1c",storageBucket:"th-and-ward-b8f1c.firebasestorage.app",
+      messagingSenderId:"499057353962",appId:"1:499057353962:web:18f42748c242a6e0be2393"
+    });
+    const db=getFirestore(app);
+    const page='wardlev2';
+    const d=new Date();
+    const today=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    let vid=localStorage.getItem('4ward_vid'),isNew=false;
+    if(!vid){vid='v_'+Math.random().toString(36).slice(2)+Date.now();localStorage.setItem('4ward_vid',vid);isNew=true;}
+    setDoc(doc(db,'pageviews',page+'_'+today),{page,date:today,views:increment(1),allTime:increment(1),newVisitors:increment(isNew?1:0)},{merge:true});
+  </script>
+
+  <style>
+    /* ── HERO ── */
+    .wardle-hero { padding: 100px 48px 0; background: var(--black); position: relative; overflow: hidden; }
+    .wardle-hero-bg {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 50% 60% at 50% 30%, rgba(245,197,24,0.07) 0%, transparent 70%),
+        repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(245,197,24,0.03) 79px, rgba(245,197,24,0.03) 80px);
+    }
+    .wardle-hero-inner { position: relative; z-index: 2; max-width: 800px; margin: 0 auto; text-align: center; padding: 60px 0 48px; }
+    .wardle-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 20px; }
+    .wardle-title { font-family: var(--condensed); font-weight: 900; font-size: clamp(72px, 14vw, 140px); line-height: 0.85; text-transform: uppercase; letter-spacing: -0.02em; margin-bottom: 20px; }
+    .wardle-title .amp { color: var(--gold); }
+    .wardle-subtitle { font-size: 18px; color: var(--muted); line-height: 1.6; margin-bottom: 12px; }
+    .wardle-rules { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; margin-bottom: 40px; }
+    .wardle-rule { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); font-weight: 500; }
+    .wardle-rule-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+
+    /* ── BETA BADGE ── */
+    .beta-badge {
+      display: inline-block;
+      background: var(--gold);
+      color: var(--black);
+      font-family: var(--body);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      vertical-align: super;
+      margin-left: 8px;
+      line-height: 1;
+    }
+
+    /* ── BODY ── */
+    .wardle-body { padding: 0 24px 100px; max-width: 800px; margin: 0 auto; }
+    .game-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+
+    /* ── CLUE SECTION ── */
+    .clue-section { padding: 32px 40px; border-bottom: 1px solid var(--border); }
+    .clue-label { font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+    .clue-text { font-size: 18px; color: var(--white); line-height: 1.5; min-height: 52px; font-weight: 500; }
+    .clue-text.loading { color: var(--muted); animation: pulse 1.5s ease-in-out infinite; }
+    .clue-image { width: 100%; max-height: 240px; object-fit: contain; border-radius: 8px; background: #111; padding: 16px; box-sizing: border-box; }
+    .clue-dots { display: flex; gap: 8px; margin-top: 16px; }
+    .clue-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--border); transition: all .3s; }
+    .clue-dot.used   { background: var(--gold); border-color: var(--gold); }
+    .clue-dot.active { border-color: var(--gold); box-shadow: 0 0 6px rgba(245,197,24,.4); }
+
+    /* ── SCORE BAR ── */
+    .score-bar { padding: 20px 40px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; background: var(--surface2); }
+    .score-item { text-align: center; }
+    .score-num { font-family: var(--condensed); font-weight: 900; font-size: 28px; color: var(--gold); line-height: 1; transition: color .3s; }
+    .score-label { font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-top: 3px; }
+    .score-divider { width: 1px; height: 40px; background: var(--border); }
+    .attempts-pips { display: flex; gap: 6px; align-items: center; }
+    .pip { width: 12px; height: 12px; border-radius: 50%; background: var(--gold); transition: all .3s; }
+    .pip.used { background: var(--border); }
+
+    /* ── GUESS HISTORY ── */
+    .guess-history { padding: 20px 40px; border-bottom: 1px solid var(--border); min-height: 60px; }
+    .guess-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #1e1e1e; animation: slideIn .2s ease; }
+    @keyframes slideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+    .guess-row:last-child { border-bottom: none; }
+    .guess-icon { width: 28px; height: 28px; border-radius: 50%; background: #3a1a1a; border: 1px solid #5a2020; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+    .guess-text { font-size: 14px; color: var(--muted); font-style: italic; }
+    .guess-result { font-size: 11px; font-weight: 700; color: #e05555; letter-spacing: .08em; text-transform: uppercase; margin-left: auto; }
+
+    /* ── INPUT SECTION ── */
+    .input-section { padding: 28px 40px; }
+    .input-wrap { display: flex; gap: 12px; margin-bottom: 16px; }
+    .guess-input { flex: 1; background: var(--surface2); border: 2px solid var(--border); border-radius: 6px; padding: 14px 20px; font-size: 16px; color: var(--white); font-family: var(--body); transition: border-color .2s; outline: none; }
+    .guess-input:focus { border-color: var(--gold); }
+    .guess-input::placeholder { color: var(--muted); }
+    .guess-btn { background: var(--gold); color: var(--black); border: none; border-radius: 6px; padding: 14px 28px; font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; font-family: var(--body); transition: background .2s, transform .15s; white-space: nowrap; }
+    .guess-btn:hover { background: var(--gold-hover); transform: translateY(-1px); }
+    .guess-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+    .hint-text { font-size: 13px; color: var(--muted); text-align: center; }
+
+    /* ── UNLOCK MENU ── */
+    .unlock-section { padding: 0 40px 28px; }
+    .unlock-label { font-size: 10px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .unlock-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+    .unlock-btn {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+      padding: 10px 14px; font-size: 12px; font-weight: 600; color: var(--white);
+      cursor: pointer; font-family: var(--body); transition: border-color .2s, background .2s;
+      text-align: left; width: 100%;
+    }
+    .unlock-btn:hover:not(:disabled) { border-color: var(--gold); background: rgba(245,197,24,.05); }
+    .unlock-btn:disabled { opacity: .35; cursor: not-allowed; }
+    .unlock-btn.used { border-color: rgba(245,197,24,.3); background: rgba(245,197,24,.06); color: var(--gold); }
+    .unlock-cost { margin-left: auto; font-size: 11px; font-weight: 700; color: #e05555; white-space: nowrap; }
+    .unlock-cost.used { color: var(--gold); }
+    .unlock-reveal { background: var(--surface2); border: 1px solid rgba(245,197,24,.3); border-radius: 6px; padding: 12px 14px; margin-top: 8px; font-size: 14px; color: var(--gold); font-weight: 600; animation: slideIn .2s ease; display: none; }
+    .unlock-reveal.show { display: block; }
+
+    /* ── ANSWER BLANKS (for letter hints) ── */
+    .answer-blanks { display: flex; flex-wrap: wrap; gap: 4px; margin: 12px 0 0; justify-content: center; }
+    .answer-blank { width: 22px; height: 28px; border-bottom: 2px solid var(--border); display: flex; align-items: flex-end; justify-content: center; font-family: var(--condensed); font-weight: 700; font-size: 18px; color: var(--gold); padding-bottom: 2px; transition: color .3s; }
+    .answer-blank.space { border-bottom: none; width: 12px; }
+
+    /* ── RESULT ── */
+    .result-card { padding: 40px; text-align: center; }
+    .result-win  { background: rgba(245,197,24,.08); border-top: 3px solid var(--gold); }
+    .result-lose { background: rgba(255,80,80,.05); border-top: 3px solid #e05555; }
+    .result-emoji { font-size: 48px; margin-bottom: 12px; }
+    .result-headline { font-family: var(--condensed); font-weight: 900; font-size: 40px; text-transform: uppercase; margin-bottom: 8px; }
+    .result-win  .result-headline { color: var(--gold); }
+    .result-lose .result-headline { color: #e05555; }
+    .result-answer { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+    .result-meta   { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
+    .result-score  { font-family: var(--condensed); font-weight: 900; font-size: 52px; color: var(--gold); line-height: 1; margin-bottom: 4px; }
+    .result-score-label { font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 28px; }
+    .result-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }
+    .btn-gold  { background: var(--gold); color: var(--black); border: none; border-radius: 6px; padding: 12px 28px; font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; font-family: var(--body); transition: background .2s; }
+    .btn-gold:hover { background: var(--gold-hover); }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 12px 28px; font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; font-family: var(--body); text-decoration: none; display: inline-flex; align-items: center; transition: border-color .2s, color .2s; }
+    .btn-ghost:hover { border-color: var(--white); color: var(--white); }
+
+    /* ── SHARE SECTION ── */
+    .share-section { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 24px 28px; margin-bottom: 24px; text-align: left; }
+    .share-title { font-family: var(--condensed); font-weight: 900; font-size: 20px; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+    .share-bonus-note { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+    .share-bonus-note strong { color: #4caf50; }
+    .share-emoji-grid { font-family: monospace; font-size: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; margin-bottom: 16px; line-height: 1.6; white-space: pre; overflow-x: auto; color: var(--white); }
+    .share-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+    .share-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 6px; font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; border: none; font-family: var(--body); transition: opacity .2s, transform .15s; text-decoration: none; }
+    .share-btn:hover { transform: translateY(-1px); opacity: .9; }
+    .share-btn.twitter   { background: #000; color: #fff; }
+    .share-btn.facebook  { background: #1877f2; color: #fff; }
+    .share-btn.instagram { background: linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); color: #fff; }
+    .share-btn.copy      { background: var(--surface); border: 1px solid var(--border); color: var(--muted); }
+    .share-btn.copy:hover { border-color: var(--white); color: var(--white); }
+    .share-bonus-applied { font-size: 13px; color: #4caf50; font-weight: 600; margin-top: 10px; display: none; }
+
+    /* ── LEADERBOARD ── */
+    .leaderboard-section { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 24px 28px; text-align: left; }
+    .lb-title { font-family: var(--condensed); font-weight: 900; font-size: 22px; text-transform: uppercase; color: var(--gold); letter-spacing: .06em; margin-bottom: 18px; }
+    .lb-name-row { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .lb-name-input { flex: 1; min-width: 140px; background: var(--surface); border: 2px solid var(--border); border-radius: 6px; padding: 10px 14px; font-size: 15px; color: var(--white); font-family: var(--body); outline: none; transition: border-color .2s; }
+    .lb-name-input:focus { border-color: var(--gold); }
+    .lb-name-input::placeholder { color: var(--muted); }
+    .lb-submit-btn { background: var(--gold); color: var(--black); border: none; border-radius: 6px; padding: 10px 20px; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; font-family: var(--body); white-space: nowrap; transition: background .2s; }
+    .lb-submit-btn:hover { background: var(--gold-hover); }
+    .lb-submit-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .lb-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .lb-table th { font-size: 10px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; }
+    .lb-table th:last-child { text-align: right; }
+    .lb-table td { padding: 9px 8px; border-bottom: 1px solid #1e1e1e; color: var(--white); vertical-align: middle; }
+    .lb-table td:last-child { text-align: right; color: var(--gold); font-weight: 700; font-family: var(--condensed); font-size: 16px; }
+    .lb-table tr:last-child td { border-bottom: none; }
+    .lb-rank { font-family: var(--condensed); font-weight: 900; font-size: 18px; color: var(--muted); width: 32px; }
+    .lb-rank.top1{color:#ffd700;}.lb-rank.top2{color:#c0c0c0;}.lb-rank.top3{color:#cd7f32;}
+    .lb-you-row td { background: rgba(245,197,24,.06); }
+    .lb-empty   { text-align: center; color: var(--muted); font-size: 13px; padding: 20px 0; }
+    .lb-loading { text-align: center; color: var(--muted); font-size: 13px; padding: 12px 0; animation: pulse 1.5s ease-in-out infinite; }
+
+    /* ── COUNTDOWN ── */
+    .countdown-bar { margin-top: 24px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .countdown-label { font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+    .countdown-time { font-family: var(--condensed); font-weight: 900; font-size: 32px; color: var(--gold); letter-spacing: .04em; line-height: 1; }
+
+    /* ── PAST + STATS ── */
+    .past-section { padding: 40px 48px 0; max-width: 800px; margin: 0 auto; }
+    .past-inner { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px 32px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+    .past-label { font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+    .past-select { flex: 1; min-width: 200px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 16px; font-size: 14px; color: var(--white); font-family: var(--body); cursor: pointer; outline: none; }
+    .past-select:focus { border-color: var(--gold); }
+    .past-btn { background: transparent; border: 1px solid var(--gold); color: var(--gold); border-radius: 6px; padding: 10px 20px; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; font-family: var(--body); transition: background .2s, color .2s; white-space: nowrap; }
+    .past-btn:hover { background: var(--gold); color: var(--black); }
+    .stats-section { padding: 24px 48px 0; max-width: 800px; margin: 0 auto; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; text-align: center; }
+    .stat-num   { font-family: var(--condensed); font-weight: 900; font-size: 32px; color: var(--gold); line-height: 1; margin-bottom: 4px; }
+    .stat-label { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+
+    @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+
+    @media (max-width: 900px) {
+      .wardle-hero { padding: 90px 24px 0; }
+      .clue-section, .score-bar, .guess-history, .input-section, .unlock-section { padding: 20px 24px; }
+      .result-card { padding: 28px 24px; }
+      .past-section, .stats-section { padding: 20px 24px 0; }
+    }
+    @media (max-width: 600px) {
+      .wardle-hero { padding: 80px 16px 0; }
+      .wardle-title { font-size: 72px; }
+      .clue-section, .score-bar, .guess-history, .input-section, .unlock-section { padding: 16px; }
+      .clue-text { font-size: 16px; }
+      .input-wrap { flex-direction: column; }
+      .guess-btn { width: 100%; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .past-section, .stats-section { padding: 16px 16px 0; }
+      .past-inner { padding: 20px 16px; gap: 12px; }
+      .result-score { font-size: 40px; }
+      .result-headline { font-size: 32px; }
+      .leaderboard-section, .share-section { padding: 18px 16px; }
+      .unlock-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo"><img src="logo.png" alt="4th & Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="totw.html">Team of the Week</a></li>
+      <li><a href="wardle.html">4th &amp; Wardle</a></li>
+      <li><a href="merch.html">Merch</a></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+  </nav>
+
+  <div class="wardle-hero">
+    <div class="wardle-hero-bg"></div>
+    <div class="wardle-hero-inner">
+      <div class="wardle-eyebrow">Daily Puzzle Game</div>
+      <div class="wardle-title">4th <span class="amp">&</span><br>Wardle V2<span class="beta-badge">Beta</span></div>
+      <p class="wardle-subtitle">Guess the high school football program from the clues.</p>
+      <div class="wardle-rules">
+        <div class="wardle-rule"><div class="wardle-rule-dot"></div>High school football programs</div>
+        <div class="wardle-rule"><div class="wardle-rule-dot"></div>6 guesses max</div>
+        <div class="wardle-rule"><div class="wardle-rule-dot"></div>New puzzle every day</div>
+        <div class="wardle-rule"><div class="wardle-rule-dot"></div>Unlock hints for points</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="past-section">
+    <div class="past-inner">
+      <span class="past-label">Play a past puzzle:</span>
+      <select class="past-select" id="puzzleSelect">
+        <option value="">— Today's Puzzle —</option>
+      </select>
+      <button class="past-btn" onclick="loadSelected()">Load</button>
+    </div>
+  </div>
+
+  <div class="stats-section">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num" id="stat-plays">—</div><div class="stat-label">Plays Today</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-today">—</div><div class="stat-label">Avg Score Today</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-alltime">—</div><div class="stat-label">All-Time Avg</div></div>
+    </div>
+  </div>
+
+  <div class="wardle-body">
+    <div class="game-card">
+      <div class="clue-section">
+        <div class="clue-label" id="clue-label">Clue 1 of 5</div>
+        <div class="clue-text loading" id="clue-text">Loading today's puzzle...</div>
+        <div id="clue-image-wrap" style="display:none;"></div>
+        <div class="clue-dots">
+          <div class="clue-dot active" id="dot-0"></div>
+          <div class="clue-dot" id="dot-1"></div>
+          <div class="clue-dot" id="dot-2"></div>
+          <div class="clue-dot" id="dot-3"></div>
+          <div class="clue-dot" id="dot-4"></div>
+        </div>
+      </div>
+
+      <div class="score-bar">
+        <div class="score-item">
+          <div class="score-num" id="score-display">100</div>
+          <div class="score-label">Points</div>
+        </div>
+        <div class="score-divider"></div>
+        <div class="score-item">
+          <div class="score-label" style="margin-bottom:6px;">Guesses Left</div>
+          <div class="attempts-pips">
+            <div class="pip" id="pip-0"></div><div class="pip" id="pip-1"></div>
+            <div class="pip" id="pip-2"></div><div class="pip" id="pip-3"></div>
+            <div class="pip" id="pip-4"></div><div class="pip" id="pip-5"></div>
+          </div>
+        </div>
+        <div class="score-divider"></div>
+        <div class="score-item">
+          <div class="score-num" id="clue-num">1</div>
+          <div class="score-label">of 5 Clues</div>
+        </div>
+      </div>
+
+      <div class="guess-history" id="guess-history"></div>
+
+      <div class="input-section" id="input-section">
+        <div class="input-wrap">
+          <input type="text" class="guess-input" id="guess-input"
+            placeholder="Type school name (e.g. Allen, Southlake Carroll)"
+            autocomplete="off" autocorrect="off" spellcheck="false">
+          <button class="guess-btn" id="guess-btn" onclick="submitGuess()">Guess</button>
+        </div>
+        <div id="answer-blanks-wrap" style="display:none;">
+          <div class="answer-blanks" id="answer-blanks"></div>
+        </div>
+        <p class="hint-text">Press Enter to submit · Unlock hints below to spend points for help</p>
+      </div>
+
+      <!-- UNLOCK MENU -->
+      <div class="unlock-section" id="unlock-section">
+        <div class="unlock-label">Unlock Hints — costs points from your score</div>
+        <div class="unlock-grid">
+          <button class="unlock-btn" id="unlock-location"  onclick="useUnlock('location')">
+            <span>📍</span><span>Location</span><span class="unlock-cost">−10 pts</span>
+          </button>
+          <button class="unlock-btn" id="unlock-colors"    onclick="useUnlock('colors')">
+            <span>🎨</span><span>School Colors</span><span class="unlock-cost">−5 pts</span>
+          </button>
+          <button class="unlock-btn" id="unlock-mascot"    onclick="useUnlock('mascot')">
+            <span>🐉</span><span>Mascot</span><span class="unlock-cost">−10 pts</span>
+          </button>
+          <button class="unlock-btn" id="unlock-stadium"   onclick="useUnlock('stadium')">
+            <span>🏟️</span><span>Stadium Name</span><span class="unlock-cost">−5 pts</span>
+          </button>
+          <button class="unlock-btn" id="unlock-alumni"    onclick="useUnlock('alumni')">
+            <span>⭐</span><span>Famous Alumni</span><span class="unlock-cost">−5 pts</span>
+          </button>
+          <button class="unlock-btn" id="unlock-letter"    onclick="useUnlock('letter')">
+            <span>🔤</span><span>Reveal a Letter</span><span class="unlock-cost">−5 pts</span>
+          </button>
+          <button class="unlock-btn" id="unlock-vowels"    onclick="useUnlock('vowels')">
+            <span>🔤</span><span>All Vowels</span><span class="unlock-cost">−10 pts</span>
+          </button>
+        </div>
+        <div class="unlock-reveal" id="unlock-reveal"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.png" alt="4th & Ward Podcast"></div>
+    <ul class="footer-links">
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="totw.html">TOTW</a></li>
+      <li><a href="wardle.html">Wardle</a></li>
+      <li><a href="merch.html">Merch</a></li>
+    </ul>
+    <div class="footer-text-line">
+      <span>Text us:</span>
+      <a href="sms:4697269875">469-726-9875</a>
+      <span class="footer-text-disclaimer">Standard message rates apply</span>
+    </div>
+    <p class="footer-copy">© 2026 4th & Ward Podcast. All rights reserved.</p>
+  </footer>
+
+  <script type="module">
+    import { initializeApp }                         from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, doc, getDoc, collection,
+             addDoc, query, where, orderBy, limit,
+             getDocs, updateDoc, increment, setDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    const firebaseConfig = {
+      apiKey:"AIzaSyB5EJMsZT4WsfJjaFQ-srIdNwAINr7Q2yY",authDomain:"th-and-ward-b8f1c.firebaseapp.com",
+      projectId:"th-and-ward-b8f1c",storageBucket:"th-and-ward-b8f1c.firebasestorage.app",
+      messagingSenderId:"499057353962",appId:"1:499057353962:web:18f42748c242a6e0be2393"
+    };
+    const LAUNCH_DATE = '2026-03-14';
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    // ── STATE ──────────────────────────────────────────────────────────────────
+    let puzzle            = null;
+    let attempts          = 6;
+    let clueIndex         = 0;
+    let score             = 100;
+    let gameOver          = false;
+    let currentFinalScore = 0;
+    let countdownInterval = null;
+    let _playerName       = null;
+    let shareBonus        = false;
+    let scoreDocId        = null;
+
+    // Unlocks used this game
+    const usedUnlocks = new Set();
+
+    // Unlock costs
+    const UNLOCK_COSTS = {
+      location: 10, colors: 5, mascot: 10, stadium: 5,
+      alumni: 5, letter: 5, vowels: 10
+    };
+
+    // ── DATE HELPERS ──────────────────────────────────────────────────────────
+    function todayStr() {
+      const d = new Date();
+      return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    }
+    function todayPuzzleNumber() {
+      const launch = new Date(LAUNCH_DATE+'T00:00:00Z');
+      const now = new Date(); now.setUTCHours(0,0,0,0);
+      return Math.max(1, Math.floor((now-launch)/86400000)+1);
+    }
+
+    // ── NORMALIZE + MATCH ─────────────────────────────────────────────────────
+    function normalizeSchool(str) {
+      return str.toLowerCase()
+        .replace(/\bsenior high school\b/g,'').replace(/\bhigh school\b/g,'')
+        .replace(/\bsenior high\b/g,'').replace(/\bhigh\b/g,'').replace(/\bschool\b/g,'')
+        .replace(/\bhs\b/g,'').replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,' ').trim();
+    }
+    function isCorrect(guess, answer) { return normalizeSchool(guess)===normalizeSchool(answer); }
+
+    // ── STATS ─────────────────────────────────────────────────────────────────
+    async function loadStats() {
+      try {
+        const [daySnap, summSnap] = await Promise.all([
+          getDoc(doc(db,'daily_v2',todayStr())),
+          getDoc(doc(db,'meta','summary_v2'))
+        ]);
+        const plays    = daySnap.exists() ? (daySnap.data().plays||0) : 0;
+        const todayAvg = daySnap.exists() && plays>0 ? Math.round((daySnap.data().totalScore||0)/plays) : 0;
+        const allAvg   = summSnap.exists() && summSnap.data().totalPlays>0
+          ? Math.round(summSnap.data().totalScore/summSnap.data().totalPlays) : 0;
+        document.getElementById('stat-plays').textContent   = plays;
+        document.getElementById('stat-today').textContent   = todayAvg;
+        document.getElementById('stat-alltime').textContent = allAvg;
+      } catch(e) { console.error('loadStats error:', e); }
+    }
+
+    // ── PUZZLE LOADING ────────────────────────────────────────────────────────
+    async function loadPuzzle(num) {
+      const snap = await getDoc(doc(db,'puzzles_v2',String(num)));
+      if (!snap.exists()) throw new Error('Puzzle '+num+' not found');
+      return { puzzleNum: num, ...snap.data() };
+    }
+    async function loadPuzzleList() {
+      try {
+        const total  = todayPuzzleNumber();
+        const select = document.getElementById('puzzleSelect');
+        const launch = new Date(LAUNCH_DATE+'T00:00:00Z');
+        for (let i=total; i>=1; i--) {
+          const d=new Date(launch); d.setDate(d.getDate()+(i-1));
+          const opt=document.createElement('option');
+          opt.value=i;
+          const ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+          opt.textContent=(i===total?'Puzzle #'+i+' — Today ('+ds+')':'Puzzle #'+i+' — '+ds);
+          if (i===total) opt.selected=true;
+          select.appendChild(opt);
+        }
+      } catch(e) { console.error('loadPuzzleList error:', e); }
+    }
+    async function loadSelected() {
+      const val=document.getElementById('puzzleSelect').value;
+      const num=val?parseInt(val):todayPuzzleNumber();
+      resetGame();
+      try { puzzle=await loadPuzzle(num); startGame(); }
+      catch(e) { document.getElementById('clue-text').textContent='Error loading puzzle #'+num+'. It may not exist yet.'; }
+    }
+
+    // ── GAME ──────────────────────────────────────────────────────────────────
+    function startGame() {
+      document.getElementById('clue-text').classList.remove('loading');
+      showClue();
+      // Dim any unlock buttons that have no data for this puzzle
+      ['colors','stadium','alumni'].forEach(type => {
+        if (!hintHasData(type)) {
+          const btn = document.getElementById('unlock-'+type);
+          if (btn) {
+            btn.style.opacity = '0.4';
+            btn.querySelector('.unlock-cost').textContent = 'N/A';
+          }
+        }
+      });
+      document.getElementById('guess-input').focus();
+    }
+
+    function resetGame() {
+      if (countdownInterval) { clearInterval(countdownInterval); countdownInterval=null; }
+      attempts=6; clueIndex=0; score=100; gameOver=false;
+      currentFinalScore=0; _playerName=null; puzzle=null;
+      shareBonus=false; scoreDocId=null;
+      usedUnlocks.clear();
+      document.getElementById('guess-history').innerHTML='';
+      document.getElementById('score-display').textContent='100';
+      document.getElementById('clue-num').textContent='1';
+      document.getElementById('clue-text').textContent='Loading...';
+      document.getElementById('clue-text').classList.add('loading');
+      document.getElementById('clue-image-wrap').style.display='none';
+      document.getElementById('clue-image-wrap').innerHTML='';
+      document.getElementById('clue-text').style.display='block';
+      document.getElementById('guess-input').value='';
+      document.getElementById('guess-btn').disabled=false;
+      document.getElementById('input-section').style.display='';
+      document.getElementById('unlock-section').style.display='';
+      document.getElementById('unlock-reveal').className='unlock-reveal';
+      document.getElementById('unlock-reveal').innerHTML='';
+      document.getElementById('answer-blanks-wrap').style.display='none';
+      document.getElementById('answer-blanks').innerHTML='';
+      // Reset unlock buttons
+      Object.keys(UNLOCK_COSTS).forEach(k => {
+        const btn=document.getElementById('unlock-'+k);
+        if (btn) { btn.disabled=false; btn.classList.remove('used'); }
+      });
+      for (let i=0;i<6;i++) document.getElementById('pip-'+i).classList.remove('used');
+      for (let i=0;i<5;i++) {
+        const d=document.getElementById('dot-'+i);
+        d.classList.remove('used','active');
+        if (i===0) d.classList.add('active');
+      }
+      const rc=document.querySelector('.result-card');
+      if (rc) rc.remove();
+    }
+
+    function showClue() {
+      if (!puzzle) return;
+      const clueText = puzzle.clues[clueIndex];
+
+      document.getElementById('clue-label').textContent='Clue '+(clueIndex+1)+' of 5';
+      document.getElementById('clue-num').textContent=clueIndex+1;
+      document.getElementById('score-display').textContent=score;
+
+      document.getElementById('clue-text').style.display='block';
+      document.getElementById('clue-image-wrap').style.display='none';
+      document.getElementById('clue-text').textContent=clueText;
+
+      for (let i=0;i<5;i++) {
+        const d=document.getElementById('dot-'+i);
+        d.classList.remove('used','active');
+        if (i<clueIndex) d.classList.add('used');
+        else if (i===clueIndex) d.classList.add('active');
+      }
+    }
+
+    // ── UNLOCK HINTS ──────────────────────────────────────────────────────────
+    // Check if a hint type has real data available for the current puzzle
+    function hintHasData(type) {
+      switch(type) {
+        case 'location': return !!(puzzle.city && puzzle.state);
+        case 'colors':   return !!(puzzle.colors);
+        case 'mascot':   return !!(puzzle.mascot);
+        case 'stadium':  return !!(puzzle.stadium);
+        case 'alumni':   return !!(puzzle.famousAlumni);
+        case 'letter':
+        case 'vowels':   return !!(puzzle.answer);
+        default: return false;
+      }
+    }
+
+    window.useUnlock = function(type) {
+      if (gameOver || !puzzle || usedUnlocks.has(type)) return;
+
+      const btn    = document.getElementById('unlock-'+type);
+      const reveal = document.getElementById('unlock-reveal');
+
+      // If data isn't available, show a free "not available" message — no cost, no mark as used
+      if (!hintHasData(type)) {
+        reveal.innerHTML = `<span style="color:var(--muted);">ℹ️ This hint isn't available for this puzzle — no points deducted.</span>`;
+        reveal.className = 'unlock-reveal show';
+        return;
+      }
+
+      const cost = UNLOCK_COSTS[type];
+      if (score - cost < 0) { alert("Not enough points to use this hint!"); return; }
+
+      usedUnlocks.add(type);
+      score = Math.max(0, score - cost);
+      document.getElementById('score-display').textContent = score;
+      btn.disabled = true;
+      btn.classList.add('used');
+      btn.querySelector('.unlock-cost').textContent = '✓ Used';
+
+      let content = '';
+      switch (type) {
+        case 'location':
+          content = `📍 <strong>Location:</strong> ${escapeHtml(puzzle.city)}, ${escapeHtml(puzzle.state)}`;
+          break;
+        case 'colors':
+          content = `🎨 <strong>Colors:</strong> ${escapeHtml(puzzle.colors)}`;
+          break;
+        case 'mascot':
+          content = `🐉 <strong>Mascot:</strong> ${escapeHtml(puzzle.mascot)}`;
+          break;
+        case 'stadium':
+          content = `🏟️ <strong>Stadium:</strong> ${escapeHtml(puzzle.stadium)}`;
+          break;
+        case 'alumni':
+          content = `⭐ <strong>Famous Alumni:</strong> ${escapeHtml(puzzle.famousAlumni)}`;
+          break;
+        case 'letter': {
+          const answer     = puzzle.answer.toUpperCase().replace(/HIGH SCHOOL/i,'').trim();
+          const consonants = answer.replace(/[^A-Z]/g,'').split('').filter(l=>!'AEIOU'.includes(l));
+          if (consonants.length===0) { content='No consonants to reveal!'; break; }
+          const pick = consonants[Math.floor(Math.random()*consonants.length)];
+          updateAnswerBlanks(pick, false);
+          content=`🔤 Revealed the letter: <strong style="font-size:20px;color:var(--gold)">${pick}</strong>`;
+          break;
+        }
+        case 'vowels': {
+          updateAnswerBlanks(null, true);
+          content='🔤 All vowels revealed in the blanks above.';
+          break;
+        }
+      }
+
+      reveal.innerHTML=content;
+      reveal.className='unlock-reveal show';
+    };
+
+    function updateAnswerBlanks(revealLetter, revealAllVowels) {
+      const wrap = document.getElementById('answer-blanks-wrap');
+      const blanks = document.getElementById('answer-blanks');
+      const answer = puzzle.answer.toUpperCase().replace(/HIGH SCHOOL/i,'').trim();
+
+      wrap.style.display='block';
+
+      // Build or update blanks
+      if (!blanks.children.length) {
+        // First time — build blank divs
+        answer.split('').forEach(ch => {
+          const div=document.createElement('div');
+          div.className='answer-blank'+(ch===' '?' space':'');
+          div.dataset.char=ch;
+          div.textContent=ch===' '?'':'_';
+          blanks.appendChild(div);
+        });
+      }
+
+      // Reveal specified letters
+      Array.from(blanks.children).forEach(div => {
+        const ch = div.dataset.char;
+        if (!ch||ch===' ') return;
+        const isVowel = 'AEIOU'.includes(ch);
+        if (revealAllVowels && isVowel) div.textContent=ch;
+        if (revealLetter && ch===revealLetter) div.textContent=ch;
+      });
+    }
+
+    // ── SUBMIT GUESS ──────────────────────────────────────────────────────────
+    window.submitGuess = function() {
+      if (gameOver||!puzzle) return;
+      const input=document.getElementById('guess-input');
+      const guess=input.value.trim();
+      if (!guess) return;
+
+      if (isCorrect(guess,puzzle.answer)) {
+        gameOver=true; currentFinalScore=Math.max(0,score);
+        addGuessRow(guess,true); showResult(true); saveScore(currentFinalScore); return;
+      }
+
+      attempts--;
+      addGuessRow(guess,false);
+      updatePips();
+
+      if (attempts<=0) { gameOver=true; currentFinalScore=0; showResult(false); saveScore(0); return; }
+      if (clueIndex<4) { clueIndex++; score=Math.max(0,score-20); showClue(); }
+      input.value=''; input.focus();
+    };
+
+    function addGuessRow(guess,correct) {
+      const row=document.createElement('div');
+      row.className='guess-row';
+      row.innerHTML='<div class="guess-icon">'+(correct?'&#10003;':'&#10007;')+'</div>'
+        +'<div class="guess-text">'+escapeHtml(guess)+'</div>'
+        +'<div class="guess-result">'+(correct?'Correct!':'Wrong')+'</div>';
+      if (correct) {
+        row.querySelector('.guess-icon').style.cssText='background:rgba(245,197,24,.15);border:1px solid rgba(245,197,24,.3);color:var(--gold)';
+        row.querySelector('.guess-result').style.color='var(--gold)';
+      }
+      document.getElementById('guess-history').appendChild(row);
+    }
+    function updatePips() {
+      for (let i=0;i<6;i++) document.getElementById('pip-'+i).classList.toggle('used',i>=attempts);
+    }
+
+    // ── EMOJI GRID ────────────────────────────────────────────────────────────
+    function buildEmojiGrid(won, hintsUsed) {
+      const guessRows = document.querySelectorAll('.guess-row');
+      let grid = '';
+      guessRows.forEach(row => {
+        const isCorrect = row.querySelector('.guess-result').textContent === 'Correct!';
+        grid += (isCorrect ? '🏈' : '⬛') + '\n';
+      });
+      const hintLine = hintsUsed.size > 0 ? `💡 Hints used: ${hintsUsed.size}` : '💡 No hints used';
+      return `4th & Wardle V2 #${puzzle.puzzleNum} — ${won?currentFinalScore:0}pts ${won?'🏆':'😤'}\n\n${grid.trim()}\n${hintLine}`;
+    }
+
+    // ── RESULT ────────────────────────────────────────────────────────────────
+    function showResult(won) {
+      document.getElementById('input-section').style.display='none';
+      document.getElementById('unlock-section').style.display='none';
+
+      const emojiGrid = buildEmojiGrid(won, usedUnlocks);
+      const shareText = emojiGrid+'\n\nPlay at 4thandward.com/wardlev2';
+      const shareUrl  = 'https://4thandward.com/wardlev2';
+
+      const card=document.createElement('div');
+      card.className='result-card '+(won?'result-win':'result-lose');
+      card.innerHTML=`
+        <div class="result-emoji">${won?'🏆':'😤'}</div>
+        <div class="result-headline">${won?'Nice Call!':'Game Over'}</div>
+        <div class="result-answer">${escapeHtml(puzzle.answer)}</div>
+        <div class="result-meta">${escapeHtml(puzzle.mascot||'')}${puzzle.city?' &middot; '+escapeHtml(puzzle.city)+', '+escapeHtml(puzzle.state):''} ${puzzle.stadium?'&middot; '+escapeHtml(puzzle.stadium):''}</div>
+        <div class="result-score" id="display-score">${won?currentFinalScore:0}</div>
+        <div class="result-score-label">Points Earned</div>
+        <div class="result-actions">
+          <button class="btn-gold" onclick="resetAndLoadNew()">Play Again</button>
+          <a href="episodes.html" class="btn-ghost">Listen to the Pod</a>
+        </div>
+
+        <!-- SHARE -->
+        <div class="share-section">
+          <div class="share-title">&#128279; Share Your Score</div>
+          <div class="share-bonus-note">Share and your score gets a <strong>+5 bonus</strong> added to the leaderboard!</div>
+          <div class="share-emoji-grid" id="share-emoji-grid">${emojiGrid}</div>
+          <div class="share-btns">
+            <button class="share-btn twitter"   onclick="shareScore('twitter','${encodeURIComponent(shareText)}','${shareUrl}')">𝕏 Twitter</button>
+            <button class="share-btn facebook"  onclick="shareScore('facebook','${encodeURIComponent(shareText)}','${shareUrl}')">Facebook</button>
+            <button class="share-btn instagram" onclick="shareScore('instagram','${encodeURIComponent(shareText)}','${shareUrl}')">📸 Instagram Story</button>
+            <button class="share-btn copy"      onclick="shareScore('copy','${encodeURIComponent(shareText)}','${shareUrl}')">📋 Copy</button>
+          </div>
+          <div class="share-bonus-applied" id="share-bonus-applied">✅ +5 share bonus applied to your leaderboard score!</div>
+        </div>
+
+        <!-- LEADERBOARD -->
+        <div class="leaderboard-section" id="lb-section">
+          <div class="lb-title">&#127942; Puzzle #${puzzle.puzzleNum} Leaderboard</div>
+          <div class="lb-name-row" id="lb-name-row">
+            <input type="text" class="lb-name-input" id="lb-name-input"
+              placeholder="Enter your name or nickname" maxlength="24"
+              autocomplete="off" autocorrect="off" spellcheck="false">
+            <button class="lb-submit-btn" id="lb-submit-btn" onclick="submitToLeaderboard()">Post Score</button>
+          </div>
+          <div id="lb-table-wrap"><div class="lb-loading">Loading leaderboard...</div></div>
+        </div>
+
+        <div class="countdown-bar" style="margin-top:24px;">
+          <div>
+            <div class="countdown-label">Next Puzzle In</div>
+            <div style="font-size:13px;color:var(--muted);">New puzzle at midnight</div>
+          </div>
+          <div class="countdown-time" id="countdown-timer">--:--:--</div>
+        </div>`;
+
+      document.querySelector('.game-card').appendChild(card);
+      startCountdown();
+      loadLeaderboard(puzzle.puzzleNum, null);
+      setTimeout(() => {
+        const ni=document.getElementById('lb-name-input');
+        if (ni) ni.addEventListener('keypress',e=>{ if(e.key==='Enter') submitToLeaderboard(); });
+      },100);
+    }
+
+    // ── SHARE ─────────────────────────────────────────────────────────────────
+    window.shareScore = async function(platform, encodedText, url) {
+      const text = decodeURIComponent(encodedText);
+
+      // Apply share bonus once
+      if (!shareBonus) {
+        shareBonus = true;
+        currentFinalScore += 5;
+        document.getElementById('display-score').textContent = currentFinalScore;
+        document.getElementById('share-bonus-applied').style.display = 'block';
+        // Persist share bonus to Firestore immediately
+        if (scoreDocId) {
+          try {
+            await updateDoc(doc(db,'scores_v2',scoreDocId),{ score:currentFinalScore, shared:true });
+          } catch(e) { console.error('share bonus save error:', e); }
+        }
+      }
+
+      switch(platform) {
+        case 'twitter':
+          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,'_blank');
+          break;
+        case 'facebook':
+          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`,'_blank');
+          break;
+        case 'instagram':
+          // Generate canvas image for Instagram story
+          generateInstagramCard(text);
+          break;
+        case 'copy':
+          try {
+            await navigator.clipboard.writeText(text);
+            const btn=document.querySelector('.share-btn.copy');
+            btn.textContent='✓ Copied!';
+            setTimeout(()=>btn.textContent='📋 Copy',2000);
+          } catch(e) { alert(text); }
+          break;
+      }
+    };
+
+    function generateInstagramCard(text) {
+      const canvas=document.createElement('canvas');
+      canvas.width=1080; canvas.height=1920;
+      const ctx=canvas.getContext('2d');
+
+      // Background
+      ctx.fillStyle='#0a0a0a';
+      ctx.fillRect(0,0,1080,1920);
+
+      // Gold accent bar
+      ctx.fillStyle='#F5C518';
+      ctx.fillRect(0,0,1080,12);
+      ctx.fillRect(0,1908,1080,12);
+
+      // Title
+      ctx.fillStyle='#F5C518';
+      ctx.font='900 100px "Arial Black", sans-serif';
+      ctx.textAlign='center';
+      ctx.fillText('4th & Wardle V2',540,200);
+
+      // Score
+      ctx.fillStyle='#ffffff';
+      ctx.font='700 60px Arial, sans-serif';
+      ctx.fillText(`Puzzle #${puzzle.puzzleNum}`,540,310);
+      ctx.fillStyle='#F5C518';
+      ctx.font='900 180px "Arial Black", sans-serif';
+      ctx.fillText(`${currentFinalScore}`,540,520);
+      ctx.fillStyle='#888888';
+      ctx.font='500 48px Arial, sans-serif';
+      ctx.fillText('POINTS',540,600);
+
+      // Emoji grid
+      ctx.font='80px serif';
+      const lines=text.split('\n').filter(l=>l.match(/[🏈⬛]/));
+      lines.forEach((line,i)=>ctx.fillText(line,540,760+i*100));
+
+      // URL
+      ctx.fillStyle='#F5C518';
+      ctx.font='700 44px Arial, sans-serif';
+      ctx.fillText('4thandward.com/wardlev2',540,1780);
+
+      // Logo text
+      ctx.fillStyle='#ffffff';
+      ctx.font='500 36px Arial, sans-serif';
+      ctx.fillText('4th & Ward Podcast',540,1850);
+
+      // Download
+      const link=document.createElement('a');
+      link.download='4th-wardle-v2-score.png';
+      link.href=canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // ── SCORE SAVING ──────────────────────────────────────────────────────────
+    async function saveScore(fs) {
+      try {
+        const today=todayStr();
+        const ref=await addDoc(collection(db,'scores_v2'),{
+          puzzleNum:puzzle.puzzleNum, score:fs, playerName:'Anonymous',
+          date:today, timestamp:Date.now(), hintsUsed:usedUnlocks.size, shared:false
+        });
+        scoreDocId=ref.id;
+        await setDoc(doc(db,'daily_v2',today),{plays:increment(1),totalScore:increment(fs)},{merge:true});
+        await setDoc(doc(db,'meta','summary_v2'),{totalPlays:increment(1),totalScore:increment(fs)},{merge:true});
+        loadStats();
+      } catch(e) { console.error('saveScore error:', e); }
+    }
+
+    window.submitToLeaderboard = async function() {
+      const input=document.getElementById('lb-name-input');
+      const btn=document.getElementById('lb-submit-btn');
+      if (!input||!btn) return;
+      const name=input.value.trim()||'Anonymous';
+      _playerName=name;
+      btn.disabled=true; btn.textContent='Saving...'; input.disabled=true;
+      try {
+        if (scoreDocId) {
+          // Update the existing score doc (created by saveScore) instead of creating a duplicate
+          await updateDoc(doc(db,'scores_v2',scoreDocId),{
+            playerName:sanitizeName(name), named:true,
+            score:currentFinalScore, shared:shareBonus
+          });
+        } else {
+          // Fallback: create new doc if saveScore didn't run (e.g. past puzzles)
+          const today=todayStr();
+          const ref=await addDoc(collection(db,'scores_v2'),{
+            puzzleNum:puzzle.puzzleNum, score:currentFinalScore,
+            playerName:sanitizeName(name), date:today, timestamp:Date.now(),
+            named:true, hintsUsed:usedUnlocks.size, shared:shareBonus
+          });
+          scoreDocId=ref.id;
+        }
+        await loadLeaderboard(puzzle.puzzleNum,name);
+        const nr=document.getElementById('lb-name-row');
+        if (nr) nr.style.display='none';
+      } catch(e) { console.error('submitToLeaderboard error:', e); btn.disabled=false; btn.textContent='Post Score'; input.disabled=false; }
+    };
+
+    async function loadLeaderboard(puzzleNum, highlightName) {
+      const wrap=document.getElementById('lb-table-wrap');
+      if (!wrap) return;
+      wrap.innerHTML='<div class="lb-loading">Loading leaderboard...</div>';
+      try {
+        // Try optimized query first (requires composite index: puzzleNum + named + score)
+        let snap;
+        try {
+          const q=query(collection(db,'scores_v2'),where('puzzleNum','==',puzzleNum),where('named','==',true),orderBy('score','desc'),limit(10));
+          snap=await getDocs(q);
+        } catch(indexErr) {
+          // Fallback: fetch without index, sort client-side
+          console.warn('Leaderboard index not yet created, using fallback query:', indexErr.message);
+          const q=query(collection(db,'scores_v2'),where('puzzleNum','==',puzzleNum),limit(200));
+          snap=await getDocs(q);
+        }
+        const entries=[];
+        snap.forEach(d=>{ const s=d.data(); if(s.playerName && s.named) entries.push(s); });
+        entries.sort((a,b)=>b.score-a.score);
+        const top10=entries.slice(0,10);
+        top10.forEach((e,i)=>e.rank=i+1);
+        renderLeaderboard(wrap,top10,highlightName||_playerName);
+      } catch(e) { console.error('loadLeaderboard error:', e); wrap.innerHTML='<div class="lb-empty">Could not load leaderboard.</div>'; }
+    }
+
+    function renderLeaderboard(wrap,entries,highlightName) {
+      if (!entries||!entries.length) { wrap.innerHTML='<div class="lb-empty">No scores yet for this puzzle.</div>'; return; }
+      const rankIcon=r=>r===1?'🥇':r===2?'🥈':r===3?'🥉':r;
+      const rankCls=r=>r===1?'top1':r===2?'top2':r===3?'top3':'';
+      let rows='';
+      entries.forEach(e=>{
+        const isYou=highlightName&&e.playerName.toLowerCase()===highlightName.toLowerCase();
+        const bonus=e.shared?'<span style="font-size:10px;color:#4caf50;"> +5✓</span>':'';
+        rows+=`<tr class="${isYou?'lb-you-row':''}">
+          <td class="lb-rank ${rankCls(e.rank)}">${rankIcon(e.rank)}</td>
+          <td>${escapeHtml(e.playerName)}${isYou?' <span style="font-size:10px;font-weight:700;color:var(--gold)">YOU</span>':''}${bonus}</td>
+          <td>${e.score}</td></tr>`;
+      });
+      wrap.innerHTML=`<table class="lb-table">
+        <thead><tr><th style="width:36px">#</th><th>Player</th><th>Score</th></tr></thead>
+        <tbody>${rows}</tbody></table>`;
+    }
+
+    // ── COUNTDOWN ─────────────────────────────────────────────────────────────
+    function updateCountdown() {
+      const now=new Date(),mid=new Date(now); mid.setHours(0,0,0,0); mid.setDate(mid.getDate()+1);
+      const diff=mid-now;
+      if (diff<=0) { document.getElementById('countdown-timer').textContent='Now!'; return; }
+      const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
+      const p=n=>String(n).padStart(2,'0');
+      document.getElementById('countdown-timer').textContent=p(h)+':'+p(m)+':'+p(s);
+    }
+    function startCountdown() { updateCountdown(); countdownInterval=setInterval(updateCountdown,1000); }
+
+    window.loadSelected    = loadSelected;
+    window.resetAndLoadNew = async function() {
+      resetGame();
+      try { puzzle=await loadPuzzle(todayPuzzleNumber()); startGame(); } catch(e) {}
+    };
+
+    function sanitizeName(n) {
+      return String(n).replace(/<[^>]*>/g,'').replace(/[^a-zA-Z0-9 '_\-\.!]/g,'').substring(0,24).trim()||'Anonymous';
+    }
+    function escapeHtml(s) {
+      return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── INIT ──────────────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', async () => {
+      document.getElementById('guess-input').addEventListener('keypress',e=>{ if(e.key==='Enter') window.submitGuess(); });
+      loadStats();
+      loadPuzzleList();
+      try { puzzle=await loadPuzzle(todayPuzzleNumber()); startGame(); }
+      catch(e) { document.getElementById('clue-text').textContent="Could not load today's puzzle."; }
+    });
+  </script>
+</body>
+</html>
