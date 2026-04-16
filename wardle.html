@@ -401,8 +401,8 @@
       return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     }
     function todayPuzzleNumber() {
-      const launch = new Date(LAUNCH_DATE+'T00:00:00');
-      const now = new Date(); now.setHours(0,0,0,0);
+      const launch = new Date(LAUNCH_DATE+'T00:00:00Z');
+      const now = new Date(); now.setUTCHours(0,0,0,0);
       return Math.max(1, Math.floor((now-launch)/86400000)+1);
     }
 
@@ -429,7 +429,7 @@
         document.getElementById('stat-plays').textContent   = plays;
         document.getElementById('stat-today').textContent   = todayAvg;
         document.getElementById('stat-alltime').textContent = allAvg;
-      } catch(e) {}
+      } catch(e) { console.error('loadStats error:', e); }
     }
 
     // ── PUZZLE LOADING ────────────────────────────────────────────────────────
@@ -442,7 +442,7 @@
       try {
         const total  = todayPuzzleNumber();
         const select = document.getElementById('puzzleSelect');
-        const launch = new Date(LAUNCH_DATE+'T00:00:00');
+        const launch = new Date(LAUNCH_DATE+'T00:00:00Z');
         for (let i=total; i>=1; i--) {
           const d=new Date(launch); d.setDate(d.getDate()+(i-1));
           const opt=document.createElement('option');
@@ -452,7 +452,7 @@
           if (i===total) opt.selected=true;
           select.appendChild(opt);
         }
-      } catch(e) {}
+      } catch(e) { console.error('loadPuzzleList error:', e); }
     }
     async function loadSelected() {
       const val=document.getElementById('puzzleSelect').value;
@@ -765,12 +765,11 @@
         currentFinalScore += 5;
         document.getElementById('display-score').textContent = currentFinalScore;
         document.getElementById('share-bonus-applied').style.display = 'block';
-        // Update score doc with share bonus
+        // Persist share bonus to Firestore immediately
         if (scoreDocId) {
           try {
-            const { doc: firestoreDoc, updateDoc: update } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-            // increment handled via re-save on leaderboard submit
-          } catch(e) {}
+            await updateDoc(doc(db,'scores',scoreDocId),{ score:currentFinalScore, shared:true });
+          } catch(e) { console.error('share bonus save error:', e); }
         }
       }
 
@@ -861,7 +860,7 @@
         await setDoc(doc(db,'daily',today),{plays:increment(1),totalScore:increment(fs)},{merge:true});
         await setDoc(doc(db,'meta','summary'),{totalPlays:increment(1),totalScore:increment(fs)},{merge:true});
         loadStats();
-      } catch(e) {}
+      } catch(e) { console.error('saveScore error:', e); }
     }
 
     window.submitToLeaderboard = async function() {
@@ -872,18 +871,26 @@
       _playerName=name;
       btn.disabled=true; btn.textContent='Saving...'; input.disabled=true;
       try {
-        const today=todayStr();
-        const finalScore=shareBonus?currentFinalScore:currentFinalScore;
-        await addDoc(collection(db,'scores'),{
-          puzzleNum:puzzle.puzzleNum, score:finalScore,
-          playerName:sanitizeName(name), date:today, timestamp:Date.now(),
-          named:true, hintsUsed:usedUnlocks.size, shared:shareBonus
-        });
+        if (scoreDocId) {
+          // Update the existing score doc (created by saveScore) instead of creating a duplicate
+          await updateDoc(doc(db,'scores',scoreDocId),{
+            playerName:sanitizeName(name), named:true,
+            score:currentFinalScore, shared:shareBonus
+          });
+        } else {
+          // Fallback: create new doc if saveScore didn't run (e.g. past puzzles)
+          const today=todayStr();
+          const ref=await addDoc(collection(db,'scores'),{
+            puzzleNum:puzzle.puzzleNum, score:currentFinalScore,
+            playerName:sanitizeName(name), date:today, timestamp:Date.now(),
+            named:true, hintsUsed:usedUnlocks.size, shared:shareBonus
+          });
+          scoreDocId=ref.id;
+        }
         await loadLeaderboard(puzzle.puzzleNum,name);
         const nr=document.getElementById('lb-name-row');
         if (nr) nr.style.display='none';
-        loadStats();
-      } catch(e) { btn.disabled=false; btn.textContent='Post Score'; input.disabled=false; }
+      } catch(e) { console.error('submitToLeaderboard error:', e); btn.disabled=false; btn.textContent='Post Score'; input.disabled=false; }
     };
 
     async function loadLeaderboard(puzzleNum, highlightName) {
@@ -891,15 +898,24 @@
       if (!wrap) return;
       wrap.innerHTML='<div class="lb-loading">Loading leaderboard...</div>';
       try {
-        const q=query(collection(db,'scores'),where('puzzleNum','==',puzzleNum),limit(200));
-        const snap=await getDocs(q);
+        // Try optimized query first (requires composite index: puzzleNum + named + score)
+        let snap;
+        try {
+          const q=query(collection(db,'scores'),where('puzzleNum','==',puzzleNum),where('named','==',true),orderBy('score','desc'),limit(10));
+          snap=await getDocs(q);
+        } catch(indexErr) {
+          // Fallback: fetch without index, sort client-side
+          console.warn('Leaderboard index not yet created, using fallback query:', indexErr.message);
+          const q=query(collection(db,'scores'),where('puzzleNum','==',puzzleNum),limit(200));
+          snap=await getDocs(q);
+        }
         const entries=[];
-        snap.forEach(d=>{ const s=d.data(); if(s.playerName) entries.push(s); });
+        snap.forEach(d=>{ const s=d.data(); if(s.playerName && s.named) entries.push(s); });
         entries.sort((a,b)=>b.score-a.score);
         const top10=entries.slice(0,10);
         top10.forEach((e,i)=>e.rank=i+1);
         renderLeaderboard(wrap,top10,highlightName||_playerName);
-      } catch(e) { wrap.innerHTML='<div class="lb-empty">Could not load leaderboard.</div>'; }
+      } catch(e) { console.error('loadLeaderboard error:', e); wrap.innerHTML='<div class="lb-empty">Could not load leaderboard.</div>'; }
     }
 
     function renderLeaderboard(wrap,entries,highlightName) {
@@ -922,7 +938,7 @@
 
     // ── COUNTDOWN ─────────────────────────────────────────────────────────────
     function updateCountdown() {
-      const now=new Date(),mid=new Date(); mid.setHours(24,0,0,0);
+      const now=new Date(),mid=new Date(now); mid.setHours(0,0,0,0); mid.setDate(mid.getDate()+1);
       const diff=mid-now;
       if (diff<=0) { document.getElementById('countdown-timer').textContent='Now!'; return; }
       const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);

@@ -1228,7 +1228,10 @@
         return;
       }
       let html = '';
+      // Store nominee data for event delegation (avoids XSS from inline onclick)
+      window._nomineeData = {};
       rows.forEach(r => {
+        window._nomineeData[r.id] = r;
         const date = r.submittedAt ? new Date(r.submittedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
         html += `<tr>
           <td><strong>${escapeHtml(r.teamName)}</strong></td>
@@ -1236,9 +1239,9 @@
           <td>${escapeHtml(r.location||'')}</td>
           <td style="color:var(--muted);font-size:12px">${date}</td>
           <td style="white-space:nowrap">
-            <button class="btn btn-ghost btn-sm" onclick="editNomineeAdmin('${r.id}','${escapeHtml(r.teamName).replace(/'/g,"\\'")}','${escapeHtml(r.mascot||'').replace(/'/g,"\\'")}','${escapeHtml(r.city||'').replace(/'/g,"\\'")}','${escapeHtml(r.state||'')}')">Edit</button>
-            <button class="btn btn-ghost btn-sm" style="border-color:rgba(245,197,24,.4);color:var(--gold)" onclick="promoteToWinner('${r.id}','${escapeHtml(r.teamName).replace(/'/g,"\\'")}','${escapeHtml(r.mascot||'').replace(/'/g,"\\'")}','${escapeHtml(r.location||'').replace(/'/g,"\\'")}','${escapeHtml(r.city||'').replace(/'/g,"\\'")}','${escapeHtml(r.state||'')}','${escapeHtml(r.logoUrl||'')}')">&#127942; Make Winner</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteNomineeAdmin('${r.id}','${escapeHtml(r.teamName).replace(/'/g,"\\'")}')">Delete</button>
+            <button class="btn btn-ghost btn-sm" data-action="edit-nominee" data-id="${r.id}">Edit</button>
+            <button class="btn btn-ghost btn-sm" style="border-color:rgba(245,197,24,.4);color:var(--gold)" data-action="promote-nominee" data-id="${r.id}">&#127942; Make Winner</button>
+            <button class="btn btn-danger btn-sm" data-action="delete-nominee" data-id="${r.id}">Delete</button>
           </td>
         </tr>`;
       });
@@ -1253,7 +1256,16 @@
     const state  = document.getElementById('mnom-state').value.trim();
     if (!raw||!mascot||!city||!state) { toast('All fields required.','error'); return; }
     const teamName = normalizeName(raw);
+    // Duplicate check — same logic as public nomination form
     try {
+      const nomSnap = await getDocs(collection(db,'totw_nominees'));
+      const winSnap = await getDocs(collection(db,'totw_winners'));
+      const nameNorm = teamName.toLowerCase().trim();
+      let onWheel = false, isPastWin = false;
+      nomSnap.forEach(d => { if ((d.data().teamName||'').toLowerCase().trim() === nameNorm) onWheel = true; });
+      winSnap.forEach(d => { if ((d.data().teamName||'').toLowerCase().trim() === nameNorm) isPastWin = true; });
+      if (onWheel) { toast('This school is already on the wheel!','error'); return; }
+      if (isPastWin) { toast('This school has already been a past winner!','error'); return; }
       await addDoc(collection(db,'totw_nominees'), {
         teamName, mascot, city, state, location: city+', '+state, logoUrl: '', submittedAt: Date.now()
       });
@@ -1263,14 +1275,29 @@
     } catch(e) { toast('Error: '+e.message,'error'); }
   };
 
-  window.editNomineeAdmin = function(id, teamName, mascot, city, state) {
-    const newName   = prompt('School name:', teamName);
+  // Event delegation for nominee actions (avoids XSS from inline onclick)
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const id = btn.dataset.id;
+    if (action === 'edit-nominee')    { editNomineeAdmin(id); }
+    if (action === 'delete-nominee')  { deleteNomineeAdmin(id); }
+    if (action === 'promote-nominee') { promoteToWinner(id); }
+    if (action === 'edit-winner')     { editWinnerAdmin(id); }
+    if (action === 'delete-winner')   { deleteWinnerAdmin(id); }
+  });
+
+  window.editNomineeAdmin = function(id) {
+    const r = window._nomineeData && window._nomineeData[id];
+    if (!r) return;
+    const newName   = prompt('School name:', r.teamName);
     if (newName === null) return;
-    const newMascot = prompt('Mascot:', mascot);
+    const newMascot = prompt('Mascot:', r.mascot||'');
     if (newMascot === null) return;
-    const newCity   = prompt('City:', city);
+    const newCity   = prompt('City:', r.city||'');
     if (newCity === null) return;
-    const newState  = prompt('State:', state);
+    const newState  = prompt('State:', r.state||'');
     if (newState === null) return;
     const normalized = normalizeName(newName);
     updateDoc(doc(db,'totw_nominees',id), {
@@ -1280,7 +1307,9 @@
       .catch(e => toast('Error: '+e.message,'error'));
   };
 
-  window.deleteNomineeAdmin = async function(id, name) {
+  window.deleteNomineeAdmin = async function(id) {
+    const r = window._nomineeData && window._nomineeData[id];
+    const name = r ? r.teamName : 'this nominee';
     if (!confirm('Remove "'+name+'" from the wheel? This cannot be undone.')) return;
     try {
       await deleteDoc(doc(db,'totw_nominees',id));
@@ -1289,17 +1318,20 @@
     } catch(e) { toast('Error: '+e.message,'error'); }
   };
 
-  window.promoteToWinner = async function(id, teamName, mascot, location, city, state, logoUrl) {
+  window.promoteToWinner = async function(id) {
+    const r = window._nomineeData && window._nomineeData[id];
+    if (!r) return;
     const epNum = prompt('Episode number for this winner:');
     if (!epNum || !epNum.trim()) return;
-    if (!confirm('Mark "'+teamName+'" as Ep. '+epNum+' winner and remove from wheel?')) return;
+    if (!confirm('Mark "'+r.teamName+'" as Ep. '+epNum+' winner and remove from wheel?')) return;
     try {
       await addDoc(collection(db,'totw_winners'), {
-        teamName, mascot, location, city, state, logoUrl: logoUrl||'',
+        teamName: r.teamName, mascot: r.mascot, location: r.location,
+        city: r.city, state: r.state, logoUrl: r.logoUrl||'',
         episode: epNum.trim(), wonAt: Date.now()
       });
       await deleteDoc(doc(db,'totw_nominees',id));
-      toast(teamName+' logged as Ep. '+epNum+' winner!');
+      toast(r.teamName+' logged as Ep. '+epNum+' winner!');
       loadNomineesAdmin();
     } catch(e) { toast('Error: '+e.message,'error'); }
   };
@@ -1330,16 +1362,19 @@
         tbody.innerHTML = '<tr><td colspan="5" class="loading-row">No winners logged yet.</td></tr>';
         return;
       }
+      // Store winner data for event delegation (avoids XSS from inline onclick)
+      window._winnerData = {};
       let html = '';
       rows.forEach(w => {
+        window._winnerData[w.id] = w;
         html += `<tr>
           <td><span class="badge badge-gold">Ep. ${escapeHtml(String(w.episode||'—'))}</span></td>
           <td><strong>${escapeHtml(w.teamName||'—')}</strong></td>
           <td>${escapeHtml(w.mascot||'—')}</td>
           <td>${escapeHtml(w.location||'')}</td>
           <td style="white-space:nowrap">
-            <button class="btn btn-ghost btn-sm" onclick="editWinnerAdmin('${w.id}','${escapeHtml(w.teamName||'').replace(/'/g,"\\'")}','${escapeHtml(w.mascot||'').replace(/'/g,"\\'")}','${escapeHtml(w.city||'').replace(/'/g,"\\'")}','${escapeHtml(w.state||'')}','${escapeHtml(String(w.episode||''))}')">Edit</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteWinnerAdmin('${w.id}','${escapeHtml(w.teamName||'').replace(/'/g,"\\'")}')">Delete</button>
+            <button class="btn btn-ghost btn-sm" data-action="edit-winner" data-id="${w.id}">Edit</button>
+            <button class="btn btn-danger btn-sm" data-action="delete-winner" data-id="${w.id}">Delete</button>
           </td>
         </tr>`;
       });
@@ -1366,16 +1401,18 @@
     } catch(e) { toast('Error: '+e.message,'error'); }
   };
 
-  window.editWinnerAdmin = function(id, teamName, mascot, city, state, episode) {
-    const newName    = prompt('School name:', teamName);
+  window.editWinnerAdmin = function(id) {
+    const w = window._winnerData && window._winnerData[id];
+    if (!w) return;
+    const newName    = prompt('School name:', w.teamName||'');
     if (newName === null) return;
-    const newMascot  = prompt('Mascot:', mascot);
+    const newMascot  = prompt('Mascot:', w.mascot||'');
     if (newMascot === null) return;
-    const newCity    = prompt('City:', city);
+    const newCity    = prompt('City:', w.city||'');
     if (newCity === null) return;
-    const newState   = prompt('State:', state);
+    const newState   = prompt('State:', w.state||'');
     if (newState === null) return;
-    const newEp      = prompt('Episode #:', episode);
+    const newEp      = prompt('Episode #:', String(w.episode||''));
     if (newEp === null) return;
     const normalized = normalizeName(newName);
     updateDoc(doc(db,'totw_winners',id), {
@@ -1386,7 +1423,9 @@
       .catch(e => toast('Error: '+e.message,'error'));
   };
 
-  window.deleteWinnerAdmin = async function(id, name) {
+  window.deleteWinnerAdmin = async function(id) {
+    const w = window._winnerData && window._winnerData[id];
+    const name = w ? w.teamName : 'this winner';
     if (!confirm('Delete "'+name+'" from winners? This cannot be undone.')) return;
     try {
       await deleteDoc(doc(db,'totw_winners',id));
