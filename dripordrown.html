@@ -38,8 +38,8 @@
     .drip-subtitle { color: var(--muted); font-size: 17px; line-height: 1.65; max-width: 600px; }
 
     /* TABS */
-    .tab-bar { display: flex; gap: 4px; padding: 28px 48px 0; border-bottom: 1px solid var(--border); background: var(--black); justify-content: center; }
-    .tab-btn { padding: 14px 28px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: none; border: none; border-bottom: 3px solid transparent; color: var(--muted); cursor: pointer; font-family: var(--body); transition: color 0.2s, border-color 0.2s; margin-bottom: -1px; }
+    .tab-bar { display: flex; gap: 8px; padding: 28px 48px 0; border-bottom: 1px solid var(--border); background: var(--black); justify-content: center; }
+    .tab-btn { padding: 16px 32px; font-family: var(--condensed); font-size: 22px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; background: none; border: none; border-bottom: 3px solid transparent; color: var(--muted); cursor: pointer; transition: color 0.2s, border-color 0.2s; margin-bottom: -1px; line-height: 1; }
     .tab-btn:hover { color: var(--white); }
     .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
 
@@ -252,10 +252,10 @@
   </div>
 
   <div class="tab-bar">
-    <button class="tab-btn active" data-tab="vote">&#128064; Vote</button>
-    <button class="tab-btn" data-tab="submit">&#128247; Submit</button>
-    <button class="tab-btn" data-tab="schools">&#127979; Schools</button>
-    <button class="tab-btn" data-tab="top">&#127942; Top Drips</button>
+    <button class="tab-btn active" data-tab="vote">Vote</button>
+    <button class="tab-btn" data-tab="schools">Schools</button>
+    <button class="tab-btn" data-tab="submit">Submit</button>
+    <button class="tab-btn" data-tab="top">Top Drips</button>
   </div>
 
   <div class="drip-body">
@@ -278,8 +278,17 @@
         <div class="section-head">
           <h2>&#127942; TOP 3 <span class="accent">DRIPS</span></h2>
         </div>
-        <p class="section-sub">The drippiest fits in the game. Min. 10 votes to qualify.</p>
+        <p class="section-sub">The drippiest fits in the game. Min. 3 votes to qualify.</p>
         <div class="tier-grid" id="top3-grid"></div>
+      </div>
+
+      <!-- BOTTOM 3 DROWNS -->
+      <div id="bottom3-wrap" class="tier-section" style="display:none;">
+        <div class="section-head">
+          <h2>&#128128; BOTTOM 3 <span class="accent-blue">DROWNS</span></h2>
+        </div>
+        <p class="section-sub">Yikes. These ones didn't hit. Min. 3 votes to qualify.</p>
+        <div class="tier-grid" id="bottom3-grid"></div>
       </div>
 
       <!-- ALL SUBMISSIONS -->
@@ -293,15 +302,6 @@
             <div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div>
           </div>
         </div>
-      </div>
-
-      <!-- BOTTOM 3 DROWNS -->
-      <div id="bottom3-wrap" class="tier-section" style="display:none;">
-        <div class="section-head">
-          <h2>&#128128; BOTTOM 3 <span class="accent-blue">DROWNS</span></h2>
-        </div>
-        <p class="section-sub">Yikes. These ones didn't hit. Min. 10 votes to qualify.</p>
-        <div class="tier-grid" id="bottom3-grid"></div>
       </div>
     </div>
 
@@ -748,7 +748,7 @@
       const wrap = document.getElementById('top3-wrap');
       const grid = document.getElementById('top3-grid');
       const eligible = window._submissions
-        .filter(s => ((s.dripVotes||0) + (s.drownVotes||0)) >= 10)
+        .filter(s => ((s.dripVotes||0) + (s.drownVotes||0)) >= 3)
         .map(s => ({...s, _pct: dripScore(s.dripVotes, s.drownVotes)}))
         .sort((a,b) => b._pct - a._pct)
         .slice(0,3);
@@ -761,7 +761,7 @@
       const wrap = document.getElementById('bottom3-wrap');
       const grid = document.getElementById('bottom3-grid');
       const eligible = window._submissions
-        .filter(s => ((s.dripVotes||0) + (s.drownVotes||0)) >= 10)
+        .filter(s => ((s.dripVotes||0) + (s.drownVotes||0)) >= 3)
         .map(s => ({...s, _pct: dripScore(s.dripVotes, s.drownVotes)}))
         .sort((a,b) => a._pct - b._pct)
         .slice(0,3);
