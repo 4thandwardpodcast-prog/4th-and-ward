@@ -5,17 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>4th & Ward — Admin Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:wght@0,400;0,500;0,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
   <style>
+    /* Admin-only color additions (gold/surfaces/etc. come from shared.css) */
     :root {
-      --gold: #f5c518; --gold-hover: #e6b800;
-      --black: #0a0a0a; --surface: #111111; --surface2: #1a1a1a;
-      --border: #2a2a2a; --white: #ffffff; --muted: #888888;
       --red: #e05555; --green: #4caf50; --blue: #2196f3;
-      --condensed: 'Barlow Condensed', sans-serif;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Barlow', sans-serif; background: var(--black); color: var(--white); min-height: 100vh; }
+    body { min-height: 100vh; }
 
     /* LOGIN SCREEN */
     #login-screen {
@@ -111,7 +108,7 @@
     .form-label { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
     .form-input, .form-select, .form-textarea {
       background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
-      padding: 10px 14px; font-size: 14px; color: var(--white); font-family: 'Barlow', sans-serif;
+      padding: 10px 14px; font-size: 14px; color: var(--white); font-family: var(--body);
       outline: none; transition: border-color .2s; width: 100%;
     }
     .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--gold); }
@@ -119,7 +116,7 @@
     .form-actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
 
     /* BUTTONS */
-    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; border: none; font-family: 'Barlow', sans-serif; transition: background .2s, transform .15s; white-space: nowrap; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; border: none; font-family: var(--body); transition: background .2s, transform .15s; white-space: nowrap; }
     .btn:hover { transform: translateY(-1px); }
     .btn-gold    { background: var(--gold); color: var(--black); }
     .btn-gold:hover { background: var(--gold-hover); }
@@ -217,9 +214,6 @@
       </button>
 
       <div class="sidebar-section">Drip or Drown</div>
-      <button class="sidebar-item" onclick="showPage('drip-pending')">
-        <span class="sidebar-icon">&#128680;</span> Pending Review
-      </button>
       <button class="sidebar-item" onclick="showPage('drip-all')">
         <span class="sidebar-icon">&#128171;</span> All Submissions
       </button>

@@ -11,6 +11,7 @@
     { "src": "/wardlev2", "dest": "/wardlev2.html" },
     { "src": "/totwv2", "dest": "/totwv2.html" },
     { "src": "/dripordrown", "dest": "/dripordrown.html" },
+    { "src": "/admin", "dest": "/admin.html" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }
