@@ -73,6 +73,25 @@
     .field-input:focus { border-color: var(--gold); background: #0c0c0c;
       box-shadow: inset 0 2px 6px rgba(0,0,0,0.5), 0 0 0 4px rgba(245,197,24,0.12); }
     .field-hint { font-size: 11px; color: var(--muted); margin-top: 6px; letter-spacing: 0.05em; }
+    .palette-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
+    .palette-opt {
+      display: flex; flex-direction: column; gap: 6px; align-items: center;
+      padding: 8px 6px 7px; background: #050505; border: 2px solid var(--border);
+      border-radius: 8px; cursor: pointer; color: var(--white); font-family: inherit;
+      transition: border-color .15s, background .15s, transform .1s;
+    }
+    .palette-opt:hover { border-color: rgba(245,197,24,0.4); }
+    .palette-opt.selected { border-color: var(--gold); background: rgba(245,197,24,0.06); box-shadow: 0 0 0 3px rgba(245,197,24,0.08); }
+    .palette-swatch { width: 100%; height: 30px; border-radius: 5px; overflow: hidden; display: flex; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1); }
+    .palette-swatch-half { flex: 1; }
+    .palette-lbl { font-family: var(--condensed); font-size: 10px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); line-height: 1; text-align: center; }
+    .palette-opt.selected .palette-lbl { color: var(--gold); }
+    .palette-custom-icon {
+      width: 100%; height: 30px; border-radius: 5px;
+      background: conic-gradient(from 0deg, #ff3b3b, #ffd21e, #3bff7e, #3bc9ff, #6a3bff, #ff3bb3, #ff3b3b);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15), inset 0 0 10px rgba(0,0,0,0.35);
+    }
+    .custom-colors { margin-top: 10px; padding: 12px 14px; background: #050505; border: 1px solid var(--border); border-radius: 8px; }
     .color-row { display: flex; gap: 16px; }
     .color-chip { flex: 1; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
     .color-swatch-wrap { position: relative; width: 100%; height: 62px; border-radius: 10px; border: 2px solid var(--border); overflow: hidden; cursor: pointer; transition: border-color .2s; }
@@ -396,14 +415,17 @@
 
           <div class="field-group">
             <label class="field-label">Team Colors</label>
-            <div class="color-row">
-              <div class="color-chip">
-                <div class="color-swatch-wrap" id="swatch1-wrap" style="background:#F5C518"><input type="color" id="fld-color1" value="#F5C518"></div>
-                <div class="field-hint">Primary</div>
-              </div>
-              <div class="color-chip">
-                <div class="color-swatch-wrap" id="swatch2-wrap" style="background:#080808"><input type="color" id="fld-color2" value="#080808"></div>
-                <div class="field-hint">Secondary</div>
+            <div class="palette-picker" id="palette-picker"></div>
+            <div class="custom-colors" id="custom-colors" style="display:none">
+              <div class="color-row">
+                <div class="color-chip">
+                  <div class="color-swatch-wrap" id="swatch1-wrap" style="background:#F5C518"><input type="color" id="fld-color1" value="#F5C518"></div>
+                  <div class="field-hint">Primary</div>
+                </div>
+                <div class="color-chip">
+                  <div class="color-swatch-wrap" id="swatch2-wrap" style="background:#080808"><input type="color" id="fld-color2" value="#080808"></div>
+                  <div class="field-hint">Secondary</div>
+                </div>
               </div>
             </div>
           </div>
@@ -854,6 +876,86 @@
   fldMascot.addEventListener('input', () => { school.mascot = fldMascot.value; previewMascot.textContent = school.mascot || 'Mascot'; renderPreview(); });
   fldColor1.addEventListener('input', () => { school.primary = fldColor1.value; swatch1.style.background = school.primary; renderPreview(); });
   fldColor2.addEventListener('input', () => { school.secondary = fldColor2.value; swatch2.style.background = school.secondary; renderPreview(); });
+
+  /* ── PRESET PALETTES ── */
+  const PALETTES = [
+    { name: 'Ward Gold',      p: '#F5C518', s: '#080808' },
+    { name: 'Red & White',    p: '#C8102E', s: '#FFFFFF' },
+    { name: 'Red & Black',    p: '#C8102E', s: '#080808' },
+    { name: 'Royal & White',  p: '#1E3A8A', s: '#FFFFFF' },
+    { name: 'Navy & Gold',    p: '#0B2545', s: '#F5C518' },
+    { name: 'Navy & Orange',  p: '#0B2545', s: '#FF7A00' },
+    { name: 'Purple & Gold',  p: '#4B1E78', s: '#F5C518' },
+    { name: 'Forest & White', p: '#0F5132', s: '#FFFFFF' },
+    { name: 'Green & Gold',   p: '#0F5132', s: '#F5C518' },
+    { name: 'Orange & Black', p: '#FF6B00', s: '#080808' },
+    { name: 'Maroon & White', p: '#6A1B1B', s: '#FFFFFF' },
+    { name: 'Carolina',       p: '#7CB9E8', s: '#0B2545' },
+    { name: 'Columbia & Gold',p: '#9BCBEB', s: '#F5C518' },
+    { name: 'Black & Gold',   p: '#0a0a0a', s: '#F5C518' },
+    { name: 'Teal & Black',   p: '#0AA4A4', s: '#080808' },
+    { custom: true,           name: 'Custom' }
+  ];
+
+  const paletteContainer = document.getElementById('palette-picker');
+  const customColorsEl   = document.getElementById('custom-colors');
+
+  function eqColor(a, b) { return String(a||'').toLowerCase() === String(b||'').toLowerCase(); }
+  function findPresetIdx() {
+    for (let i = 0; i < PALETTES.length; i++) {
+      const P = PALETTES[i];
+      if (P.custom) continue;
+      if (eqColor(P.p, school.primary) && eqColor(P.s, school.secondary)) return i;
+    }
+    return PALETTES.findIndex(p => p.custom);
+  }
+
+  PALETTES.forEach((palette, i) => {
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'palette-opt';
+    el.dataset.idx = String(i);
+    if (palette.custom) {
+      el.innerHTML = '<div class="palette-custom-icon"></div><div class="palette-lbl">Custom</div>';
+    } else {
+      el.innerHTML =
+        '<div class="palette-swatch">' +
+          '<div class="palette-swatch-half" style="background:' + palette.p + '"></div>' +
+          '<div class="palette-swatch-half" style="background:' + palette.s + '"></div>' +
+        '</div>' +
+        '<div class="palette-lbl">' + palette.name + '</div>';
+    }
+    el.addEventListener('click', () => selectPalette(i));
+    paletteContainer.appendChild(el);
+  });
+
+  function selectPalette(idx) {
+    const palette = PALETTES[idx];
+    [...paletteContainer.children].forEach((c, i) => c.classList.toggle('selected', i === idx));
+    if (palette.custom) {
+      customColorsEl.style.display = '';
+    } else {
+      customColorsEl.style.display = 'none';
+      school.primary   = palette.p;
+      school.secondary = palette.s;
+      fldColor1.value = palette.p;
+      fldColor2.value = palette.s;
+      swatch1.style.background = palette.p;
+      swatch2.style.background = palette.s;
+      renderPreview();
+    }
+  }
+
+  function syncPaletteToColors() {
+    const idx = findPresetIdx();
+    [...paletteContainer.children].forEach((c, i) => c.classList.toggle('selected', i === idx));
+    customColorsEl.style.display = PALETTES[idx].custom ? '' : 'none';
+  }
+  // When the user tweaks a custom color, keep the picker state correct
+  fldColor1.addEventListener('input', syncPaletteToColors);
+  fldColor2.addEventListener('input', syncPaletteToColors);
+  // Initial state based on current school colors
+  syncPaletteToColors();
 
   // Restore saved school if any
   try {
