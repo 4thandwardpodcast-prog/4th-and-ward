@@ -46,20 +46,52 @@
 </script>
   <style>
     .hero { min-height: 100vh; display: flex; align-items: center; padding: 68px 48px 0; position: relative; overflow: hidden; }
-    .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 60% 70% at 70% 50%, rgba(245,197,24,0.06) 0%, transparent 70%), radial-gradient(ellipse 40% 50% at 20% 80%, rgba(245,197,24,0.03) 0%, transparent 60%); }
-    .hero-bg-lines { position: absolute; inset: 0; background-image: repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(245,197,24,0.03) 79px, rgba(245,197,24,0.03) 80px); }
+    /* Layered atmospheric backdrop */
+    .hero-bg { position: absolute; inset: 0; pointer-events: none;
+               background: radial-gradient(ellipse 70% 80% at 75% 45%, rgba(245,197,24,0.14) 0%, rgba(245,197,24,0.04) 35%, transparent 70%),
+                           radial-gradient(ellipse 50% 60% at 18% 85%, rgba(245,197,24,0.05) 0%, transparent 65%),
+                           radial-gradient(ellipse 100% 60% at 50% 100%, rgba(0,0,0,0.7) 0%, transparent 70%); }
+    .hero-bg-lines { position: absolute; inset: 0; pointer-events: none;
+                     background-image: repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(245,197,24,0.035) 79px, rgba(245,197,24,0.035) 80px),
+                                       repeating-linear-gradient(0deg, transparent 0 6px, rgba(255,255,255,0.012) 6px 7px);
+                     opacity: 0.9; }
+    .hero-bg-glow { position: absolute; pointer-events: none; right: -6%; top: 50%; transform: translateY(-50%);
+                    width: 720px; height: 720px; max-width: 70vw; max-height: 70vw;
+                    background: radial-gradient(circle, rgba(245,197,24,0.18) 0%, rgba(245,197,24,0.05) 35%, transparent 65%);
+                    filter: blur(20px); animation: heroGlowBreath 6s ease-in-out infinite; }
+    @keyframes heroGlowBreath { 0%,100% { opacity: 0.85; transform: translateY(-50%) scale(1); } 50% { opacity: 1; transform: translateY(-50%) scale(1.04); } }
     .hero-inner { position: relative; z-index: 2; display: grid; grid-template-columns: 1fr 420px; gap: 80px; align-items: center; max-width: 1200px; margin: 0 auto; width: 100%; padding: 80px 0; }
     .hero-tag { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 24px; }
     .hero-tag::before { content: ''; display: block; width: 24px; height: 2px; background: var(--gold); }
-    .hero h1 { font-family: var(--condensed); font-weight: 900; font-size: clamp(64px, 9vw, 108px); line-height: 0.88; text-transform: uppercase; letter-spacing: -0.01em; margin-bottom: 28px; }
-    .hero h1 .gold { color: var(--gold); }
+    .hero h1 { font-family: var(--condensed); font-weight: 900; font-size: clamp(64px, 9vw, 108px); line-height: 0.88; text-transform: uppercase; letter-spacing: -0.01em; margin-bottom: 28px; text-shadow: 0 2px 18px rgba(0,0,0,0.6); }
+    .hero h1 .gold { color: var(--gold); text-shadow: 0 0 32px rgba(245,197,24,0.4), 0 2px 18px rgba(0,0,0,0.6); }
     .hero-desc { font-size: 17px; color: var(--muted); line-height: 1.65; max-width: 480px; margin-bottom: 40px; }
     .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
-    .hero-cover { position: relative; }
-    .hero-cover-img { width: 100%; aspect-ratio: 1; border-radius: 8px; display: block; box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(245,197,24,0.1); }
-    .hero-cover-badge { position: absolute; bottom: -16px; left: -16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; }
-    .badge-dot { width: 8px; height: 8px; border-radius: 50%; background: #1DB954; box-shadow: 0 0 0 3px rgba(29,185,84,0.2); animation: pulse 2s ease-in-out infinite; }
-    @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 3px rgba(29,185,84,0.2); } 50% { box-shadow: 0 0 0 6px rgba(29,185,84,0.1); } }
+    .hero-cover { position: relative; perspective: 1000px; }
+    .hero-cover-img { width: 100%; aspect-ratio: 1; border-radius: 16px; display: block;
+                      box-shadow: 0 50px 100px rgba(0,0,0,0.8),
+                                  0 30px 60px rgba(0,0,0,0.5),
+                                  0 0 80px rgba(245,197,24,0.25),
+                                  0 0 0 1px rgba(245,197,24,0.35),
+                                  inset 0 0 0 4px rgba(0,0,0,0.6);
+                      animation: coverFloat 5s ease-in-out infinite, coverGlow 4s ease-in-out infinite;
+                      transition: transform 0.4s ease, box-shadow 0.4s ease; }
+    .hero-cover-img:hover { transform: translateY(-6px) scale(1.015);
+                            box-shadow: 0 60px 120px rgba(0,0,0,0.85),
+                                        0 30px 60px rgba(0,0,0,0.5),
+                                        0 0 120px rgba(245,197,24,0.4),
+                                        0 0 0 1px rgba(245,197,24,0.5),
+                                        inset 0 0 0 4px rgba(0,0,0,0.6); }
+    @keyframes coverFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    @keyframes coverGlow { 0%,100% { filter: drop-shadow(0 0 0 rgba(245,197,24,0)); }
+                            50%     { filter: drop-shadow(0 0 24px rgba(245,197,24,0.18)); } }
+    .hero-cover-badge { position: absolute; bottom: -18px; left: -18px;
+                        background: linear-gradient(180deg, #1c1c1c 0%, #0e0e0e 100%);
+                        border: 1px solid rgba(245,197,24,0.3); border-radius: 8px;
+                        padding: 14px 18px; display: flex; align-items: center; gap: 12px;
+                        box-shadow: 0 12px 28px rgba(0,0,0,0.55), 0 0 24px rgba(245,197,24,0.12); }
+    .badge-dot { width: 8px; height: 8px; border-radius: 50%; background: #1DB954; box-shadow: 0 0 0 3px rgba(29,185,84,0.2), 0 0 12px rgba(29,185,84,0.5); animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 3px rgba(29,185,84,0.2), 0 0 12px rgba(29,185,84,0.5); } 50% { box-shadow: 0 0 0 7px rgba(29,185,84,0.05), 0 0 20px rgba(29,185,84,0.7); } }
     .badge-text { font-size: 12px; font-weight: 600; color: var(--white); }
     .badge-sub { font-size: 11px; color: var(--muted); }
     .listen-strip { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 20px 48px; display: flex; align-items: center; gap: 40px; }
@@ -117,6 +149,7 @@
   <section class="hero">
     <div class="hero-bg"></div>
     <div class="hero-bg-lines"></div>
+    <div class="hero-bg-glow"></div>
     <div class="hero-inner">
       <div>
         <div class="hero-tag fade-up fade-up-1">Sports &amp; Culture Podcast</div>
@@ -128,7 +161,7 @@
         </div>
       </div>
       <div class="hero-cover fade-up fade-up-3">
-        <img src="logo.png" alt="4th & Ward Podcast" class="hero-cover-img">
+        <img src="logo-cover.svg" alt="4th & Ward Podcast" class="hero-cover-img">
         <div class="hero-cover-badge">
           <div class="badge-dot"></div>
           <div><div class="badge-text">New Episode</div><div class="badge-sub">Available now</div></div>
