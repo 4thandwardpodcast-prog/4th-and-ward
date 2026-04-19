@@ -83,26 +83,28 @@
     .field-input:focus { border-color: var(--gold); background: #0c0c0c;
       box-shadow: inset 0 2px 6px rgba(0,0,0,0.5), 0 0 0 4px rgba(245,197,24,0.12); }
     .field-hint { font-size: 11px; color: var(--muted); margin-top: 6px; letter-spacing: 0.05em; }
-    .palette-picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
-    .palette-opt {
-      display: flex; flex-direction: column; gap: 6px; align-items: center;
-      padding: 8px 6px 7px; background: #050505; border: 2px solid var(--border);
-      border-radius: 8px; cursor: pointer; color: var(--white); font-family: inherit;
-      transition: border-color .15s, background .15s, transform .1s;
+    /* ── COLOR CHIP PICKER (per-slot) ── */
+    .color-slot { margin-bottom: 14px; }
+    .color-slot:last-child { margin-bottom: 0; }
+    .color-slot-label { display: flex; align-items: center; gap: 10px; font-family: var(--condensed); font-size: 11px; font-weight: 900; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .color-slot-label .dot { width: 14px; height: 14px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.18); transition: background .15s; }
+    .color-chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)); gap: 6px; }
+    .color-chip-btn {
+      width: 100%; aspect-ratio: 1; border-radius: 6px; padding: 0;
+      border: 2px solid var(--border); cursor: pointer; position: relative;
+      background-clip: padding-box;
+      transition: transform .1s, border-color .15s, box-shadow .15s;
     }
-    .palette-opt:hover { border-color: rgba(245,197,24,0.4); }
-    .palette-opt.selected { border-color: var(--gold); background: rgba(245,197,24,0.06); box-shadow: 0 0 0 3px rgba(245,197,24,0.08); }
-    .palette-swatch { width: 100%; height: 30px; border-radius: 5px; overflow: hidden; display: flex; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1); }
-    .palette-swatch-half { flex: 1; }
-    .palette-lbl { font-family: var(--condensed); font-size: 10px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); line-height: 1; text-align: center; }
-    .palette-opt.selected .palette-lbl { color: var(--gold); }
-    .palette-custom-icon {
-      width: 100%; height: 30px; border-radius: 5px;
+    .color-chip-btn:hover { transform: scale(1.08); border-color: rgba(245,197,24,0.35); }
+    .color-chip-btn.selected { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(245,197,24,0.25); transform: scale(1.08); }
+    .color-chip-custom {
       background: conic-gradient(from 0deg, #ff3b3b, #ffd21e, #3bff7e, #3bc9ff, #6a3bff, #ff3bb3, #ff3b3b);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15), inset 0 0 10px rgba(0,0,0,0.35);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2), inset 0 0 8px rgba(0,0,0,0.3);
     }
-    .custom-colors { margin-top: 10px; padding: 12px 14px; background: #050505; border: 1px solid var(--border); border-radius: 8px; }
-    .color-row { display: flex; gap: 16px; }
+    .color-chip-custom input[type="color"] {
+      position: absolute; inset: -6px; width: calc(100% + 12px); height: calc(100% + 12px);
+      opacity: 0; cursor: pointer; border: 0; padding: 0; background: transparent;
+    }
     .color-chip { flex: 1; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
     .color-swatch-wrap { position: relative; width: 100%; height: 62px; border-radius: 10px; border: 2px solid var(--border); overflow: hidden; cursor: pointer; transition: border-color .2s; }
     .color-swatch-wrap:hover { border-color: var(--gold); }
@@ -451,18 +453,13 @@
 
           <div class="field-group">
             <label class="field-label">Team Colors</label>
-            <div class="palette-picker" id="palette-picker"></div>
-            <div class="custom-colors" id="custom-colors" style="display:none">
-              <div class="color-row">
-                <div class="color-chip">
-                  <div class="color-swatch-wrap" id="swatch1-wrap" style="background:#F5C518"><input type="color" id="fld-color1" value="#F5C518"></div>
-                  <div class="field-hint">Primary</div>
-                </div>
-                <div class="color-chip">
-                  <div class="color-swatch-wrap" id="swatch2-wrap" style="background:#080808"><input type="color" id="fld-color2" value="#080808"></div>
-                  <div class="field-hint">Secondary</div>
-                </div>
-              </div>
+            <div class="color-slot">
+              <div class="color-slot-label"><div class="dot" id="dot-primary"></div>Primary</div>
+              <div class="color-chips" id="primary-chips"></div>
+            </div>
+            <div class="color-slot">
+              <div class="color-slot-label"><div class="dot" id="dot-secondary"></div>Secondary</div>
+              <div class="color-chips" id="secondary-chips"></div>
             </div>
           </div>
 
@@ -916,10 +913,6 @@
      ────────────────────────────────────────────────────────── */
   const fldName = document.getElementById('fld-name');
   const fldMascot = document.getElementById('fld-mascot');
-  const fldColor1 = document.getElementById('fld-color1');
-  const fldColor2 = document.getElementById('fld-color2');
-  const swatch1 = document.getElementById('swatch1-wrap');
-  const swatch2 = document.getElementById('swatch2-wrap');
   const previewName = document.getElementById('preview-name');
   const previewMascot = document.getElementById('preview-mascot');
   const createSubmit = document.getElementById('create-submit');
@@ -927,88 +920,85 @@
 
   fldName.addEventListener('input', () => { school.name = fldName.value; previewName.textContent = school.name || 'Your School'; renderPreview(); });
   fldMascot.addEventListener('input', () => { school.mascot = fldMascot.value; previewMascot.textContent = school.mascot || 'Mascot'; renderPreview(); });
-  fldColor1.addEventListener('input', () => { school.primary = fldColor1.value; swatch1.style.background = school.primary; renderPreview(); });
-  fldColor2.addEventListener('input', () => { school.secondary = fldColor2.value; swatch2.style.background = school.secondary; renderPreview(); });
-
-  /* ── PRESET PALETTES ── */
-  const PALETTES = [
-    { name: 'Ward Gold',      p: '#F5C518', s: '#080808' },
-    { name: 'Red & White',    p: '#C8102E', s: '#FFFFFF' },
-    { name: 'Red & Black',    p: '#C8102E', s: '#080808' },
-    { name: 'Royal & White',  p: '#1E3A8A', s: '#FFFFFF' },
-    { name: 'Navy & Gold',    p: '#0B2545', s: '#F5C518' },
-    { name: 'Navy & Orange',  p: '#0B2545', s: '#FF7A00' },
-    { name: 'Purple & Gold',  p: '#4B1E78', s: '#F5C518' },
-    { name: 'Forest & White', p: '#0F5132', s: '#FFFFFF' },
-    { name: 'Green & Gold',   p: '#0F5132', s: '#F5C518' },
-    { name: 'Orange & Black', p: '#FF6B00', s: '#080808' },
-    { name: 'Maroon & White', p: '#6A1B1B', s: '#FFFFFF' },
-    { name: 'Carolina',       p: '#7CB9E8', s: '#0B2545' },
-    { name: 'Columbia & Gold',p: '#9BCBEB', s: '#F5C518' },
-    { name: 'Black & Gold',   p: '#0a0a0a', s: '#F5C518' },
-    { name: 'Teal & Black',   p: '#0AA4A4', s: '#080808' },
-    { custom: true,           name: 'Custom' }
+  /* ── PER-SLOT COLOR CHIPS ── */
+  const COLORS = [
+    { name: 'Red',      hex: '#C8102E' },
+    { name: 'Orange',   hex: '#FF6B00' },
+    { name: 'Gold',     hex: '#F5C518' },
+    { name: 'Yellow',   hex: '#FFD60A' },
+    { name: 'Lime',     hex: '#6FCF45' },
+    { name: 'Forest',   hex: '#0F5132' },
+    { name: 'Teal',     hex: '#0AA4A4' },
+    { name: 'Carolina', hex: '#7CB9E8' },
+    { name: 'Royal',    hex: '#1E3A8A' },
+    { name: 'Navy',     hex: '#0B2545' },
+    { name: 'Purple',   hex: '#4B1E78' },
+    { name: 'Pink',     hex: '#FF4FA3' },
+    { name: 'Maroon',   hex: '#6A1B1B' },
+    { name: 'Silver',   hex: '#C0C0C0' },
+    { name: 'White',    hex: '#FFFFFF' },
+    { name: 'Black',    hex: '#080808' },
   ];
 
-  const paletteContainer = document.getElementById('palette-picker');
-  const customColorsEl   = document.getElementById('custom-colors');
+  const eqColor = (a, b) => String(a||'').toLowerCase() === String(b||'').toLowerCase();
 
-  function eqColor(a, b) { return String(a||'').toLowerCase() === String(b||'').toLowerCase(); }
-  function findPresetIdx() {
-    for (let i = 0; i < PALETTES.length; i++) {
-      const P = PALETTES[i];
-      if (P.custom) continue;
-      if (eqColor(P.p, school.primary) && eqColor(P.s, school.secondary)) return i;
-    }
-    return PALETTES.findIndex(p => p.custom);
+  function buildChips(containerId, slot) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    COLORS.forEach(col => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'color-chip-btn';
+      btn.style.background = col.hex;
+      btn.title = col.name;
+      btn.dataset.hex = col.hex;
+      btn.addEventListener('click', () => setSlot(slot, col.hex));
+      container.appendChild(btn);
+    });
+    // Custom chip with hidden color input
+    const custom = document.createElement('button');
+    custom.type = 'button';
+    custom.className = 'color-chip-btn color-chip-custom';
+    custom.title = 'Custom color';
+    custom.dataset.custom = 'true';
+    const input = document.createElement('input');
+    input.type = 'color';
+    input.value = slot === 'primary' ? school.primary : school.secondary;
+    input.addEventListener('input', () => setSlot(slot, input.value));
+    custom.appendChild(input);
+    container.appendChild(custom);
   }
 
-  PALETTES.forEach((palette, i) => {
-    const el = document.createElement('button');
-    el.type = 'button';
-    el.className = 'palette-opt';
-    el.dataset.idx = String(i);
-    if (palette.custom) {
-      el.innerHTML = '<div class="palette-custom-icon"></div><div class="palette-lbl">Custom</div>';
-    } else {
-      el.innerHTML =
-        '<div class="palette-swatch">' +
-          '<div class="palette-swatch-half" style="background:' + palette.p + '"></div>' +
-          '<div class="palette-swatch-half" style="background:' + palette.s + '"></div>' +
-        '</div>' +
-        '<div class="palette-lbl">' + palette.name + '</div>';
-    }
-    el.addEventListener('click', () => selectPalette(i));
-    paletteContainer.appendChild(el);
-  });
-
-  function selectPalette(idx) {
-    const palette = PALETTES[idx];
-    [...paletteContainer.children].forEach((c, i) => c.classList.toggle('selected', i === idx));
-    if (palette.custom) {
-      customColorsEl.style.display = '';
-    } else {
-      customColorsEl.style.display = 'none';
-      school.primary   = palette.p;
-      school.secondary = palette.s;
-      fldColor1.value = palette.p;
-      fldColor2.value = palette.s;
-      swatch1.style.background = palette.p;
-      swatch2.style.background = palette.s;
-      renderPreview();
-    }
+  function setSlot(slot, hex) {
+    if (slot === 'primary') school.primary = hex;
+    else school.secondary = hex;
+    paintSlotSelection(slot);
+    renderPreview();
   }
 
-  function syncPaletteToColors() {
-    const idx = findPresetIdx();
-    [...paletteContainer.children].forEach((c, i) => c.classList.toggle('selected', i === idx));
-    customColorsEl.style.display = PALETTES[idx].custom ? '' : 'none';
+  function paintSlotSelection(slot) {
+    const container = document.getElementById(slot + '-chips');
+    const hex = slot === 'primary' ? school.primary : school.secondary;
+    let matched = false;
+    [...container.children].forEach(c => {
+      if (c.dataset.custom) return;
+      const isMatch = eqColor(c.dataset.hex, hex);
+      c.classList.toggle('selected', isMatch);
+      if (isMatch) matched = true;
+    });
+    const customChip = container.querySelector('.color-chip-custom');
+    customChip.classList.toggle('selected', !matched);
+    if (!matched) {
+      const inp = customChip.querySelector('input[type="color"]');
+      if (inp) inp.value = hex;
+    }
+    document.getElementById('dot-' + slot).style.background = hex;
   }
-  // When the user tweaks a custom color, keep the picker state correct
-  fldColor1.addEventListener('input', syncPaletteToColors);
-  fldColor2.addEventListener('input', syncPaletteToColors);
-  // Initial state based on current school colors
-  syncPaletteToColors();
+
+  buildChips('primary-chips', 'primary');
+  buildChips('secondary-chips', 'secondary');
+  paintSlotSelection('primary');
+  paintSlotSelection('secondary');
 
   // Restore saved school if any
   try {
@@ -1017,10 +1007,6 @@
       Object.assign(school, saved);
       fldName.value = school.name || '';
       fldMascot.value = school.mascot || '';
-      fldColor1.value = school.primary || '#F5C518';
-      fldColor2.value = school.secondary || '#080808';
-      swatch1.style.background = school.primary;
-      swatch2.style.background = school.secondary;
       previewName.textContent = school.name;
       previewMascot.textContent = school.mascot || 'Mascot';
     }
