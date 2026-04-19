@@ -83,7 +83,7 @@
     /* Preview wheel: bigger on desktop. On mobile we hide the wheel entirely
        and show a vertical nominee list since the wheel text is unreadable
        at small widths with many slices. */
-    #preview-wheel-wrap { width: min(880px, 92vw); height: min(880px, 92vw); }
+    #preview-wheel-wrap { width: min(1040px, 94vw) !important; height: min(1040px, 94vw) !important; }
     #preview-list { display: none; max-width: 600px; margin: 0 auto 28px;
                     background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
                     padding: 4px 8px; }
@@ -782,7 +782,7 @@
         const rawName = nominees[i].teamName.replace(/High School/gi,'').replace(/\bHS\b/gi,'').trim();
         const textW   = (outerR - innerR) * 0.84;
         const sliceW  = 2 * outerR * Math.sin(arc/2);
-        const baseFs  = Math.min(22, Math.max(10, sliceW * 0.20));
+        const baseFs  = Math.min(28, Math.max(12, sliceW * 0.26));
         const { lines, size: fs } = fitWheelText(ctx, rawName, textW, baseFs);
 
         ctx.save();
