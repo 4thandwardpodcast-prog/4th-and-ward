@@ -30,14 +30,16 @@
     /* ── HERO ── */
     .wardle-hero { padding: 100px 48px 0; background: var(--black); position: relative; overflow: hidden; }
     .wardle-hero-bg {
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse 50% 60% at 50% 30%, rgba(245,197,24,0.07) 0%, transparent 70%),
-        repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(245,197,24,0.03) 79px, rgba(245,197,24,0.03) 80px);
+      position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 70% 80% at 50% 25%, rgba(245,197,24,0.14) 0%, rgba(245,197,24,0.04) 40%, transparent 70%),
+                  radial-gradient(ellipse 100% 60% at 50% 100%, rgba(0,0,0,0.6) 0%, transparent 70%),
+                  repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(245,197,24,0.035) 79px, rgba(245,197,24,0.035) 80px),
+                  repeating-linear-gradient(0deg, transparent 0 6px, rgba(255,255,255,0.012) 6px 7px);
     }
     .wardle-hero-inner { position: relative; z-index: 2; max-width: 800px; margin: 0 auto; text-align: center; padding: 60px 0 48px; }
     .wardle-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 20px; }
-    .wardle-title { font-family: var(--condensed); font-weight: 900; font-size: clamp(72px, 14vw, 140px); line-height: 0.85; text-transform: uppercase; letter-spacing: -0.02em; margin-bottom: 20px; }
-    .wardle-title .amp { color: var(--gold); }
+    .wardle-title { font-family: var(--condensed); font-weight: 900; font-size: clamp(72px, 14vw, 140px); line-height: 0.85; text-transform: uppercase; letter-spacing: -0.02em; margin-bottom: 20px; text-shadow: 0 2px 18px rgba(0,0,0,0.6); }
+    .wardle-title .amp { color: var(--gold); text-shadow: 0 0 40px rgba(245,197,24,0.5), 0 2px 14px rgba(0,0,0,0.5); }
     .wardle-subtitle { font-size: 18px; color: var(--muted); line-height: 1.6; margin-bottom: 12px; }
     .wardle-rules { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; margin-bottom: 40px; }
     .wardle-rule { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); font-weight: 500; }

@@ -44,9 +44,9 @@
   }, { merge: true });
 </script>
   <style>
-    .page-hero { padding: 120px 48px 60px; border-bottom: 1px solid var(--border); }
-    .page-hero h1 { font-family: var(--condensed); font-weight: 900; font-size: clamp(52px, 8vw, 96px); text-transform: uppercase; line-height: 0.88; letter-spacing: -0.01em; }
-    .page-hero h1 span { color: var(--gold); }
+    .page-hero { padding: 120px 48px 80px; border-bottom: 1px solid var(--border); overflow: hidden; }
+    .page-hero h1 { font-family: var(--condensed); font-weight: 900; font-size: clamp(52px, 8vw, 96px); text-transform: uppercase; line-height: 0.88; letter-spacing: -0.01em; text-shadow: 0 2px 18px rgba(0,0,0,0.6); }
+    .page-hero h1 span { color: var(--gold); text-shadow: 0 0 32px rgba(245,197,24,0.4), 0 2px 14px rgba(0,0,0,0.5); }
     .page-hero p { color: var(--muted); font-size: 17px; margin-top: 20px; max-width: 520px; line-height: 1.65; }
     .episodes-body { padding: 60px 48px 100px; }
     .ep-count { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 32px; }
@@ -139,7 +139,7 @@
     </ul>
   </nav>
 
-  <div class="page-hero">
+  <div class="page-hero hero-backdrop">
     <div class="section-inner">
       <div class="section-label">All Episodes</div>
       <h1>From the<br><span>Coaches Office.</span></h1>

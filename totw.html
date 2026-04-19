@@ -32,10 +32,10 @@
     .page-hero h1 { font-family: var(--condensed); font-weight: 900; font-size: clamp(52px, 8vw, 96px); text-transform: uppercase; line-height: 0.88; }
     .page-hero h1 span { color: var(--gold); }
     .page-hero p { color: var(--muted); font-size: 17px; margin-top: 20px; max-width: 600px; line-height: 1.65; }
-    .tab-bar { display: flex; gap: 4px; padding: 32px 48px 0; border-bottom: 1px solid var(--border); background: var(--black); }
-    .tab-btn { padding: 12px 24px; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; background: none; border: none; border-bottom: 3px solid transparent; color: var(--muted); cursor: pointer; font-family: var(--body); transition: color 0.2s, border-color 0.2s; margin-bottom: -1px; }
+    .tab-bar { display: flex; gap: 8px; padding: 28px 48px 0; border-bottom: 1px solid var(--border); background: var(--black); }
+    .tab-btn { padding: 16px 32px; font-family: var(--condensed); font-size: 22px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; background: none; border: none; border-bottom: 3px solid transparent; color: var(--muted); cursor: pointer; transition: color 0.2s, border-color 0.2s; margin-bottom: -1px; line-height: 1; }
     .tab-btn:hover { color: var(--white); }
-    .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); text-shadow: 0 0 18px rgba(245,197,24,0.4); }
     .totw-body { padding: 48px 48px 100px; max-width: 1100px; margin: 0 auto; }
     .nom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
     .nom-inline-form { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
@@ -684,16 +684,31 @@
         ctx.rotate(mid);
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = isEven ? '#F5C518' : '#0a0a0a';
         ctx.font = `900 ${fs}px 'Barlow Condensed',sans-serif`;
 
         const xAnchor = outerR - 14;
+        const drawLifted = (text, x, y) => {
+          // Dark outline + drop shadow gives white text "lift" so it reads
+          // on both gold and dark slices regardless of slice color.
+          ctx.shadowColor = 'rgba(0,0,0,0.65)';
+          ctx.shadowBlur = 5;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 2;
+          ctx.lineJoin = 'round';
+          ctx.strokeStyle = 'rgba(0,0,0,0.92)';
+          ctx.lineWidth = Math.max(2.5, fs * 0.22);
+          ctx.strokeText(text, x, y);
+          ctx.shadowColor = 'transparent';
+          ctx.fillStyle = '#F4F2ED';
+          ctx.fillText(text, x, y);
+        };
+
         if (lines.length === 1) {
-          ctx.fillText(lines[0], xAnchor, 0);
+          drawLifted(lines[0], xAnchor, 0);
         } else {
           const lineH = fs * 0.95;
-          ctx.fillText(lines[0], xAnchor, -lineH/2);
-          ctx.fillText(lines[1], xAnchor,  lineH/2);
+          drawLifted(lines[0], xAnchor, -lineH/2);
+          drawLifted(lines[1], xAnchor,  lineH/2);
         }
         ctx.restore();
       }

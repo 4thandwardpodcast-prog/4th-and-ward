@@ -37,9 +37,14 @@
     .merch-hero-bg {
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse 60% 70% at 50% 0%, rgba(245,197,24,0.06) 0%, transparent 70%);
       pointer-events: none;
+      background: radial-gradient(ellipse 70% 80% at 70% 30%, rgba(245,197,24,0.10) 0%, rgba(245,197,24,0.025) 40%, transparent 70%),
+                  radial-gradient(ellipse 50% 60% at 18% 85%, rgba(245,197,24,0.04) 0%, transparent 65%),
+                  radial-gradient(ellipse 100% 60% at 50% 100%, rgba(0,0,0,0.6) 0%, transparent 70%);
     }
+    .merch-hero::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+      background-image: repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(245,197,24,0.025) 79px, rgba(245,197,24,0.025) 80px),
+                        repeating-linear-gradient(0deg, transparent 0 6px, rgba(255,255,255,0.010) 6px 7px); }
     .merch-hero-inner {
       position: relative;
       z-index: 2;
@@ -54,7 +59,8 @@
       line-height: 0.88;
       margin-bottom: 20px;
     }
-    .merch-hero h1 span { color: var(--gold); }
+    .merch-hero h1 { text-shadow: 0 2px 18px rgba(0,0,0,0.6); }
+    .merch-hero h1 span { color: var(--gold); text-shadow: 0 0 32px rgba(245,197,24,0.4), 0 2px 14px rgba(0,0,0,0.5); }
     .merch-hero p {
       color: var(--muted);
       font-size: 17px;
