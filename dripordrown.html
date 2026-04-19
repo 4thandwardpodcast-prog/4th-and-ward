@@ -406,9 +406,9 @@
         <div class="schools-toolbar-group">
           <label class="toolbar-label">Sort by</label>
           <select class="toolbar-select" id="schools-sort">
+            <option value="alpha">A &rarr; Z</option>
             <option value="fits">Most fits</option>
             <option value="drip">Best drip score</option>
-            <option value="alpha">A &rarr; Z</option>
           </select>
         </div>
       </div>
@@ -865,7 +865,7 @@
       stateSel.innerHTML = '<option value="">All States</option>' +
         states.map(s => `<option value="${s}" ${s===currentVal?'selected':''}>${s}</option>`).join('');
 
-      const sortBy = sortSel.value || 'fits';
+      const sortBy = sortSel.value || 'alpha';
       const filterSt = stateSel.value || null;
       let schools = computeSchoolStats(filterSt);
 
