@@ -382,7 +382,7 @@
 
           <button type="submit" class="submit-btn" id="submit-btn">&#128293; Submit Uniform</button>
           <div class="upload-progress" id="upload-progress"><div class="upload-progress-bar" id="upload-progress-bar"></div></div>
-          <div class="form-success" id="form-success">&#127881; Submitted! Your fit is live &mdash; share it to rack up votes.</div>
+          <div class="form-success" id="form-success">&#127881; Submitted! Pending admin review &mdash; we&rsquo;ll get it live soon.</div>
           <div class="form-error" id="form-error"></div>
         </form>
       </div>
@@ -1176,7 +1176,7 @@
           schoolLogoUrl: schoolLogo || '',
           submittedBy: visitorId,
           submittedAt: Date.now(),
-          approved: true,
+          approved: false,
           ownsPhoto: true,
           podcastOptIn: !!podOpt,
           dripVotes: 0,
@@ -1190,13 +1190,8 @@
         document.getElementById('submit-form').reset();
         document.getElementById('cap-count').textContent = '0';
         clearPhoto();
-        toast('\uD83C\uDF89 Submitted! Share to rack up votes.');
-        // Refresh feed so new submission appears, then deep-link to it
-        loadSubmissions().then(() => {
-          window.history.replaceState({}, '', `?id=${encodeURIComponent(newDoc.id)}`);
-          switchTab('vote');
-          requestAnimationFrame(() => scrollToCard(newDoc.id));
-        });
+        toast('\uD83C\uDF89 Submitted! Pending review.');
+        // No deep-link to the new card — it's hidden until admin approves.
       } catch(e) {
         console.error('submit error', e);
         showFormError('Submission failed. Please try again.');
