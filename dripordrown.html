@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drip or Drown — 4th & Ward Podcast</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+
+  <!-- Page view tracking -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, doc, setDoc, increment } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    const app = initializeApp({
+      apiKey:"AIzaSyB5EJMsZT4WsfJjaFQ-srIdNwAINr7Q2yY",authDomain:"th-and-ward-b8f1c.firebaseapp.com",
+      projectId:"th-and-ward-b8f1c",storageBucket:"th-and-ward-b8f1c.firebasestorage.app",
+      messagingSenderId:"499057353962",appId:"1:499057353962:web:18f42748c242a6e0be2393"
+    });
+    const db=getFirestore(app);
+    const page='dripordrown';
+    const d=new Date();
+    const today=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    let vid=localStorage.getItem('4ward_vid'),isNew=false;
+    if(!vid){vid='v_'+Math.random().toString(36).slice(2)+Date.now();localStorage.setItem('4ward_vid',vid);isNew=true;}
+    setDoc(doc(db,'pageviews',page+'_'+today),{page,date:today,views:increment(1),allTime:increment(1),newVisitors:increment(isNew?1:0)},{merge:true});
+  </script>
+
+  <style>
+    /* HERO */
+    .drip-hero { padding: 120px 48px 60px; border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
+    .drip-hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 60% 70% at 50% 30%, rgba(245,197,24,0.08) 0%, transparent 70%), radial-gradient(ellipse 50% 60% at 80% 70%, rgba(56,178,172,0.08) 0%, transparent 70%); pointer-events: none; }
+    .drip-hero-inner { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto; }
+    .drip-title { font-family: var(--condensed); font-weight: 900; font-size: clamp(52px, 8vw, 96px); line-height: 0.88; text-transform: uppercase; letter-spacing: -0.01em; margin-bottom: 20px; }
+    .drip-title .drip { color: var(--gold); }
+    .drip-title .drown { color: #38B2AC; }
+    .drip-title .or { color: var(--white); }
+    .drip-subtitle { color: var(--muted); font-size: 17px; line-height: 1.65; max-width: 600px; }
+
+    /* TABS */
+    .tab-bar { display: flex; gap: 4px; padding: 28px 48px 0; border-bottom: 1px solid var(--border); background: var(--black); justify-content: center; }
+    .tab-btn { padding: 14px 28px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: none; border: none; border-bottom: 3px solid transparent; color: var(--muted); cursor: pointer; font-family: var(--body); transition: color 0.2s, border-color 0.2s; margin-bottom: -1px; }
+    .tab-btn:hover { color: var(--white); }
+    .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+    /* BODY */
+    .drip-body { padding: 48px 48px 100px; max-width: 1200px; margin: 0 auto; }
+
+    /* SECTION HEADERS */
+    .section-head { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+    .section-head h2 { font-family: var(--condensed); font-weight: 900; font-size: 30px; text-transform: uppercase; letter-spacing: 0.02em; }
+    .section-head .accent { color: var(--gold); }
+    .section-head .accent-blue { color: #38B2AC; }
+    .section-sub { font-size: 13px; color: var(--muted); margin-top: -12px; margin-bottom: 24px; }
+
+    /* SPOTLIGHT */
+    .spotlight-section { background: linear-gradient(180deg, rgba(245,197,24,0.04) 0%, transparent 100%); border: 1px solid rgba(245,197,24,0.2); border-radius: 12px; padding: 32px; margin-bottom: 48px; }
+    .spotlight-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+    .host-take { background: rgba(245,197,24,0.08); border-left: 3px solid var(--gold); padding: 12px 14px; margin: 12px 0; font-style: italic; color: var(--gold); font-size: 13px; line-height: 1.5; border-radius: 0 6px 6px 0; }
+    .host-take strong { font-style: normal; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; font-size: 11px; display: block; margin-bottom: 4px; }
+    .featured-badge { position: absolute; top: 12px; right: 12px; background: var(--gold); color: var(--black); font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; padding: 5px 10px; border-radius: 4px; z-index: 5; box-shadow: 0 4px 12px rgba(245,197,24,0.4); }
+
+    /* TIER SECTIONS */
+    .tier-section { margin-bottom: 48px; }
+    .tier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .medal { font-size: 32px; line-height: 1; }
+    .rank-badge { position: absolute; top: 12px; left: 12px; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--condensed); font-weight: 900; font-size: 18px; color: var(--black); z-index: 5; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+    .rank-badge.gold { background: linear-gradient(135deg, #FFD700, #F5C518); }
+    .rank-badge.silver { background: linear-gradient(135deg, #E5E5E5, #B0B0B0); }
+    .rank-badge.bronze { background: linear-gradient(135deg, #CD7F32, #8B5A2B); color: var(--white); }
+
+    /* SUBMISSION CARD GRID */
+    .sub-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .sub-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.2s, transform 0.2s; position: relative; display: flex; flex-direction: column; }
+    .sub-card:hover { border-color: rgba(245,197,24,0.4); transform: translateY(-3px); }
+    .sub-card.featured { border-color: var(--gold); box-shadow: 0 0 24px rgba(245,197,24,0.15); }
+    .sub-photo-wrap { position: relative; width: 100%; aspect-ratio: 3/4; overflow: hidden; background: #0a0a0a; }
+    .sub-photo { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s; }
+    .sub-card:hover .sub-photo { transform: scale(1.03); }
+    .sub-info { padding: 16px 18px 14px; flex: 1; display: flex; flex-direction: column; }
+    .sub-school { font-family: var(--condensed); font-weight: 900; font-size: 19px; text-transform: uppercase; line-height: 1.1; margin-bottom: 4px; }
+    .sub-loc { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .sub-caption { font-size: 13px; color: var(--white); font-style: italic; opacity: 0.85; margin-bottom: 12px; line-height: 1.45; }
+    .sub-score-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 10px 12px; background: var(--surface2); border-radius: 6px; }
+    .sub-score-emoji { font-size: 24px; line-height: 1; }
+    .sub-score-pct { font-family: var(--condensed); font-weight: 900; font-size: 24px; color: var(--gold); line-height: 1; }
+    .sub-score-pct.bad { color: #38B2AC; }
+    .sub-score-pct.neutral { color: var(--muted); }
+    .sub-score-pct.empty { color: var(--muted); font-size: 13px; font-family: var(--body); font-weight: 600; }
+    .sub-score-meta { font-size: 11px; color: var(--muted); margin-left: auto; text-align: right; line-height: 1.3; }
+    .sub-vote-row { display: flex; gap: 8px; margin-top: auto; }
+    .vote-btn { flex: 1; padding: 11px 8px; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; border: none; border-radius: 6px; cursor: pointer; font-family: var(--body); transition: background 0.2s, transform 0.15s; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+    .vote-btn.drip { background: var(--gold); color: var(--black); }
+    .vote-btn.drip:hover:not(:disabled) { background: var(--gold-hover); transform: translateY(-1px); }
+    .vote-btn.drown { background: #38B2AC; color: var(--black); }
+    .vote-btn.drown:hover:not(:disabled) { background: #4FD1C5; transform: translateY(-1px); }
+    .vote-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .sub-footer-row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); }
+    .share-mini { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 5px 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; border-radius: 4px; cursor: pointer; font-family: var(--body); transition: border-color 0.2s, color 0.2s; }
+    .share-mini:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* SUBMIT FORM */
+    .submit-form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 40px; max-width: 640px; margin: 0 auto; }
+    .submit-form-card h2 { font-family: var(--condensed); font-weight: 900; font-size: 32px; text-transform: uppercase; margin-bottom: 8px; }
+    .submit-form-card .form-intro { color: var(--muted); font-size: 14px; line-height: 1.6; margin-bottom: 32px; }
+
+    .drop-zone { position: relative; border: 2px dashed var(--border); border-radius: 10px; padding: 48px 20px; text-align: center; background: var(--surface2); cursor: pointer; transition: border-color 0.2s, background 0.2s; margin-bottom: 24px; }
+    .drop-zone:hover, .drop-zone.dragover { border-color: var(--gold); background: rgba(245,197,24,0.04); }
+    .drop-zone-icon { font-size: 44px; margin-bottom: 12px; opacity: 0.7; }
+    .drop-zone-text { font-size: 15px; color: var(--white); font-weight: 600; margin-bottom: 4px; }
+    .drop-zone-hint { font-size: 12px; color: var(--muted); }
+    .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .preview-wrap { display: none; margin-bottom: 24px; position: relative; border-radius: 10px; overflow: hidden; background: #000; max-height: 420px; }
+    .preview-wrap.show { display: block; }
+    .preview-img { width: 100%; max-height: 420px; object-fit: contain; display: block; }
+    .preview-clear { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); border: 1px solid var(--border); color: var(--white); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+    .preview-clear:hover { background: #e05555; border-color: #e05555; }
+
+    .form-group { margin-bottom: 18px; }
+    .form-row { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; }
+    .form-label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .form-input, .form-select, .form-textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; font-size: 15px; color: var(--white); font-family: var(--body); outline: none; transition: border-color 0.2s; box-sizing: border-box; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--gold); }
+    .form-textarea { resize: vertical; min-height: 70px; font-family: var(--body); }
+    .char-count { text-align: right; font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .submit-btn { width: 100%; background: var(--gold); color: var(--black); border: none; border-radius: 6px; padding: 16px; font-size: 14px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; font-family: var(--body); transition: background 0.2s, transform 0.15s; margin-top: 8px; }
+    .submit-btn:hover:not(:disabled) { background: var(--gold-hover); transform: translateY(-1px); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .form-success { background: rgba(29,185,84,0.1); border: 1px solid rgba(29,185,84,0.3); border-radius: 6px; padding: 14px; text-align: center; color: #1DB954; font-size: 14px; font-weight: 600; margin-top: 16px; display: none; }
+    .form-error { background: rgba(224,85,85,0.1); border: 1px solid rgba(224,85,85,0.3); border-radius: 6px; padding: 14px; text-align: center; color: #e05555; font-size: 14px; font-weight: 600; margin-top: 16px; display: none; }
+    .upload-progress { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; margin-top: 12px; display: none; }
+    .upload-progress.show { display: block; }
+    .upload-progress-bar { height: 100%; background: var(--gold); width: 0%; transition: width 0.3s; }
+
+    /* GUIDELINES + LEGAL */
+    .guidelines-block { background: rgba(245,197,24,0.05); border: 1px solid rgba(245,197,24,0.25); border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; }
+    .guidelines-title { font-size: 12px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+    .guidelines-list { list-style: none; padding: 0; margin: 0; font-size: 13px; color: var(--white); line-height: 1.7; }
+    .guidelines-list li { padding-left: 16px; position: relative; }
+    .guidelines-list li::before { content: '\2022'; position: absolute; left: 0; color: var(--gold); font-weight: 700; }
+    .guidelines-list strong { color: var(--gold); font-weight: 700; }
+    .legal-checks { margin: 20px 0 8px; display: flex; flex-direction: column; gap: 12px; }
+    .legal-check { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; color: var(--white); line-height: 1.45; }
+    .legal-check input[type=checkbox] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--gold); cursor: pointer; flex-shrink: 0; }
+
+    /* SCHOOL FILTER + LINK */
+    .filter-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: rgba(245,197,24,0.08); border: 1px solid rgba(245,197,24,0.3); border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; flex-wrap: wrap; }
+    .filter-banner-text { font-size: 14px; color: var(--white); }
+    .filter-banner-text strong { color: var(--gold); font-family: var(--condensed); font-size: 18px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .filter-banner-clear { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 7px 14px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; font-family: var(--body); }
+    .filter-banner-clear:hover { background: rgba(245,197,24,0.1); }
+    .sub-school-link { color: inherit; text-decoration: none; cursor: pointer; transition: color 0.15s; }
+    .sub-school-link:hover { color: var(--gold); }
+    .highlight-card { animation: highlightPulse 2.4s ease; }
+    @keyframes highlightPulse { 0%,100%{box-shadow:0 0 0 0 rgba(245,197,24,0)} 30%{box-shadow:0 0 0 4px rgba(245,197,24,0.55)} }
+
+    /* TOAST */
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface); border: 1px solid var(--gold); color: var(--white); padding: 14px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; opacity: 0; transition: opacity 0.3s, transform 0.3s; z-index: 2000; pointer-events: none; box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.error { border-color: #e05555; }
+
+    /* EMPTY/LOADING STATES */
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 15px; background: var(--surface); border: 1px dashed var(--border); border-radius: 10px; }
+    .loading-state { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 15px; animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+    .skeleton-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .skeleton-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; aspect-ratio: 3/5; animation: pulse 1.5s ease-in-out infinite; }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .drip-hero { padding: 90px 24px 36px; }
+      .tab-bar { padding: 20px 16px 0; overflow-x: auto; justify-content: flex-start; }
+      .tab-btn { padding: 12px 18px; font-size: 11px; white-space: nowrap; }
+      .drip-body { padding: 32px 24px 80px; }
+      .sub-grid, .tier-grid, .spotlight-grid, .skeleton-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+      .submit-form-card { padding: 28px 24px; }
+      .spotlight-section { padding: 24px 20px; }
+    }
+    @media (max-width: 600px) {
+      .drip-hero { padding: 80px 16px 28px; }
+      .drip-title { font-size: clamp(48px, 16vw, 80px); }
+      .drip-subtitle { font-size: 16px; }
+      .drip-body { padding: 24px 16px 60px; }
+      .sub-grid, .tier-grid, .spotlight-grid, .skeleton-grid { grid-template-columns: 1fr; gap: 14px; }
+      .section-head h2 { font-size: 24px; }
+      .submit-form-card { padding: 22px 18px; }
+      .submit-form-card h2 { font-size: 26px; }
+      .form-row { grid-template-columns: 1fr; }
+      .drop-zone { padding: 32px 16px; }
+      .vote-btn { padding: 12px 6px; font-size: 11px; }
+      .sub-photo-wrap { aspect-ratio: 4/5; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo"><img src="logo.png" alt="4th & Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="totw.html">Team of the Week</a></li>
+      <li><a href="wardle.html">4th &amp; Wardle</a></li>
+      <li><a href="dripordrown.html" class="active">Drip or Drown</a></li>
+      <li><a href="merch.html">Merch</a></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+  </nav>
+
+  <div class="drip-hero">
+    <div class="drip-hero-bg"></div>
+    <div class="drip-hero-inner">
+      <h1 class="drip-title"><span class="drip">DRIP</span> <span class="or">OR</span> <span class="drown">DROWN</span></h1>
+      <p class="drip-subtitle">Submit high school football uniforms. Community votes drip or drown. Top fits stay pinned at the top, drowns sink to the bottom &mdash; Rotten Tomatoes for the gridiron.</p>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="vote">&#128064; Vote</button>
+    <button class="tab-btn" data-tab="submit">&#128247; Submit</button>
+    <button class="tab-btn" data-tab="top">&#127942; Top Drips</button>
+  </div>
+
+  <div class="drip-body">
+
+    <!-- VOTE TAB -->
+    <div id="tab-vote">
+      <!-- THIS WEEK'S SPOTLIGHT -->
+      <div id="spotlight-wrap" style="display:none;">
+        <div class="spotlight-section">
+          <div class="section-head">
+            <h2>&#11088; <span class="accent">THIS WEEK'S</span> SPOTLIGHT</h2>
+          </div>
+          <p class="section-sub">Fresh fits from the past 7 days &mdash; plus Jack &amp; Adam's featured picks.</p>
+          <div class="spotlight-grid" id="spotlight-grid"></div>
+        </div>
+      </div>
+
+      <!-- TOP 3 DRIPS -->
+      <div id="top3-wrap" class="tier-section" style="display:none;">
+        <div class="section-head">
+          <h2>&#127942; TOP 3 <span class="accent">DRIPS</span></h2>
+        </div>
+        <p class="section-sub">The drippiest fits in the game. Min. 10 votes to qualify.</p>
+        <div class="tier-grid" id="top3-grid"></div>
+      </div>
+
+      <!-- ALL SUBMISSIONS -->
+      <div class="tier-section">
+        <div class="section-head">
+          <h2>ALL <span class="accent">SUBMISSIONS</span></h2>
+          <span style="font-size:12px;color:var(--muted);font-weight:600;" id="all-count"></span>
+        </div>
+        <div id="all-grid">
+          <div class="skeleton-grid">
+            <div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM 3 DROWNS -->
+      <div id="bottom3-wrap" class="tier-section" style="display:none;">
+        <div class="section-head">
+          <h2>&#128128; BOTTOM 3 <span class="accent-blue">DROWNS</span></h2>
+        </div>
+        <p class="section-sub">Yikes. These ones didn't hit. Min. 10 votes to qualify.</p>
+        <div class="tier-grid" id="bottom3-grid"></div>
+      </div>
+    </div>
+
+    <!-- SUBMIT TAB -->
+    <div id="tab-submit" style="display:none;">
+      <div class="submit-form-card">
+        <h2>Submit a Uniform</h2>
+        <p class="form-intro">Spotted a sick (or tragic) high school football fit? Drop the photo, give us the deets, and let the community judge.</p>
+
+        <div class="guidelines-block">
+          <div class="guidelines-title">&#9888;&#65039; Quick Rules</div>
+          <ul class="guidelines-list">
+            <li><strong>High school football only</strong> &mdash; no college, no NFL.</li>
+            <li><strong>No full player names.</strong> Jersey numbers are fine.</li>
+            <li><strong>Photos must be yours</strong> or used with permission.</li>
+            <li>We reserve the right to remove anything that breaks the rules.</li>
+          </ul>
+        </div>
+
+        <form id="submit-form" autocomplete="off">
+          <div class="drop-zone" id="drop-zone">
+            <div class="drop-zone-icon">&#128247;</div>
+            <div class="drop-zone-text">Drop photo here or click to upload</div>
+            <div class="drop-zone-hint">JPG / PNG &middot; Max 5MB &middot; We'll resize for you</div>
+            <input type="file" id="photo-input" accept="image/*">
+          </div>
+
+          <div class="preview-wrap" id="preview-wrap">
+            <img class="preview-img" id="preview-img" alt="Preview">
+            <button type="button" class="preview-clear" data-action="clear-photo" title="Remove">&times;</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">School / Team Name *</label>
+            <input type="text" class="form-input" id="f-team" placeholder="e.g. Allen High School" maxlength="80">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">City *</label>
+              <input type="text" class="form-input" id="f-city" placeholder="City" maxlength="60">
+            </div>
+            <div class="form-group">
+              <label class="form-label">State *</label>
+              <select class="form-select" id="f-state">
+                <option value="" disabled selected>Select</option>
+                <option>AL</option><option>AK</option><option>AZ</option><option>AR</option><option>CA</option>
+                <option>CO</option><option>CT</option><option>DE</option><option>DC</option><option>FL</option>
+                <option>GA</option><option>HI</option><option>ID</option><option>IL</option><option>IN</option>
+                <option>IA</option><option>KS</option><option>KY</option><option>LA</option><option>ME</option>
+                <option>MD</option><option>MA</option><option>MI</option><option>MN</option><option>MS</option>
+                <option>MO</option><option>MT</option><option>NE</option><option>NV</option><option>NH</option>
+                <option>NJ</option><option>NM</option><option>NY</option><option>NC</option><option>ND</option>
+                <option>OH</option><option>OK</option><option>OR</option><option>PA</option><option>RI</option>
+                <option>SC</option><option>SD</option><option>TN</option><option>TX</option><option>UT</option>
+                <option>VT</option><option>VA</option><option>WA</option><option>WV</option><option>WI</option>
+                <option>WY</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Caption (optional)</label>
+            <textarea class="form-textarea" id="f-caption" placeholder="Tell us why this fit slaps (or doesn't)" maxlength="140"></textarea>
+            <div class="char-count"><span id="cap-count">0</span> / 140</div>
+          </div>
+
+          <div class="legal-checks">
+            <label class="legal-check">
+              <input type="checkbox" id="f-owns" required>
+              <span>I took these photos or have full rights to share them. *</span>
+            </label>
+            <label class="legal-check">
+              <input type="checkbox" id="f-podcast">
+              <span>I&rsquo;m cool with 4th &amp; Ward featuring this on the podcast, YouTube, and social clips.</span>
+            </label>
+          </div>
+
+          <button type="submit" class="submit-btn" id="submit-btn">&#128293; Submit Uniform</button>
+          <div class="upload-progress" id="upload-progress"><div class="upload-progress-bar" id="upload-progress-bar"></div></div>
+          <div class="form-success" id="form-success">&#127881; Submitted! Your fit is live &mdash; share it to rack up votes.</div>
+          <div class="form-error" id="form-error"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- TOP DRIPS TAB -->
+    <div id="tab-top" style="display:none;">
+      <div class="section-head">
+        <h2>&#127942; HALL OF <span class="accent">DRIP</span></h2>
+      </div>
+      <p class="section-sub">Every approved uniform ranked by drip percentage. Min. 5 votes to make the wall.</p>
+      <div id="hof-grid">
+        <div class="skeleton-grid">
+          <div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.png" alt="4th & Ward Podcast"></div>
+    <ul class="footer-links">
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="totw.html">TOTW</a></li>
+      <li><a href="wardle.html">Wardle</a></li>
+      <li><a href="dripordrown.html">Drip or Drown</a></li>
+      <li><a href="merch.html">Merch</a></li>
+    </ul>
+    <div class="footer-text-line">
+      <span>Text us:</span>
+      <a href="sms:4697269875">469-726-9875</a>
+      <span class="footer-text-disclaimer">Standard message rates apply</span>
+    </div>
+    <p class="footer-copy">&copy; 2026 4th &amp; Ward Podcast. All rights reserved.</p>
+  </footer>
+
+  <script type="module">
+    import { initializeApp }                              from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, collection, addDoc, getDocs,
+             doc, getDoc, setDoc, updateDoc, query, where,
+             orderBy, increment }                          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getStorage, ref as sref, uploadBytes,
+             getDownloadURL }                              from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+
+    const FIREBASE_CONFIG = {
+      apiKey:"AIzaSyB5EJMsZT4WsfJjaFQ-srIdNwAINr7Q2yY",authDomain:"th-and-ward-b8f1c.firebaseapp.com",
+      projectId:"th-and-ward-b8f1c",storageBucket:"th-and-ward-b8f1c.firebasestorage.app",
+      messagingSenderId:"499057353962",appId:"1:499057353962:web:18f42748c242a6e0be2393"
+    };
+
+    const app     = initializeApp(FIREBASE_CONFIG);
+    const db      = getFirestore(app);
+    const storage = getStorage(app);
+
+    // ── VISITOR ID ───────────────────────────────────────
+    let visitorId = localStorage.getItem('4ward_vid');
+    if (!visitorId) {
+      visitorId = 'v_' + Math.random().toString(36).slice(2) + Date.now();
+      localStorage.setItem('4ward_vid', visitorId);
+    }
+
+    // ── STATE ────────────────────────────────────────────
+    window._submissions = [];
+    const myVotes = new Set(); // submissionIds the visitor already voted on
+    let currentTab = 'vote';
+    let pendingPhotoBlob = null;
+    let schoolFilter = null;       // active school filter (string) or null
+    let pendingScrollId = null;    // submission id to scroll to after render
+
+    // ── URL PARAMS ───────────────────────────────────────
+    function readUrlParams() {
+      const params = new URLSearchParams(window.location.search);
+      schoolFilter   = params.get('school') || null;
+      pendingScrollId = params.get('id') || null;
+    }
+    readUrlParams();
+
+    function setUrl(params) {
+      const usp = new URLSearchParams();
+      if (params.school) usp.set('school', params.school);
+      if (params.id)     usp.set('id', params.id);
+      const qs = usp.toString();
+      const url = window.location.pathname + (qs ? ('?' + qs) : '');
+      window.history.pushState({}, '', url);
+    }
+
+    function scrollToCard(id) {
+      const card = document.querySelector(`.sub-card[data-id="${CSS.escape(id)}"]`);
+      if (!card) return;
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.classList.add('highlight-card');
+      setTimeout(() => card.classList.remove('highlight-card'), 2600);
+    }
+
+    // ── HELPERS ──────────────────────────────────────────
+    function escapeHtml(s) {
+      return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function dripScore(dripVotes, drownVotes) {
+      const total = (dripVotes||0) + (drownVotes||0);
+      if (total === 0) return null;
+      return Math.round((dripVotes||0) / total * 100);
+    }
+
+    function scoreEmoji(pct) {
+      if (pct == null) return '\u2796';
+      if (pct >= 60) return '\uD83D\uDD25'; // fire
+      if (pct < 40)  return '\uD83D\uDCA7'; // water drop
+      return '\u2796'; // neutral
+    }
+
+    function scoreClass(pct) {
+      if (pct == null) return 'empty';
+      if (pct >= 60) return '';
+      if (pct < 40)  return 'bad';
+      return 'neutral';
+    }
+
+    function fmtDate(ts) {
+      if (!ts) return '';
+      const d = new Date(ts);
+      return d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+    }
+
+    function toast(msg, type) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.toggle('error', type === 'error');
+      el.classList.add('show');
+      clearTimeout(window._toastT);
+      window._toastT = setTimeout(() => el.classList.remove('show'), 2800);
+    }
+
+    // ── TAB SWITCHING ────────────────────────────────────
+    function switchTab(tab, opts) {
+      opts = opts || {};
+      currentTab = tab;
+      ['vote','submit','top'].forEach(t => {
+        document.getElementById('tab-'+t).style.display = (t === tab) ? 'block' : 'none';
+      });
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+      });
+      if (tab === 'top') renderHallOfFame();
+      if (!opts.noScroll) window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+
+    // ── LOAD DATA ────────────────────────────────────────
+    async function loadSubmissions() {
+      try {
+        // Approved submissions, newest first
+        let snap;
+        try {
+          const q = query(collection(db,'drip_submissions'), where('approved','==',true), orderBy('submittedAt','desc'));
+          snap = await getDocs(q);
+        } catch(e) {
+          // Fallback w/o composite index
+          const q = query(collection(db,'drip_submissions'), where('approved','==',true));
+          snap = await getDocs(q);
+        }
+        const subs = [];
+        snap.forEach(d => subs.push({ id: d.id, ...d.data() }));
+        subs.sort((a,b) => (b.submittedAt||0) - (a.submittedAt||0));
+        window._submissions = subs;
+
+        // Load this visitor's votes
+        await loadMyVotes();
+
+        renderAll();
+      } catch(e) {
+        console.error('loadSubmissions error', e);
+        document.getElementById('all-grid').innerHTML =
+          '<div class="empty-state">Could not load submissions. Try refreshing.</div>';
+      }
+    }
+
+    async function loadMyVotes() {
+      // Best-effort: query votes by this visitor (limited fetch — if not indexed, skip silently)
+      try {
+        const q = query(collection(db,'drip_votes'), where('visitorId','==',visitorId));
+        const snap = await getDocs(q);
+        snap.forEach(d => {
+          const v = d.data();
+          if (v.submissionId) myVotes.add(v.submissionId);
+        });
+      } catch(e) { /* non-fatal */ }
+    }
+
+    // ── RENDERING ────────────────────────────────────────
+    function renderAll() {
+      if (schoolFilter) {
+        // Hide global leaderboards when viewing a single school
+        ['spotlight-wrap','top3-wrap','bottom3-wrap'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = 'none';
+        });
+      } else {
+        renderSpotlight();
+        renderTop3();
+        renderBottom3();
+      }
+      renderAllGrid();
+    }
+
+    function cardHtml(sub, opts) {
+      opts = opts || {};
+      const pct = dripScore(sub.dripVotes, sub.drownVotes);
+      const totalVotes = (sub.dripVotes||0) + (sub.drownVotes||0);
+      const scoreText = pct == null ? 'No votes yet' : pct + '%';
+      const cls = scoreClass(pct);
+      const voted = myVotes.has(sub.id);
+      const featured = !!sub.featuredThisWeek;
+      const loc = [sub.city, sub.state].filter(Boolean).join(', ');
+
+      let badgeHtml = '';
+      if (opts.rank) {
+        const cls = opts.rank === 1 ? 'gold' : opts.rank === 2 ? 'silver' : 'bronze';
+        const medal = opts.rank === 1 ? '\uD83E\uDD47' : opts.rank === 2 ? '\uD83E\uDD48' : '\uD83E\uDD49';
+        badgeHtml = `<div class="rank-badge ${cls}" title="Rank ${opts.rank}">${medal}</div>`;
+      } else if (opts.bottomRank) {
+        badgeHtml = `<div class="rank-badge" style="background:#38B2AC;color:#000;">${opts.bottomRank}</div>`;
+      } else if (opts.hofRank) {
+        badgeHtml = `<div class="rank-badge" style="background:var(--gold);">#${opts.hofRank}</div>`;
+      }
+
+      const featuredBadge = featured ? `<div class="featured-badge">&#11088; Featured</div>` : '';
+      const hostTakeHtml = (opts.showHostTake && sub.hostTake)
+        ? `<div class="host-take"><strong>Jack &amp; Adam say:</strong>${escapeHtml(sub.hostTake)}</div>`
+        : '';
+      const captionHtml = sub.caption
+        ? `<p class="sub-caption">&ldquo;${escapeHtml(sub.caption)}&rdquo;</p>`
+        : '';
+
+      const photoSrc = sub.photoUrl
+        ? escapeHtml(sub.photoUrl)
+        : 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400"><rect width="300" height="400" fill="#111"/><text x="50%" y="50%" fill="#444" font-family="sans-serif" font-size="16" text-anchor="middle">No image</text></svg>`);
+
+      return `
+        <div class="sub-card ${featured ? 'featured' : ''}" data-id="${escapeHtml(sub.id)}">
+          ${badgeHtml}
+          ${featuredBadge}
+          <div class="sub-photo-wrap">
+            <img class="sub-photo" src="${photoSrc}" alt="${escapeHtml(sub.teamName)} uniform" loading="lazy">
+          </div>
+          <div class="sub-info">
+            <div class="sub-school"><a href="?school=${encodeURIComponent(sub.teamName)}" class="sub-school-link" data-action="filter-school" data-school="${escapeHtml(sub.teamName)}">${escapeHtml(sub.teamName)}</a></div>
+            <div class="sub-loc">${escapeHtml(loc)}</div>
+            ${captionHtml}
+            ${hostTakeHtml}
+            <div class="sub-score-row">
+              <span class="sub-score-emoji">${scoreEmoji(pct)}</span>
+              <span class="sub-score-pct ${cls}">${scoreText}</span>
+              <span class="sub-score-meta">${sub.dripVotes||0} drips<br>${sub.drownVotes||0} drowns</span>
+            </div>
+            <div class="sub-vote-row">
+              <button class="vote-btn drip" data-action="vote" data-id="${escapeHtml(sub.id)}" data-vote="drip" ${voted ? 'disabled' : ''}>&#128293; Drip</button>
+              <button class="vote-btn drown" data-action="vote" data-id="${escapeHtml(sub.id)}" data-vote="drown" ${voted ? 'disabled' : ''}>&#128167; Drown</button>
+            </div>
+            <div class="sub-footer-row">
+              <span>${fmtDate(sub.submittedAt)}</span>
+              <button class="share-mini" data-action="share" data-id="${escapeHtml(sub.id)}">&#128279; Share</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSpotlight() {
+      const wrap = document.getElementById('spotlight-wrap');
+      const grid = document.getElementById('spotlight-grid');
+      const weekAgo = Date.now() - 7*24*60*60*1000;
+      const picks = window._submissions.filter(s => s.featuredThisWeek || (s.submittedAt||0) >= weekAgo);
+      if (!picks.length) { wrap.style.display = 'none'; return; }
+      // Sort: featured first, then newest
+      picks.sort((a,b) => {
+        if ((b.featuredThisWeek?1:0) !== (a.featuredThisWeek?1:0)) return (b.featuredThisWeek?1:0) - (a.featuredThisWeek?1:0);
+        return (b.submittedAt||0) - (a.submittedAt||0);
+      });
+      wrap.style.display = 'block';
+      grid.innerHTML = picks.slice(0, 6).map(s => cardHtml(s, {showHostTake:true})).join('');
+    }
+
+    function renderTop3() {
+      const wrap = document.getElementById('top3-wrap');
+      const grid = document.getElementById('top3-grid');
+      const eligible = window._submissions
+        .filter(s => ((s.dripVotes||0) + (s.drownVotes||0)) >= 10)
+        .map(s => ({...s, _pct: dripScore(s.dripVotes, s.drownVotes)}))
+        .sort((a,b) => b._pct - a._pct)
+        .slice(0,3);
+      if (!eligible.length) { wrap.style.display = 'none'; return; }
+      wrap.style.display = 'block';
+      grid.innerHTML = eligible.map((s,i) => cardHtml(s, {rank: i+1})).join('');
+    }
+
+    function renderBottom3() {
+      const wrap = document.getElementById('bottom3-wrap');
+      const grid = document.getElementById('bottom3-grid');
+      const eligible = window._submissions
+        .filter(s => ((s.dripVotes||0) + (s.drownVotes||0)) >= 10)
+        .map(s => ({...s, _pct: dripScore(s.dripVotes, s.drownVotes)}))
+        .sort((a,b) => a._pct - b._pct)
+        .slice(0,3);
+      if (!eligible.length) { wrap.style.display = 'none'; return; }
+      wrap.style.display = 'block';
+      grid.innerHTML = eligible.map((s,i) => cardHtml(s, {bottomRank: i+1})).join('');
+    }
+
+    function renderAllGrid() {
+      const grid = document.getElementById('all-grid');
+      const count = document.getElementById('all-count');
+      const all = window._submissions;
+      const subs = schoolFilter
+        ? all.filter(s => (s.teamName||'').toLowerCase() === schoolFilter.toLowerCase())
+        : all;
+      count.textContent = subs.length + ' fit' + (subs.length === 1 ? '' : 's')
+        + (schoolFilter ? ' for this school' : '');
+
+      const bannerHtml = schoolFilter ? `
+        <div class="filter-banner">
+          <div class="filter-banner-text">Showing fits for <strong>${escapeHtml(schoolFilter)}</strong></div>
+          <button class="filter-banner-clear" data-action="clear-filter">&times; Show all</button>
+        </div>` : '';
+
+      if (!subs.length) {
+        grid.innerHTML = bannerHtml + (schoolFilter
+          ? `<div class="empty-state">No fits yet for <strong>${escapeHtml(schoolFilter)}</strong>. <a href="#" data-action="goto-submit" style="color:var(--gold);text-decoration:underline;">Be the first to post one.</a></div>`
+          : '<div class="empty-state">Be the first to submit a uniform! Click <strong>Submit</strong> above.</div>');
+        return;
+      }
+      grid.innerHTML = bannerHtml + '<div class="sub-grid">' + subs.map(s => cardHtml(s)).join('') + '</div>';
+    }
+
+    function renderHallOfFame() {
+      const grid = document.getElementById('hof-grid');
+      const eligible = window._submissions
+        .filter(s => ((s.dripVotes||0) + (s.drownVotes||0)) >= 5)
+        .map(s => ({...s, _pct: dripScore(s.dripVotes, s.drownVotes)}))
+        .sort((a,b) => b._pct - a._pct);
+      if (!eligible.length) {
+        grid.innerHTML = '<div class="empty-state">No qualifying submissions yet (min. 5 votes). Get out there and vote!</div>';
+        return;
+      }
+      grid.innerHTML = '<div class="sub-grid">' + eligible.map((s,i) => cardHtml(s, {hofRank: i+1})).join('') + '</div>';
+    }
+
+    // ── VOTE ─────────────────────────────────────────────
+    async function vote(submissionId, voteType) {
+      if (myVotes.has(submissionId)) {
+        toast('You already voted on this!', 'error');
+        return;
+      }
+      const sub = window._submissions.find(s => s.id === submissionId);
+      if (!sub) return;
+
+      const voteDocId = `${submissionId}_${visitorId}`;
+      try {
+        const existing = await getDoc(doc(db,'drip_votes',voteDocId));
+        if (existing.exists()) {
+          myVotes.add(submissionId);
+          toast('You already voted on this!', 'error');
+          renderAll();
+          return;
+        }
+
+        // Optimistic update
+        myVotes.add(submissionId);
+        if (voteType === 'drip') sub.dripVotes = (sub.dripVotes||0) + 1;
+        else                     sub.drownVotes = (sub.drownVotes||0) + 1;
+        renderAll();
+
+        await setDoc(doc(db,'drip_votes',voteDocId), {
+          submissionId, visitorId, vote: voteType, timestamp: Date.now()
+        });
+        const field = voteType === 'drip' ? 'dripVotes' : 'drownVotes';
+        await updateDoc(doc(db,'drip_submissions',submissionId), {
+          [field]: increment(1)
+        });
+        toast(voteType === 'drip' ? '\uD83D\uDD25 Drip locked in!' : '\uD83D\uDCA7 Drown logged.');
+      } catch(e) {
+        console.error('vote error', e);
+        toast('Vote failed. Try again.', 'error');
+        // Roll back optimistic update
+        myVotes.delete(submissionId);
+        if (voteType === 'drip') sub.dripVotes = Math.max(0, (sub.dripVotes||1) - 1);
+        else                     sub.drownVotes = Math.max(0, (sub.drownVotes||1) - 1);
+        renderAll();
+      }
+    }
+
+    // ── SHARE ────────────────────────────────────────────
+    async function shareSub(submissionId) {
+      const sub = window._submissions.find(s => s.id === submissionId);
+      if (!sub) return;
+      const url = `${location.origin}${location.pathname}?id=${encodeURIComponent(submissionId)}`;
+      const text = `Help ${sub.teamName} get DRIP status! \uD83D\uDD25 Vote: ${url}`;
+      // Prefer native share on mobile, fall back to clipboard
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: `${sub.teamName} — Drip or Drown`, text, url });
+          return;
+        }
+        await navigator.clipboard.writeText(text);
+        toast('\u2713 Link copied to clipboard');
+      } catch(e) {
+        if (e && e.name === 'AbortError') return;
+        try { await navigator.clipboard.writeText(text); toast('\u2713 Link copied to clipboard'); }
+        catch { toast('Copy failed', 'error'); }
+      }
+    }
+
+    // ── SUBMIT FORM ──────────────────────────────────────
+    function setupSubmitForm() {
+      const dropZone   = document.getElementById('drop-zone');
+      const fileInput  = document.getElementById('photo-input');
+      const previewWrap= document.getElementById('preview-wrap');
+      const previewImg = document.getElementById('preview-img');
+      const captionEl  = document.getElementById('f-caption');
+      const capCount   = document.getElementById('cap-count');
+      const form       = document.getElementById('submit-form');
+
+      ['dragover','dragenter'].forEach(ev =>
+        dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add('dragover'); })
+      );
+      ['dragleave','dragend','drop'].forEach(ev =>
+        dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.remove('dragover'); })
+      );
+      dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (file) handleFile(file);
+      });
+      fileInput.addEventListener('change', e => {
+        const file = e.target.files && e.target.files[0];
+        if (file) handleFile(file);
+      });
+
+      captionEl.addEventListener('input', () => { capCount.textContent = captionEl.value.length; });
+
+      form.addEventListener('submit', e => { e.preventDefault(); submitForm(); });
+    }
+
+    async function handleFile(file) {
+      if (!file.type.startsWith('image/')) {
+        toast('Please pick an image file', 'error');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast('File too large (max 5MB)', 'error');
+        return;
+      }
+      try {
+        const blob = await resizeImage(file, 1080, 0.8);
+        pendingPhotoBlob = blob;
+        const url = URL.createObjectURL(blob);
+        document.getElementById('preview-img').src = url;
+        document.getElementById('preview-wrap').classList.add('show');
+        document.getElementById('drop-zone').style.display = 'none';
+      } catch(e) {
+        console.error('resize error', e);
+        toast('Could not process image', 'error');
+      }
+    }
+
+    function clearPhoto() {
+      pendingPhotoBlob = null;
+      document.getElementById('preview-wrap').classList.remove('show');
+      document.getElementById('preview-img').src = '';
+      document.getElementById('photo-input').value = '';
+      document.getElementById('drop-zone').style.display = 'block';
+    }
+
+    function resizeImage(file, maxWidth, quality) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            const ratio = Math.min(1, maxWidth / img.width);
+            const w = Math.round(img.width * ratio);
+            const h = Math.round(img.height * ratio);
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('toBlob failed')), 'image/jpeg', quality);
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function submitForm() {
+      const team    = document.getElementById('f-team').value.trim();
+      const city    = document.getElementById('f-city').value.trim();
+      const state   = document.getElementById('f-state').value;
+      const caption = document.getElementById('f-caption').value.trim();
+      const owns    = document.getElementById('f-owns').checked;
+      const podOpt  = document.getElementById('f-podcast').checked;
+      const btn     = document.getElementById('submit-btn');
+      const successEl = document.getElementById('form-success');
+      const errorEl   = document.getElementById('form-error');
+      const progress  = document.getElementById('upload-progress');
+      const progressBar = document.getElementById('upload-progress-bar');
+
+      successEl.style.display = 'none';
+      errorEl.style.display = 'none';
+
+      if (!pendingPhotoBlob) { showFormError('Please add a photo of the uniform.'); return; }
+      if (!team)             { showFormError('Please enter the school/team name.'); return; }
+      if (!city)             { showFormError('Please enter the city.'); return; }
+      if (!state)            { showFormError('Please pick a state.'); return; }
+      if (!owns)             { showFormError('You must confirm you have rights to the photo.'); return; }
+
+      btn.disabled = true; btn.textContent = 'Uploading photo...';
+      progress.classList.add('show'); progressBar.style.width = '15%';
+
+      try {
+        const tempId = 'd_' + Math.random().toString(36).slice(2) + Date.now();
+        const path   = `drip/${tempId}/photo.jpg`;
+        const ref    = sref(storage, path);
+
+        progressBar.style.width = '40%';
+        await uploadBytes(ref, pendingPhotoBlob, { contentType: 'image/jpeg' });
+        progressBar.style.width = '75%';
+        const photoUrl = await getDownloadURL(ref);
+        progressBar.style.width = '90%';
+
+        btn.textContent = 'Saving submission...';
+        const newDoc = await addDoc(collection(db,'drip_submissions'), {
+          teamName: team, city, state, caption,
+          photoUrl,
+          submittedBy: visitorId,
+          submittedAt: Date.now(),
+          approved: true,
+          ownsPhoto: true,
+          podcastOptIn: !!podOpt,
+          dripVotes: 0,
+          drownVotes: 0,
+          featuredThisWeek: false,
+          hostTake: ''
+        });
+
+        progressBar.style.width = '100%';
+        successEl.style.display = 'block';
+        document.getElementById('submit-form').reset();
+        document.getElementById('cap-count').textContent = '0';
+        clearPhoto();
+        toast('\uD83C\uDF89 Submitted! Share to rack up votes.');
+        // Refresh feed so new submission appears, then deep-link to it
+        loadSubmissions().then(() => {
+          window.history.replaceState({}, '', `?id=${encodeURIComponent(newDoc.id)}`);
+          switchTab('vote');
+          requestAnimationFrame(() => scrollToCard(newDoc.id));
+        });
+      } catch(e) {
+        console.error('submit error', e);
+        showFormError('Submission failed. Please try again.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '&#128293; Submit Uniform';
+        setTimeout(() => { progress.classList.remove('show'); progressBar.style.width = '0%'; }, 800);
+      }
+    }
+
+    function showFormError(msg) {
+      const el = document.getElementById('form-error');
+      el.textContent = msg;
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+
+    // ── FILTER ACTIONS ───────────────────────────────────
+    function applySchoolFilter(school) {
+      schoolFilter = school || null;
+      setUrl(schoolFilter ? { school: schoolFilter } : {});
+      // Leaderboard sections stay global — but hide when filtering so the school view is focused
+      const wraps = ['spotlight-wrap','top3-wrap','bottom3-wrap'];
+      wraps.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && schoolFilter) el.style.display = 'none';
+      });
+      if (schoolFilter) {
+        renderAllGrid();
+      } else {
+        renderAll();
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── EVENT DELEGATION ─────────────────────────────────
+    document.addEventListener('click', e => {
+      const tabBtn = e.target.closest('.tab-btn');
+      if (tabBtn && tabBtn.dataset.tab) { switchTab(tabBtn.dataset.tab); return; }
+
+      const actionEl = e.target.closest('[data-action]');
+      if (!actionEl) return;
+      const action = actionEl.dataset.action;
+      const id = actionEl.dataset.id;
+      if (action === 'vote') {
+        const v = actionEl.dataset.vote;
+        vote(id, v);
+      } else if (action === 'share') {
+        shareSub(id);
+      } else if (action === 'clear-photo') {
+        clearPhoto();
+      } else if (action === 'filter-school') {
+        e.preventDefault();
+        applySchoolFilter(actionEl.dataset.school);
+      } else if (action === 'clear-filter') {
+        e.preventDefault();
+        applySchoolFilter(null);
+      } else if (action === 'goto-submit') {
+        e.preventDefault();
+        switchTab('submit');
+      }
+    });
+
+    // Browser back/forward — re-read URL and re-render
+    window.addEventListener('popstate', () => {
+      readUrlParams();
+      renderAll();
+      if (pendingScrollId) requestAnimationFrame(() => scrollToCard(pendingScrollId));
+    });
+
+    // ── INIT ─────────────────────────────────────────────
+    setupSubmitForm();
+    loadSubmissions().then(() => {
+      if (pendingScrollId) {
+        // Wait one frame for the cards to be in the DOM
+        requestAnimationFrame(() => scrollToCard(pendingScrollId));
+      }
+    });
+  </script>
+</body>
+</html>

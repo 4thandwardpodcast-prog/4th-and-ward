@@ -216,6 +216,14 @@
         <span class="sidebar-icon">&#127942;</span> Past Winners
       </button>
 
+      <div class="sidebar-section">Drip or Drown</div>
+      <button class="sidebar-item" onclick="showPage('drip-pending')">
+        <span class="sidebar-icon">&#128680;</span> Pending Review
+      </button>
+      <button class="sidebar-item" onclick="showPage('drip-all')">
+        <span class="sidebar-icon">&#128171;</span> All Submissions
+      </button>
+
       <div class="sidebar-section">Site</div>
       <button class="sidebar-item" onclick="showPage('visitors')">
         <span class="sidebar-icon">&#128100;</span> Visitors
@@ -584,6 +592,52 @@
         </div>
       </div>
 
+      <!-- ══ DRIP PENDING ══ -->
+      <div class="page" id="page-drip-pending">
+        <div class="page-header">
+          <div class="page-title">Drip or Drown — Pending Review</div>
+          <div class="page-sub">Approve or reject new uniform submissions before they go public.</div>
+        </div>
+        <div class="stat-row" style="margin-bottom:28px;">
+          <div class="stat-card blue"><div class="stat-card-num" id="drip-pending-count">—</div><div class="stat-card-label">Pending</div></div>
+          <div class="stat-card green"><div class="stat-card-num" id="drip-approved-count">—</div><div class="stat-card-label">Approved</div></div>
+          <div class="stat-card"><div class="stat-card-num" id="drip-total-votes">—</div><div class="stat-card-label">Total Votes</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Pending Submissions</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadDripPending()">&#8635; Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div id="drip-pending-grid" style="padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;">
+              <div class="loading-row" style="grid-column:1/-1">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ DRIP ALL ══ -->
+      <div class="page" id="page-drip-all">
+        <div class="page-header">
+          <div class="page-title">Drip or Drown — All Submissions</div>
+          <div class="page-sub">Manage approved submissions, feature picks, and add host takes.</div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">All Submissions</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadDripAll()">&#8635; Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table class="data-table">
+              <thead>
+                <tr><th style="width:60px">Photo</th><th>School</th><th>Votes</th><th>Score</th><th>Featured</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="drip-all-body"><tr><td colspan="6" class="loading-row">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- ══ VISITORS ══ -->
       <div class="page" id="page-visitors">
         <div class="page-header">
@@ -694,6 +748,7 @@
            increment }                                  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
   import { getAuth, signInWithPopup, GoogleAuthProvider,
            signOut as fbSignOut, onAuthStateChanged }   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getStorage, ref as storageRef, deleteObject } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
   // ── CONFIG — paste your Firebase config here ──────────────
   const firebaseConfig = {
@@ -713,6 +768,7 @@
   const db   = getFirestore(app);
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
+  const storage = getStorage(app);
 
   // ── AUTH ──────────────────────────────────────────────────
   onAuthStateChanged(auth, user => {
@@ -749,6 +805,8 @@
     if (id === 'puzzle-queue')         { loadPuzzleQueue(); }
     if (id === 'totw-nominees')       { loadNomineesAdmin(); }
     if (id === 'totw-winners')         { loadWinnersAdmin(); }
+    if (id === 'drip-pending')        { loadDripPending(); }
+    if (id === 'drip-all')            { loadDripAll(); }
     if (id === 'visitors')            { loadVisitors(); }
   };
 
@@ -1478,6 +1536,152 @@
       tbody.innerHTML = html;
     } catch(e) {}
   }
+
+  // ── DRIP OR DROWN — PENDING REVIEW ────────────────────────
+  window._dripData = {};
+  async function loadDripPending() {
+    const grid = document.getElementById('drip-pending-grid');
+    grid.innerHTML = '<div class="loading-row" style="grid-column:1/-1">Loading...</div>';
+    try {
+      const snap = await getDocs(collection(db, 'drip_submissions'));
+      const all = [];
+      snap.forEach(d => all.push({ id: d.id, ...d.data() }));
+      window._dripData = Object.fromEntries(all.map(s => [s.id, s]));
+
+      const pending  = all.filter(s => !s.approved).sort((a,b) => (b.submittedAt||0) - (a.submittedAt||0));
+      const approved = all.filter(s =>  s.approved);
+      const totalVotes = all.reduce((sum, s) => sum + (s.dripVotes||0) + (s.drownVotes||0), 0);
+
+      document.getElementById('drip-pending-count').textContent  = pending.length;
+      document.getElementById('drip-approved-count').textContent = approved.length;
+      document.getElementById('drip-total-votes').textContent    = totalVotes;
+
+      if (!pending.length) {
+        grid.innerHTML = '<div class="loading-row" style="grid-column:1/-1">No pending submissions. Nice!</div>';
+        return;
+      }
+
+      grid.innerHTML = pending.map(s => `
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="aspect-ratio:3/4;background:#111;overflow:hidden">
+            <img src="${escapeHtml(s.photoUrl||'')}" alt="${escapeHtml(s.teamName||'')}" style="width:100%;height:100%;object-fit:cover" loading="lazy">
+          </div>
+          <div style="padding:16px">
+            <div style="font-family:var(--condensed);font-weight:900;font-size:18px;text-transform:uppercase;margin-bottom:4px">${escapeHtml(s.teamName||'')}</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${escapeHtml(s.city||'')}, ${escapeHtml(s.state||'')}</div>
+            ${s.caption ? `<div style="font-size:13px;color:var(--white);margin-bottom:12px;font-style:italic">"${escapeHtml(s.caption)}"</div>` : ''}
+            <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Submitted ${s.submittedAt ? new Date(s.submittedAt).toLocaleDateString() : '—'}</div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-sm" style="flex:1;background:#1DB954;color:#000;border:none" data-drip-action="approve" data-id="${s.id}">✓ Approve</button>
+              <button class="btn btn-danger btn-sm" style="flex:1" data-drip-action="reject" data-id="${s.id}">✗ Reject</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    } catch(e) { grid.innerHTML = '<div class="loading-row" style="grid-column:1/-1">Error: ' + escapeHtml(e.message) + '</div>'; }
+  }
+  window.loadDripPending = loadDripPending;
+
+  // ── DRIP OR DROWN — ALL SUBMISSIONS ───────────────────────
+  async function loadDripAll() {
+    const tbody = document.getElementById('drip-all-body');
+    tbody.innerHTML = '<tr><td colspan="6" class="loading-row">Loading...</td></tr>';
+    try {
+      const snap = await getDocs(collection(db, 'drip_submissions'));
+      const rows = [];
+      snap.forEach(d => rows.push({ id: d.id, ...d.data() }));
+      window._dripData = Object.fromEntries(rows.map(s => [s.id, s]));
+
+      rows.sort((a,b) => {
+        const totalA = (a.dripVotes||0) + (a.drownVotes||0);
+        const totalB = (b.dripVotes||0) + (b.drownVotes||0);
+        return totalB - totalA;
+      });
+
+      if (!rows.length) { tbody.innerHTML = '<tr><td colspan="6" class="loading-row">No submissions yet.</td></tr>'; return; }
+
+      tbody.innerHTML = rows.map(s => {
+        const dv = s.dripVotes || 0, wv = s.drownVotes || 0, total = dv + wv;
+        const score = total ? Math.round((dv / total) * 100) + '%' : '—';
+        const emoji = total === 0 ? '—' : (score.startsWith('1') || parseInt(score) >= 60 ? '🍅' : parseInt(score) < 40 ? '😵' : '➖');
+        const status = s.approved ? '<span style="color:#1DB954">✓ Live</span>' : '<span style="color:var(--muted)">Pending</span>';
+        return `<tr>
+          <td><img src="${escapeHtml(s.photoUrl||'')}" alt="" style="width:48px;height:64px;object-fit:cover;border-radius:4px" loading="lazy"></td>
+          <td>
+            <div><strong>${escapeHtml(s.teamName||'')}</strong></div>
+            <div style="font-size:11px;color:var(--muted)">${escapeHtml(s.city||'')}, ${escapeHtml(s.state||'')} · ${status}</div>
+          </td>
+          <td>${dv} / ${wv}<div style="font-size:11px;color:var(--muted)">${total} total</div></td>
+          <td><span style="font-family:var(--condensed);font-weight:900;font-size:18px;color:var(--gold)">${emoji} ${score}</span></td>
+          <td>${s.featuredThisWeek ? '<span style="color:var(--gold)">⭐ Featured</span>' : '—'}</td>
+          <td style="white-space:nowrap">
+            <button class="btn btn-ghost btn-sm" data-drip-action="feature" data-id="${s.id}">${s.featuredThisWeek ? 'Unfeature' : 'Feature'}</button>
+            <button class="btn btn-ghost btn-sm" data-drip-action="host-take" data-id="${s.id}">Take</button>
+            <button class="btn btn-danger btn-sm" data-drip-action="delete" data-id="${s.id}">Delete</button>
+          </td>
+        </tr>`;
+      }).join('');
+    } catch(e) { tbody.innerHTML = '<tr><td colspan="6" class="loading-row">Error: ' + escapeHtml(e.message) + '</td></tr>'; }
+  }
+  window.loadDripAll = loadDripAll;
+
+  // ── DRIP ACTIONS (event delegation) ───────────────────────
+  document.addEventListener('click', async function(e) {
+    const btn = e.target.closest('[data-drip-action]');
+    if (!btn) return;
+    const action = btn.dataset.dripAction;
+    const id = btn.dataset.id;
+    const s = window._dripData[id];
+    if (!s) return;
+
+    try {
+      if (action === 'approve') {
+        await updateDoc(doc(db, 'drip_submissions', id), { approved: true, approvedAt: Date.now() });
+        toast(s.teamName + ' approved!');
+        loadDripPending();
+      } else if (action === 'reject') {
+        if (!confirm('Reject and delete "' + s.teamName + '"? This cannot be undone.')) return;
+        // Try to delete storage file too
+        if (s.photoUrl && s.photoUrl.includes('/o/drip%2F')) {
+          try {
+            const pathMatch = s.photoUrl.match(/\/o\/(drip%2F[^?]+)/);
+            if (pathMatch) {
+              const path = decodeURIComponent(pathMatch[1]);
+              await deleteObject(storageRef(storage, path));
+            }
+          } catch(se) { console.warn('Storage delete failed:', se); }
+        }
+        await deleteDoc(doc(db, 'drip_submissions', id));
+        toast(s.teamName + ' rejected.', 'error');
+        loadDripPending();
+      } else if (action === 'feature') {
+        await updateDoc(doc(db, 'drip_submissions', id), { featuredThisWeek: !s.featuredThisWeek });
+        toast(s.featuredThisWeek ? 'Unfeatured' : 'Featured!');
+        loadDripAll();
+      } else if (action === 'host-take') {
+        const take = prompt('Jack & Adam\'s take on "' + s.teamName + '":', s.hostTake || '');
+        if (take === null) return;
+        await updateDoc(doc(db, 'drip_submissions', id), { hostTake: take });
+        toast('Take saved!');
+        loadDripAll();
+      } else if (action === 'delete') {
+        if (!confirm('Delete "' + s.teamName + '" permanently? This cannot be undone.')) return;
+        if (s.photoUrl && s.photoUrl.includes('/o/drip%2F')) {
+          try {
+            const pathMatch = s.photoUrl.match(/\/o\/(drip%2F[^?]+)/);
+            if (pathMatch) {
+              const path = decodeURIComponent(pathMatch[1]);
+              await deleteObject(storageRef(storage, path));
+            }
+          } catch(se) { console.warn('Storage delete failed:', se); }
+        }
+        await deleteDoc(doc(db, 'drip_submissions', id));
+        toast(s.teamName + ' deleted.', 'error');
+        loadDripAll();
+      }
+    } catch(err) { toast('Error: ' + err.message, 'error'); }
+  });
+
 </script>
 </body>
 </html>
