@@ -60,7 +60,12 @@
     .nominee-loc { font-size: 12px; color: var(--muted); margin-top: 2px; }
     .nominee-mascot { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); background: rgba(245,197,24,0.08); border: 1px solid rgba(245,197,24,0.2); border-radius: 3px; padding: 4px 8px; white-space: nowrap; flex-shrink: 0; }
     .nominees-loading { color: var(--muted); font-size: 14px; text-align: center; padding: 24px 0; }
-    .winners-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+    /* Past Winners breaks out of the .totw-body 1100px constraint to fill the page width */
+    #tab-winners { width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; padding: 0 48px; box-sizing: border-box; }
+    #tab-winners .section-label, #tab-winners .winners-grid { max-width: 1600px; margin-left: auto; margin-right: auto; }
+    .winners-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; }
+    @media (max-width: 900px) { #tab-winners { padding: 0 24px; } }
+    @media (max-width: 600px) { #tab-winners { padding: 0 16px; } }
     .winner-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
     .winner-card:hover { border-color: rgba(245,197,24,0.4); transform: translateY(-3px); }
     .winner-card-header { padding: 24px 20px 16px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid var(--border); }
@@ -74,6 +79,29 @@
     .winners-loading { text-align: center; padding: 60px; color: var(--muted); }
     /* WHEEL */
     .wheel-section { text-align: center; padding: 20px 0 40px; }
+
+    /* Preview wheel: bigger on desktop. On mobile we hide the wheel entirely
+       and show a vertical nominee list since the wheel text is unreadable
+       at small widths with many slices. */
+    #preview-wheel-wrap { width: min(880px, 92vw); height: min(880px, 92vw); }
+    #preview-list { display: none; max-width: 600px; margin: 0 auto 28px;
+                    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+                    padding: 4px 8px; }
+    .preview-list-head { display: flex; align-items: center; justify-content: space-between;
+                         padding: 14px 12px; border-bottom: 1px solid var(--border); }
+    .preview-list-head h3 { font-family: var(--condensed); font-weight: 900; font-size: 22px; text-transform: uppercase; }
+    .preview-list-head .count { font-size: 12px; color: var(--muted); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .preview-list-item { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+    .preview-list-item:last-child { border-bottom: none; }
+    .preview-list-num { font-family: var(--condensed); font-weight: 900; font-size: 18px; color: var(--gold);
+                        width: 28px; flex-shrink: 0; text-align: center; }
+    .preview-list-info { flex: 1; min-width: 0; }
+    .preview-list-name { font-size: 15px; font-weight: 600; color: var(--white); line-height: 1.2; }
+    .preview-list-loc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    @media (max-width: 700px) {
+      #preview-wheel-wrap { display: none; }
+      #preview-list { display: block; }
+    }
 
     .wheel-wrap { position: relative; width: min(680px, 92vw); height: min(680px, 92vw); margin: 0 auto 36px;
                   filter: drop-shadow(0 30px 60px rgba(0,0,0,0.85)) drop-shadow(0 0 100px rgba(245,197,24,0.15));
@@ -221,6 +249,13 @@
           <div class="wheel-pointer"></div>
           <canvas id="preview-wheel-canvas" class="wheel-canvas"></canvas>
           <div class="wheel-center"><canvas id="preview-center-logo-canvas"></canvas></div>
+        </div>
+        <div id="preview-list">
+          <div class="preview-list-head">
+            <h3>On the Wheel</h3>
+            <span class="count" id="preview-list-count"></span>
+          </div>
+          <div id="preview-list-body"></div>
         </div>
         <div id="preview-empty" style="display:none;text-align:center;color:var(--muted);font-size:16px;padding:60px 20px;">
           The wheel is empty. Be the first to nominate a school!
@@ -460,17 +495,38 @@
     // ── PREVIEW WHEEL ──────────────────────────────────────
     function renderPreviewWheel() {
       const wrap  = document.getElementById('preview-wheel-wrap');
+      const list  = document.getElementById('preview-list');
       const empty = document.getElementById('preview-empty');
       if (!wrap) return;
       if (!nominees.length) {
         wrap.style.display = 'none';
+        if (list)  list.style.display = 'none';
         if (empty) empty.style.display = 'block';
         return;
       }
-      wrap.style.display = 'block';
+      // Restore default display (CSS media query handles desktop vs mobile visibility)
+      wrap.style.display = '';
+      if (list)  list.style.display = '';
       if (empty) empty.style.display = 'none';
       drawWheelOnCanvas('preview-wheel-canvas', 'preview-wheel-wrap');
       drawCenterLogo('preview-center-logo-canvas');
+      renderPreviewList();
+    }
+
+    function renderPreviewList() {
+      const body = document.getElementById('preview-list-body');
+      const count = document.getElementById('preview-list-count');
+      if (!body) return;
+      if (count) count.textContent = nominees.length + ' team' + (nominees.length !== 1 ? 's' : '');
+      const sorted = [...nominees].sort((a,b) => a.teamName.localeCompare(b.teamName));
+      body.innerHTML = sorted.map((n,i) => `
+        <div class="preview-list-item">
+          <div class="preview-list-num">${i+1}</div>
+          <div class="preview-list-info">
+            <div class="preview-list-name">${escHtml(n.teamName)}</div>
+            <div class="preview-list-loc">${escHtml(n.location||'')}</div>
+          </div>
+        </div>`).join('');
     }
 
     // ── LOAD DATA ──────────────────────────────────────────
