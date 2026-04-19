@@ -143,6 +143,42 @@
     .legal-check { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 13px; color: var(--white); line-height: 1.45; }
     .legal-check input[type=checkbox] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--gold); cursor: pointer; flex-shrink: 0; }
 
+    /* SCHOOLS TAB */
+    .schools-toolbar { display: flex; gap: 16px; align-items: flex-end; margin-bottom: 28px; flex-wrap: wrap; padding: 16px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+    .schools-toolbar-group { display: flex; flex-direction: column; gap: 6px; min-width: 160px; flex: 1; }
+    .toolbar-label { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+    .toolbar-select { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; font-size: 14px; color: var(--white); font-family: var(--body); outline: none; cursor: pointer; transition: border-color 0.15s; }
+    .toolbar-select:focus { border-color: var(--gold); }
+    .schools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .school-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; display: flex; align-items: flex-start; gap: 16px; cursor: pointer; transition: border-color 0.2s, transform 0.2s; text-decoration: none; color: inherit; }
+    .school-card:hover { border-color: rgba(245,197,24,0.4); transform: translateY(-2px); }
+    .school-card-logo { width: 56px; height: 56px; border-radius: 8px; background: #1a1a1a; display: flex; align-items: center; justify-content: center; font-family: var(--condensed); font-weight: 900; font-size: 18px; color: var(--gold); flex-shrink: 0; overflow: hidden; }
+    .school-card-logo img { width: 100%; height: 100%; object-fit: contain; padding: 6px; box-sizing: border-box; }
+    .school-card-body { flex: 1; min-width: 0; }
+    .school-card-name { font-family: var(--condensed); font-weight: 900; font-size: 19px; text-transform: uppercase; line-height: 1.1; margin-bottom: 4px; }
+    .school-card-loc { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .school-card-stats { display: flex; gap: 14px; flex-wrap: wrap; }
+    .school-stat { display: flex; flex-direction: column; gap: 2px; }
+    .school-stat-num { font-family: var(--condensed); font-weight: 900; font-size: 20px; line-height: 1; color: var(--gold); }
+    .school-stat-num.muted { color: var(--muted); }
+    .school-stat-label { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+
+    /* SCHOOL PROFILE HEADER (on ?school= view) */
+    .school-header { background: linear-gradient(180deg, rgba(245,197,24,0.06) 0%, transparent 100%); border: 1px solid rgba(245,197,24,0.25); border-radius: 12px; padding: 28px 32px; margin-bottom: 28px; display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+    .school-header-logo { width: 90px; height: 90px; border-radius: 10px; background: #1a1a1a; display: flex; align-items: center; justify-content: center; font-family: var(--condensed); font-weight: 900; font-size: 32px; color: var(--gold); flex-shrink: 0; overflow: hidden; }
+    .school-header-logo img { width: 100%; height: 100%; object-fit: contain; padding: 8px; box-sizing: border-box; }
+    .school-header-info { flex: 1; min-width: 240px; }
+    .school-header-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+    .school-header-name { font-family: var(--condensed); font-weight: 900; font-size: clamp(28px, 4vw, 40px); text-transform: uppercase; line-height: 1; margin-bottom: 6px; }
+    .school-header-loc { font-size: 14px; color: var(--muted); }
+    .school-header-stats { display: flex; gap: 24px; flex-wrap: wrap; }
+    .school-header-stat { text-align: center; }
+    .school-header-stat-num { font-family: var(--condensed); font-weight: 900; font-size: 32px; line-height: 1; color: var(--gold); }
+    .school-header-stat-num.muted { color: var(--muted); }
+    .school-header-stat-label { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+    .school-header-cta { display: inline-flex; align-items: center; gap: 6px; background: var(--gold); color: var(--black); border: none; border-radius: 6px; padding: 10px 18px; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; font-family: var(--body); margin-top: 14px; transition: background 0.2s; }
+    .school-header-cta:hover { background: var(--gold-hover); }
+
     /* SCHOOL FILTER + LINK */
     .filter-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: rgba(245,197,24,0.08); border: 1px solid rgba(245,197,24,0.3); border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; flex-wrap: wrap; }
     .filter-banner-text { font-size: 14px; color: var(--white); }
@@ -218,6 +254,7 @@
   <div class="tab-bar">
     <button class="tab-btn active" data-tab="vote">&#128064; Vote</button>
     <button class="tab-btn" data-tab="submit">&#128247; Submit</button>
+    <button class="tab-btn" data-tab="schools">&#127979; Schools</button>
     <button class="tab-btn" data-tab="top">&#127942; Top Drips</button>
   </div>
 
@@ -272,7 +309,7 @@
     <div id="tab-submit" style="display:none;">
       <div class="submit-form-card">
         <h2>Submit a Uniform</h2>
-        <p class="form-intro">Spotted a sick (or tragic) high school football fit? Drop the photo, give us the deets, and let the community judge.</p>
+        <p class="form-intro">Spotted a sick (or tragic) high school football fit? Drop the photo, give us the details, and let the community judge.</p>
 
         <div class="guidelines-block">
           <div class="guidelines-title">&#9888;&#65039; Quick Rules</div>
@@ -351,6 +388,38 @@
       </div>
     </div>
 
+    <!-- SCHOOLS TAB -->
+    <div id="tab-schools" style="display:none;">
+      <div class="section-head">
+        <h2>&#127979; THE <span class="accent">SCHOOLS</span></h2>
+        <span style="font-size:12px;color:var(--muted);font-weight:600;" id="schools-count"></span>
+      </div>
+      <p class="section-sub">Every high school program with a fit on the wall. Tap a school to see all its uniforms.</p>
+
+      <div class="schools-toolbar">
+        <div class="schools-toolbar-group">
+          <label class="toolbar-label">State</label>
+          <select class="toolbar-select" id="schools-state-filter">
+            <option value="">All States</option>
+          </select>
+        </div>
+        <div class="schools-toolbar-group">
+          <label class="toolbar-label">Sort by</label>
+          <select class="toolbar-select" id="schools-sort">
+            <option value="fits">Most fits</option>
+            <option value="drip">Best drip score</option>
+            <option value="alpha">A &rarr; Z</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="schools-grid">
+        <div class="skeleton-grid">
+          <div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- TOP DRIPS TAB -->
     <div id="tab-top" style="display:none;">
       <div class="section-head">
@@ -417,20 +486,27 @@
     let currentTab = 'vote';
     let pendingPhotoBlob = null;
     let schoolFilter = null;       // active school filter (string) or null
+    let stateFilter  = null;       // active state filter (e.g. "TX") or null
     let pendingScrollId = null;    // submission id to scroll to after render
+    let pendingTab = null;         // tab to switch to after init
+    const _schoolLogos = {};       // cache: schoolKey → logoUrl
 
     // ── URL PARAMS ───────────────────────────────────────
     function readUrlParams() {
       const params = new URLSearchParams(window.location.search);
-      schoolFilter   = params.get('school') || null;
+      schoolFilter    = params.get('school') || null;
+      stateFilter     = (params.get('state') || '').toUpperCase() || null;
       pendingScrollId = params.get('id') || null;
+      pendingTab      = params.get('tab') || null;
     }
     readUrlParams();
 
     function setUrl(params) {
       const usp = new URLSearchParams();
       if (params.school) usp.set('school', params.school);
+      if (params.state)  usp.set('state', params.state);
       if (params.id)     usp.set('id', params.id);
+      if (params.tab)    usp.set('tab', params.tab);
       const qs = usp.toString();
       const url = window.location.pathname + (qs ? ('?' + qs) : '');
       window.history.pushState({}, '', url);
@@ -448,6 +524,32 @@
     function escapeHtml(s) {
       return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
         .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    // Normalize a school name into a stable key.
+    // "Allen High School", "Allen HS", "allen H.S." all → "allen"
+    function normalizeSchool(name) {
+      return String(name || '')
+        .toLowerCase()
+        .replace(/\s+(high\s+school|h\.?\s*s\.?)\s*$/i, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    }
+
+    function getSchoolInitials(name) {
+      const cleaned = String(name||'').replace(/High School/gi,'').replace(/\bHS\b/gi,'').trim();
+      const parts = cleaned.split(/\s+/).filter(w => w.length > 1);
+      return parts.slice(0,2).map(w => w[0].toUpperCase()).join('') || (cleaned[0]||'?').toUpperCase();
+    }
+
+    async function fetchSchoolLogoUrl(teamName, city, state) {
+      try {
+        const q = encodeURIComponent(`${teamName} ${city} ${state}`);
+        const res = await fetch('/api/maxpreps-logo?q=' + q);
+        if (!res.ok) return '';
+        const data = await res.json();
+        return data.logoUrl || '';
+      } catch(e) { return ''; }
     }
 
     function dripScore(dripVotes, drownVotes) {
@@ -489,13 +591,15 @@
     function switchTab(tab, opts) {
       opts = opts || {};
       currentTab = tab;
-      ['vote','submit','top'].forEach(t => {
-        document.getElementById('tab-'+t).style.display = (t === tab) ? 'block' : 'none';
+      ['vote','submit','schools','top'].forEach(t => {
+        const el = document.getElementById('tab-'+t);
+        if (el) el.style.display = (t === tab) ? 'block' : 'none';
       });
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.tab === tab);
       });
-      if (tab === 'top') renderHallOfFame();
+      if (tab === 'top')     renderHallOfFame();
+      if (tab === 'schools') renderSchools();
       if (!opts.noScroll) window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
@@ -515,6 +619,12 @@
         const subs = [];
         snap.forEach(d => subs.push({ id: d.id, ...d.data() }));
         subs.sort((a,b) => (b.submittedAt||0) - (a.submittedAt||0));
+        // Backfill schoolKey for old submissions that pre-date the field
+        subs.forEach(s => {
+          if (!s.schoolKey) s.schoolKey = normalizeSchool(s.teamName);
+          const cachedLogo = s.schoolLogoUrl || s.logoUrl;
+          if (cachedLogo && s.schoolKey && !_schoolLogos[s.schoolKey]) _schoolLogos[s.schoolKey] = cachedLogo;
+        });
         window._submissions = subs;
 
         // Load this visitor's votes
@@ -542,8 +652,8 @@
 
     // ── RENDERING ────────────────────────────────────────
     function renderAll() {
-      if (schoolFilter) {
-        // Hide global leaderboards when viewing a single school
+      if (schoolFilter || stateFilter) {
+        // Hide global leaderboards when any filter is active
         ['spotlight-wrap','top3-wrap','bottom3-wrap'].forEach(id => {
           const el = document.getElementById(id);
           if (el) el.style.display = 'none';
@@ -664,25 +774,193 @@
       const grid = document.getElementById('all-grid');
       const count = document.getElementById('all-count');
       const all = window._submissions;
-      const subs = schoolFilter
-        ? all.filter(s => (s.teamName||'').toLowerCase() === schoolFilter.toLowerCase())
-        : all;
+      const schoolKeyFilter = schoolFilter ? normalizeSchool(schoolFilter) : null;
+      const subs = all.filter(s => {
+        if (schoolKeyFilter && s.schoolKey !== schoolKeyFilter) return false;
+        if (stateFilter && (s.state||'').toUpperCase() !== stateFilter) return false;
+        return true;
+      });
       count.textContent = subs.length + ' fit' + (subs.length === 1 ? '' : 's')
-        + (schoolFilter ? ' for this school' : '');
+        + (schoolFilter ? ' for this school' : (stateFilter ? ` from ${stateFilter}` : ''));
 
-      const bannerHtml = schoolFilter ? `
-        <div class="filter-banner">
-          <div class="filter-banner-text">Showing fits for <strong>${escapeHtml(schoolFilter)}</strong></div>
-          <button class="filter-banner-clear" data-action="clear-filter">&times; Show all</button>
-        </div>` : '';
+      // School profile header (for ?school= view)
+      let headerHtml = '';
+      if (schoolFilter) headerHtml = renderSchoolHeader(schoolKeyFilter);
+
+      // Filter banner (state-only filter, or no school header)
+      let bannerHtml = '';
+      if (stateFilter && !schoolFilter) {
+        bannerHtml = `
+          <div class="filter-banner">
+            <div class="filter-banner-text">Showing fits from <strong>${escapeHtml(stateFilter)}</strong></div>
+            <button class="filter-banner-clear" data-action="clear-filter">&times; Show all</button>
+          </div>`;
+      }
 
       if (!subs.length) {
-        grid.innerHTML = bannerHtml + (schoolFilter
+        grid.innerHTML = headerHtml + bannerHtml + (schoolFilter
           ? `<div class="empty-state">No fits yet for <strong>${escapeHtml(schoolFilter)}</strong>. <a href="#" data-action="goto-submit" style="color:var(--gold);text-decoration:underline;">Be the first to post one.</a></div>`
-          : '<div class="empty-state">Be the first to submit a uniform! Click <strong>Submit</strong> above.</div>');
+          : (stateFilter
+              ? `<div class="empty-state">No fits from <strong>${escapeHtml(stateFilter)}</strong> yet.</div>`
+              : '<div class="empty-state">Be the first to submit a uniform! Click <strong>Submit</strong> above.</div>'));
+        if (schoolFilter) attachSchoolHeaderLogo(schoolKeyFilter);
         return;
       }
-      grid.innerHTML = bannerHtml + '<div class="sub-grid">' + subs.map(s => cardHtml(s)).join('') + '</div>';
+      grid.innerHTML = headerHtml + bannerHtml + '<div class="sub-grid">' + subs.map(s => cardHtml(s)).join('') + '</div>';
+      if (schoolFilter) attachSchoolHeaderLogo(schoolKeyFilter);
+    }
+
+    // ── SCHOOL STATS / GROUPING ──────────────────────────
+    function computeSchoolStats(filterState) {
+      const groups = new Map();
+      for (const s of window._submissions) {
+        if (!s.schoolKey) continue;
+        if (filterState && (s.state||'').toUpperCase() !== filterState) continue;
+        if (!groups.has(s.schoolKey)) {
+          groups.set(s.schoolKey, {
+            schoolKey: s.schoolKey,
+            teamName: s.teamName,
+            city: s.city, state: s.state,
+            subs: [],
+            totalDrip: 0, totalDrown: 0
+          });
+        }
+        const g = groups.get(s.schoolKey);
+        g.subs.push(s);
+        g.totalDrip  += (s.dripVotes||0);
+        g.totalDrown += (s.drownVotes||0);
+        // Prefer the most recent name/city/state in case of variations
+        if ((s.submittedAt||0) > (g._latest||0)) {
+          g._latest = s.submittedAt||0;
+          g.teamName = s.teamName; g.city = s.city; g.state = s.state;
+        }
+      }
+      const out = [];
+      groups.forEach(g => {
+        const total = g.totalDrip + g.totalDrown;
+        g.fitCount = g.subs.length;
+        g.dripPct  = total > 0 ? Math.round(g.totalDrip / total * 100) : null;
+        g.totalVotes = total;
+        out.push(g);
+      });
+      return out;
+    }
+
+    function uniqueStates() {
+      const set = new Set();
+      window._submissions.forEach(s => { if (s.state) set.add(String(s.state).toUpperCase()); });
+      return [...set].sort();
+    }
+
+    // ── SCHOOLS TAB RENDER ───────────────────────────────
+    function renderSchools() {
+      const grid = document.getElementById('schools-grid');
+      const countEl = document.getElementById('schools-count');
+      const stateSel = document.getElementById('schools-state-filter');
+      const sortSel = document.getElementById('schools-sort');
+
+      // Populate state dropdown (preserve current selection)
+      const states = uniqueStates();
+      const currentVal = stateSel.value || stateFilter || '';
+      stateSel.innerHTML = '<option value="">All States</option>' +
+        states.map(s => `<option value="${s}" ${s===currentVal?'selected':''}>${s}</option>`).join('');
+
+      const sortBy = sortSel.value || 'fits';
+      const filterSt = stateSel.value || null;
+      let schools = computeSchoolStats(filterSt);
+
+      // Sort
+      if (sortBy === 'fits') {
+        schools.sort((a,b) => b.fitCount - a.fitCount || (b.dripPct||0) - (a.dripPct||0));
+      } else if (sortBy === 'drip') {
+        schools.sort((a,b) => (b.dripPct ?? -1) - (a.dripPct ?? -1) || b.fitCount - a.fitCount);
+      } else {
+        schools.sort((a,b) => (a.teamName||'').localeCompare(b.teamName||''));
+      }
+
+      countEl.textContent = schools.length + ' school' + (schools.length === 1 ? '' : 's');
+
+      if (!schools.length) {
+        grid.innerHTML = '<div class="empty-state">No schools yet. Be the first to submit a fit!</div>';
+        return;
+      }
+
+      grid.innerHTML = '<div class="schools-grid">' + schools.map(g => {
+        const loc = [g.city, g.state].filter(Boolean).join(', ');
+        const dripDisplay = g.dripPct == null ? '—' : g.dripPct + '%';
+        const dripClass = g.dripPct == null ? 'muted' : '';
+        const cachedLogo = _schoolLogos[g.schoolKey];
+        const logoInner = cachedLogo
+          ? `<img src="${escapeHtml(cachedLogo)}" alt="${escapeHtml(g.teamName)} logo">`
+          : escapeHtml(getSchoolInitials(g.teamName));
+        return `
+          <a href="?school=${encodeURIComponent(g.teamName)}" class="school-card" data-action="open-school" data-school="${escapeHtml(g.teamName)}">
+            <div class="school-card-logo" data-school-logo="${escapeHtml(g.schoolKey)}">${logoInner}</div>
+            <div class="school-card-body">
+              <div class="school-card-name">${escapeHtml(g.teamName)}</div>
+              <div class="school-card-loc">${escapeHtml(loc)}</div>
+              <div class="school-card-stats">
+                <div class="school-stat"><div class="school-stat-num">${g.fitCount}</div><div class="school-stat-label">Fits</div></div>
+                <div class="school-stat"><div class="school-stat-num ${dripClass}">${dripDisplay}</div><div class="school-stat-label">Drip Score</div></div>
+                <div class="school-stat"><div class="school-stat-num muted">${g.totalVotes}</div><div class="school-stat-label">Votes</div></div>
+              </div>
+            </div>
+          </a>`;
+      }).join('') + '</div>';
+
+      // Lazy-fetch missing logos for cards now in the DOM
+      schools.forEach(g => { if (!_schoolLogos[g.schoolKey]) lazyFetchSchoolLogo(g); });
+    }
+
+    async function lazyFetchSchoolLogo(g) {
+      const url = await fetchSchoolLogoUrl(g.teamName, g.city, g.state);
+      if (!url) return;
+      _schoolLogos[g.schoolKey] = url;
+      // Swap any logo placeholders for this schoolKey
+      document.querySelectorAll(`[data-school-logo="${CSS.escape(g.schoolKey)}"]`).forEach(el => {
+        el.innerHTML = `<img src="${escapeHtml(url)}" alt="${escapeHtml(g.teamName)} logo">`;
+      });
+    }
+
+    // ── SCHOOL PROFILE HEADER (on ?school= view) ─────────
+    function renderSchoolHeader(schoolKey) {
+      if (!schoolKey) return '';
+      const stats = computeSchoolStats(null).find(g => g.schoolKey === schoolKey);
+      // Fall back to the URL-provided name if no submissions yet exist for this school
+      const displayName = stats ? stats.teamName : schoolFilter;
+      const loc = stats ? [stats.city, stats.state].filter(Boolean).join(', ') : '';
+      const cachedLogo = _schoolLogos[schoolKey];
+      const logoInner = cachedLogo
+        ? `<img src="${escapeHtml(cachedLogo)}" alt="${escapeHtml(displayName)} logo">`
+        : escapeHtml(getSchoolInitials(displayName));
+
+      const fits = stats ? stats.fitCount : 0;
+      const drip = stats && stats.dripPct != null ? stats.dripPct + '%' : '—';
+      const dripCls = stats && stats.dripPct != null ? '' : 'muted';
+      const votes = stats ? stats.totalVotes : 0;
+
+      return `
+        <div class="school-header">
+          <div class="school-header-logo" data-school-logo="${escapeHtml(schoolKey)}">${logoInner}</div>
+          <div class="school-header-info">
+            <div class="school-header-eyebrow">School Profile</div>
+            <div class="school-header-name">${escapeHtml(displayName)}</div>
+            <div class="school-header-loc">${escapeHtml(loc)}</div>
+            <button class="school-header-cta" data-action="goto-submit" data-prefill-school="${escapeHtml(displayName)}">&#128293; Add a Fit</button>
+          </div>
+          <div class="school-header-stats">
+            <div class="school-header-stat"><div class="school-header-stat-num">${fits}</div><div class="school-header-stat-label">Fits</div></div>
+            <div class="school-header-stat"><div class="school-header-stat-num ${dripCls}">${drip}</div><div class="school-header-stat-label">Drip Score</div></div>
+            <div class="school-header-stat"><div class="school-header-stat-num muted">${votes}</div><div class="school-header-stat-label">Total Votes</div></div>
+          </div>
+        </div>`;
+    }
+
+    function attachSchoolHeaderLogo(schoolKey) {
+      if (!schoolKey || _schoolLogos[schoolKey]) return;
+      const stats = computeSchoolStats(null).find(g => g.schoolKey === schoolKey);
+      if (!stats) return;
+      lazyFetchSchoolLogo(stats);
     }
 
     function renderHallOfFame() {
@@ -884,9 +1162,15 @@
         progressBar.style.width = '90%';
 
         btn.textContent = 'Saving submission...';
+        // Best-effort logo fetch (non-blocking failure ok)
+        const schoolKey = normalizeSchool(team);
+        const schoolLogo = _schoolLogos[schoolKey] || await fetchSchoolLogoUrl(team, city, state);
+        if (schoolLogo) _schoolLogos[schoolKey] = schoolLogo;
         const newDoc = await addDoc(collection(db,'drip_submissions'), {
           teamName: team, city, state, caption,
+          schoolKey,
           photoUrl,
+          schoolLogoUrl: schoolLogo || '',
           submittedBy: visitorId,
           submittedAt: Date.now(),
           approved: true,
@@ -930,18 +1214,19 @@
     // ── FILTER ACTIONS ───────────────────────────────────
     function applySchoolFilter(school) {
       schoolFilter = school || null;
+      // Clear state filter when picking a school (school is more specific)
+      if (schoolFilter) stateFilter = null;
       setUrl(schoolFilter ? { school: schoolFilter } : {});
-      // Leaderboard sections stay global — but hide when filtering so the school view is focused
-      const wraps = ['spotlight-wrap','top3-wrap','bottom3-wrap'];
-      wraps.forEach(id => {
-        const el = document.getElementById(id);
-        if (el && schoolFilter) el.style.display = 'none';
-      });
-      if (schoolFilter) {
-        renderAllGrid();
-      } else {
-        renderAll();
-      }
+      switchTab('vote', { noScroll: true });
+      renderAll();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function clearAllFilters() {
+      schoolFilter = null;
+      stateFilter  = null;
+      setUrl({});
+      renderAll();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -961,21 +1246,32 @@
         shareSub(id);
       } else if (action === 'clear-photo') {
         clearPhoto();
-      } else if (action === 'filter-school') {
+      } else if (action === 'filter-school' || action === 'open-school') {
         e.preventDefault();
         applySchoolFilter(actionEl.dataset.school);
       } else if (action === 'clear-filter') {
         e.preventDefault();
-        applySchoolFilter(null);
+        clearAllFilters();
       } else if (action === 'goto-submit') {
         e.preventDefault();
         switchTab('submit');
+        const prefill = actionEl.dataset.prefillSchool;
+        if (prefill) {
+          const teamInput = document.getElementById('f-team');
+          if (teamInput) { teamInput.value = prefill; teamInput.focus(); }
+        }
       }
     });
+
+    // ── SCHOOLS TAB CONTROLS ─────────────────────────────
+    document.getElementById('schools-state-filter').addEventListener('change', renderSchools);
+    document.getElementById('schools-sort').addEventListener('change', renderSchools);
 
     // Browser back/forward — re-read URL and re-render
     window.addEventListener('popstate', () => {
       readUrlParams();
+      const nextTab = pendingTab || (schoolFilter || stateFilter ? 'vote' : 'vote');
+      switchTab(nextTab, { noScroll: true });
       renderAll();
       if (pendingScrollId) requestAnimationFrame(() => scrollToCard(pendingScrollId));
     });
@@ -983,6 +1279,11 @@
     // ── INIT ─────────────────────────────────────────────
     setupSubmitForm();
     loadSubmissions().then(() => {
+      // If URL says ?tab= switch to that, otherwise default to vote.
+      // ?school= or ?state= imply the vote tab (filtered feed).
+      if (pendingTab === 'schools') switchTab('schools', { noScroll: true });
+      else if (pendingTab === 'top') switchTab('top', { noScroll: true });
+      else if (pendingTab === 'submit') switchTab('submit', { noScroll: true });
       if (pendingScrollId) {
         // Wait one frame for the cards to be in the DOM
         requestAnimationFrame(() => scrollToCard(pendingScrollId));
