@@ -615,8 +615,7 @@
 
         <div class="controls-help">
           <span class="ctrl"><kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> Move <span style="opacity:.6">(or WASD)</span></span>
-          <span class="ctrl"><kbd>Space</kbd> Snap</span>
-          <span class="ctrl"><kbd>Enter</kbd> / <kbd>J</kbd> / Click Pass</span>
+          <span class="ctrl"><kbd>Space</kbd> Snap / Pass</span>
           <span class="ctrl"><kbd>Shift</kbd> Burst</span>
           <span class="ctrl"><kbd>F</kbd> Fullscreen</span>
         </div>
@@ -1212,8 +1211,8 @@
     if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') input.left = true;
     if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') input.right = true;
     if (e.key === 'Shift') input.burst = true;
-    if (e.key === ' ') input.snap = true;
-    if (e.key === 'j' || e.key === 'J' || e.key === 'Enter') { e.preventDefault(); input.pass = true; }
+    if (e.key === ' ') { input.snap = true; input.pass = true; }
+    if (e.key === 'j' || e.key === 'J') input.pass = true;
   });
   window.addEventListener('keyup', e => {
     if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') input.up = false;
@@ -1221,8 +1220,8 @@
     if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft') input.left = false;
     if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') input.right = false;
     if (e.key === 'Shift') input.burst = false;
-    if (e.key === ' ') input.snap = false;
-    if (e.key === 'j' || e.key === 'J' || e.key === 'Enter') input.pass = false;
+    if (e.key === ' ') { input.snap = false; input.pass = false; }
+    if (e.key === 'j' || e.key === 'J') input.pass = false;
   });
   canvas.addEventListener('click', () => { input.pass = true; setTimeout(()=>{input.pass=false;}, 60); });
   msgEl.addEventListener('click', e => {
@@ -1267,7 +1266,7 @@
   const endDpad = e => { for (const t of e.changedTouches) if (t.identifier === dpadTouch) { dpadTouch=null; nub.style.transform=''; input.up=input.down=input.left=input.right=false; } };
   dpad.addEventListener('touchend', endDpad);
   dpad.addEventListener('touchcancel', endDpad);
-  touchSnap.addEventListener('click', () => { input.snap = true; setTimeout(()=>{input.snap=false;}, 80); });
+  touchSnap.addEventListener('click', () => { input.snap = true; input.pass = true; setTimeout(()=>{input.snap=false; input.pass=false;}, 80); });
   touchPass.addEventListener('click', () => { input.pass = true; setTimeout(()=>{input.pass=false;}, 80); });
 
   /* ── FULLSCREEN ── */
@@ -1335,7 +1334,7 @@
   const endFsDpad = e => { for (const t of e.changedTouches) if (t.identifier === fsDpadTouch) { fsDpadTouch=null; fsNub.style.transform=''; input.up=input.down=input.left=input.right=false; } };
   fsDpad.addEventListener('touchend', endFsDpad);
   fsDpad.addEventListener('touchcancel', endFsDpad);
-  fsSnapBtn.addEventListener('click', () => { input.snap = true; setTimeout(()=>{input.snap=false;}, 80); });
+  fsSnapBtn.addEventListener('click', () => { input.snap = true; input.pass = true; setTimeout(()=>{input.snap=false; input.pass=false;}, 80); });
   fsPassBtn.addEventListener('click', () => { input.pass = true; setTimeout(()=>{input.pass=false;}, 80); });
 
   /* ── PHYSICS ── */
