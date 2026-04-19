@@ -1,0 +1,28 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Dependencies
+node_modules/
+
+# Build / cache
+dist/
+build/
+.next/
+.cache/
+
+# Local environment
+.env
+.env.local
+.env.*.local
+
+# Claude Code internal state (worktrees, agent runs, etc.)
+.claude/
+
+# Logs
+*.log
+npm-debug.log*

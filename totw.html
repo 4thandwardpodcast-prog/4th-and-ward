@@ -192,7 +192,7 @@
 </head>
 <body>
   <nav>
-    <a href="index.html" class="nav-logo"><img src="logo.png" alt="4th & Ward Podcast"></a>
+    <a href="index.html" class="nav-logo"><img src="logo-cover.svg" alt="4th & Ward Podcast"></a>
     <ul class="nav-links">
       <li><a href="index.html">Home</a></li>
       <li><a href="episodes.html">Episodes</a></li>
@@ -215,15 +215,37 @@
   </div>
 
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('nominate')">Nominate a Team</button>
+    <button class="tab-btn active" onclick="switchTab('preview')">The Wheel</button>
     <button class="tab-btn" onclick="switchTab('winners')">Past Winners</button>
-    <button class="tab-btn" onclick="switchTab('wheel')" style="opacity:0.5;font-size:10px;" title="Host only">&#128274; Host</button>
+    <button class="tab-btn" onclick="switchTab('nominate')">Nominate</button>
+    <button class="tab-btn" onclick="switchTab('wheel')" style="opacity:0.5;font-size:13px;" title="Host only">&#128274; Host</button>
   </div>
 
   <div class="totw-body">
 
+    <!-- WHEEL PREVIEW TAB (default landing) -->
+    <div id="tab-preview">
+      <div class="wheel-section">
+        <div class="wheel-wrap" id="preview-wheel-wrap">
+          <div class="wheel-pointer"></div>
+          <canvas id="preview-wheel-canvas" class="wheel-canvas"></canvas>
+          <div class="wheel-center"><canvas id="preview-center-logo-canvas"></canvas></div>
+        </div>
+        <div id="preview-empty" style="display:none;text-align:center;color:var(--muted);font-size:16px;padding:60px 20px;">
+          The wheel is empty. Be the first to nominate a school!
+        </div>
+        <p style="color:var(--muted);font-size:14px;max-width:560px;margin:0 auto 20px;line-height:1.6;">
+          A live look at the current wheel. The actual spin happens on the podcast &mdash; nominate your high school below to land on it.
+        </p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+          <button onclick="switchTab('nominate')" class="btn-gold">Nominate Your Team</button>
+          <button onclick="switchTab('winners')" class="btn-ghost">See Past Winners</button>
+        </div>
+      </div>
+    </div>
+
     <!-- NOMINATE TAB -->
-    <div id="tab-nominate">
+    <div id="tab-nominate" style="display:none;">
       <div class="nom-form-card" style="margin-bottom:24px;">
         <h2>Submit Your Team</h2>
         <p>Know a great high school program with an awesome tradition, wild mascot, or untold story? Your school goes straight onto the wheel.</p>
@@ -430,13 +452,35 @@
 
     // ── TAB SWITCHING ──────────────────────────────────────
     window.switchTab = function(tab) {
-      ['nominate','winners','wheel'].forEach((t,i) => {
-        document.getElementById('tab-'+t).style.display = t===tab ? 'block' : 'none';
-        document.querySelectorAll('.tab-btn')[i].classList.toggle('active', t===tab);
+      ['preview','winners','nominate','wheel'].forEach((t,i) => {
+        const el = document.getElementById('tab-'+t);
+        if (el) el.style.display = t===tab ? 'block' : 'none';
+        const btn = document.querySelectorAll('.tab-btn')[i];
+        if (btn) btn.classList.toggle('active', t===tab);
       });
       if (tab==='winners' && winners.length===0) loadData();
       if (tab==='wheel'   && nominees.length===0) loadData();
+      if (tab==='preview') {
+        // Re-render preview wheel on activation (canvas size may have changed)
+        requestAnimationFrame(renderPreviewWheel);
+      }
     };
+
+    // ── PREVIEW WHEEL ──────────────────────────────────────
+    function renderPreviewWheel() {
+      const wrap  = document.getElementById('preview-wheel-wrap');
+      const empty = document.getElementById('preview-empty');
+      if (!wrap) return;
+      if (!nominees.length) {
+        wrap.style.display = 'none';
+        if (empty) empty.style.display = 'block';
+        return;
+      }
+      wrap.style.display = 'block';
+      if (empty) empty.style.display = 'none';
+      drawWheelOnCanvas('preview-wheel-canvas', 'preview-wheel-wrap');
+      drawCenterLogo('preview-center-logo-canvas');
+    }
 
     // ── LOAD DATA ──────────────────────────────────────────
     async function loadData() {
@@ -465,6 +509,8 @@
         renderNominees();
         renderWinners();
         if (isHost) drawWheel();
+        // Always (re-)render the public preview wheel so it reflects current nominees
+        renderPreviewWheel();
       } catch(e) { console.error('loadData error', e); }
     }
 
@@ -918,10 +964,15 @@
 
     // ── RESIZE ─────────────────────────────────────────────
     window.addEventListener('resize',()=>{
-      if(isHost&&nominees.length){
-        drawWheel();
-        if(document.getElementById('fullscreen-overlay').style.display!=='none')
-          drawWheelOnCanvas('fs-wheel-canvas','fs-wheel-wrap');
+      if(nominees.length){
+        // Public preview wheel
+        if (document.getElementById('tab-preview').style.display !== 'none') renderPreviewWheel();
+        // Host wheel
+        if(isHost){
+          drawWheel();
+          if(document.getElementById('fullscreen-overlay').style.display!=='none')
+            drawWheelOnCanvas('fs-wheel-canvas','fs-wheel-wrap');
+        }
       }
     });
 
