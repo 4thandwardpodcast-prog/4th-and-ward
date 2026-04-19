@@ -759,9 +759,13 @@
     function renderBottom3() {
       const wrap = document.getElementById('bottom3-wrap');
       const grid = document.getElementById('bottom3-grid');
-      const eligible = window._submissions
+      const pool = window._submissions
         .filter(s => ((s.dripVotes||0) + (s.drownVotes||0)) >= 3)
-        .map(s => ({...s, _pct: dripScore(s.dripVotes, s.drownVotes)}))
+        .map(s => ({...s, _pct: dripScore(s.dripVotes, s.drownVotes)}));
+      // Exclude anything already shown in Top 3 so the same fit can't appear twice
+      const top3Ids = new Set([...pool].sort((a,b) => b._pct - a._pct).slice(0,3).map(s => s.id));
+      const eligible = pool
+        .filter(s => !top3Ids.has(s.id))
         .sort((a,b) => a._pct - b._pct)
         .slice(0,3);
       if (!eligible.length) { wrap.style.display = 'none'; return; }
