@@ -73,16 +73,77 @@
     .winner-card-ep { background: rgba(245,197,24,0.1); border: 1px solid rgba(245,197,24,0.2); border-radius: 3px; padding: 4px 8px; font-size: 11px; font-weight: 700; color: var(--gold); white-space: nowrap; }
     .winners-loading { text-align: center; padding: 60px; color: var(--muted); }
     /* WHEEL */
-    .wheel-section { text-align: center; }
-    .wheel-wrap { position: relative; width: min(680px, 92vw); height: min(680px, 92vw); margin: 0 auto 32px; }
+    .wheel-section { text-align: center; position: relative; padding: 40px 20px 60px; border-radius: 16px; overflow: hidden;
+                     background: radial-gradient(ellipse 60% 70% at 50% 30%, rgba(245,197,24,0.12) 0%, rgba(245,197,24,0.04) 35%, transparent 70%),
+                                 radial-gradient(ellipse 80% 50% at 50% 100%, rgba(0,0,0,0.7) 0%, transparent 70%),
+                                 linear-gradient(180deg, #0d0d0d 0%, #050505 100%); }
+    .wheel-section::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0.5;
+                             background-image: radial-gradient(circle at 20% 20%, rgba(245,197,24,0.05) 0%, transparent 35%),
+                                               radial-gradient(circle at 80% 70%, rgba(245,197,24,0.04) 0%, transparent 40%); }
+    .wheel-section::after { content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+                            width: 110%; height: 110%; pointer-events: none;
+                            background: repeating-linear-gradient(0deg, transparent 0 6px, rgba(255,255,255,0.012) 6px 7px); opacity: 0.4; }
+
+    .wheel-wrap { position: relative; width: min(680px, 92vw); height: min(680px, 92vw); margin: 0 auto 36px;
+                  filter: drop-shadow(0 30px 60px rgba(0,0,0,0.85)) drop-shadow(0 0 100px rgba(245,197,24,0.15));
+                  animation: wheelIdleGlow 4s ease-in-out infinite;
+                  transform: translateZ(0); }
+    .wheel-wrap.spinning { animation: wheelSpinGlow 0.6s ease-in-out infinite; }
+    .wheel-wrap.winner   { animation: wheelWinFlash 1.2s ease-out 1; }
+    @keyframes wheelIdleGlow {
+      0%,100% { filter: drop-shadow(0 30px 60px rgba(0,0,0,0.85)) drop-shadow(0 0 80px rgba(245,197,24,0.10)); }
+      50%     { filter: drop-shadow(0 32px 64px rgba(0,0,0,0.85)) drop-shadow(0 0 120px rgba(245,197,24,0.22)); }
+    }
+    @keyframes wheelSpinGlow {
+      0%,100% { filter: drop-shadow(0 30px 60px rgba(0,0,0,0.9)) drop-shadow(0 0 90px rgba(245,197,24,0.30)); }
+      50%     { filter: drop-shadow(0 30px 60px rgba(0,0,0,0.9)) drop-shadow(0 0 160px rgba(245,197,24,0.55)); }
+    }
+    @keyframes wheelWinFlash {
+      0%   { filter: drop-shadow(0 30px 60px rgba(0,0,0,0.9)) drop-shadow(0 0 200px rgba(255,215,64,0.95)); }
+      100% { filter: drop-shadow(0 30px 60px rgba(0,0,0,0.85)) drop-shadow(0 0 80px rgba(245,197,24,0.18)); }
+    }
+
     .wheel-canvas { border-radius: 50%; display: block; width: 100% !important; height: 100% !important; }
-    .wheel-pointer { position: absolute; top: -28px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 38px solid var(--gold); z-index: 20; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.9)); }
-    .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 20%; height: 20%; background: var(--black); border-radius: 50%; border: 3px solid var(--gold); z-index: 10; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-    .wheel-center img { width: 85%; height: 85%; object-fit: contain; border-radius: 50%; }
-    .spin-btn { background: var(--gold); color: var(--black); border: none; border-radius: 8px; padding: 18px 60px; font-size: 22px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; font-family: var(--condensed); transition: background 0.2s, transform 0.15s; box-shadow: 0 6px 20px rgba(245,197,24,0.3); }
-    .spin-btn:hover { background: var(--gold-hover); transform: translateY(-2px); }
-    .spin-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
-    .wheel-status { margin-top: 20px; font-family: var(--condensed); font-size: 24px; font-weight: 900; text-transform: uppercase; color: var(--gold); min-height: 36px; }
+
+    /* Pointer: gradient + drop shadow + idle bob */
+    .wheel-pointer { position: absolute; top: -28px; left: 50%; transform: translateX(-50%); width: 52px; height: 64px; z-index: 20;
+                     background: linear-gradient(180deg, #FFE066 0%, #FFD740 30%, var(--gold) 60%, #C9A012 100%);
+                     clip-path: polygon(50% 100%, 0 0, 100% 0);
+                     filter: drop-shadow(0 6px 10px rgba(0,0,0,0.9)) drop-shadow(0 0 8px rgba(245,197,24,0.6));
+                     border: none; animation: pointerBob 3.2s ease-in-out infinite; }
+    @keyframes pointerBob { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(3px); } }
+
+    /* Hub (center logo) */
+    .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 22%; height: 22%;
+                    background: radial-gradient(circle at 50% 35%, #1f1f1f 0%, #050505 100%);
+                    border-radius: 50%; border: 3px solid var(--gold); z-index: 10;
+                    display: flex; align-items: center; justify-content: center; overflow: hidden;
+                    box-shadow: inset 0 0 0 2px rgba(0,0,0,0.6), inset 0 0 0 4px rgba(245,197,24,0.5),
+                                0 0 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(245,197,24,0.2); }
+    .wheel-center img { width: 78%; height: 78%; object-fit: contain; border-radius: 50%; }
+
+    /* Spin button */
+    .spin-btn { position: relative; background: linear-gradient(180deg, #FFE066 0%, var(--gold) 50%, #D9AC10 100%);
+                color: #0a0a0a; border: 2px solid rgba(255,215,64,0.6); border-radius: 10px;
+                padding: 22px 72px; font-size: 26px; font-weight: 900; letter-spacing: 0.14em;
+                text-transform: uppercase; cursor: pointer; font-family: var(--condensed);
+                transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
+                box-shadow: 0 8px 28px rgba(245,197,24,0.4), 0 0 60px rgba(245,197,24,0.18),
+                            inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -2px 0 rgba(0,0,0,0.18);
+                text-shadow: 0 1px 0 rgba(255,255,255,0.25); }
+    .spin-btn:hover:not(:disabled) { transform: translateY(-3px) scale(1.02);
+                                     box-shadow: 0 12px 40px rgba(245,197,24,0.55), 0 0 100px rgba(245,197,24,0.35),
+                                                 inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -2px 0 rgba(0,0,0,0.18); }
+    .spin-btn:active:not(:disabled) { transform: translateY(0) scale(0.99); }
+    .spin-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; transform: none;
+                         box-shadow: none; border-color: transparent; text-shadow: none; filter: grayscale(0.6); }
+
+    /* Status text */
+    .wheel-status { margin-top: 24px; font-family: var(--condensed); font-size: 32px; font-weight: 900;
+                    text-transform: uppercase; color: var(--gold); min-height: 44px; letter-spacing: 0.04em;
+                    text-shadow: 0 0 24px rgba(245,197,24,0.4), 0 2px 6px rgba(0,0,0,0.7); }
+    .wheel-status.winner { animation: statusWin 0.6s ease-out; font-size: 40px; }
+    @keyframes statusWin { from { opacity: 0; transform: translateY(8px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
     /* HOST AUTH */
     .wheel-locked { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 40px; text-align: center; margin-bottom: 32px; }
     .wheel-locked h3 { font-family: var(--condensed); font-size: 24px; text-transform: uppercase; margin-bottom: 8px; }
@@ -534,6 +595,34 @@
     // ── WHEEL DRAWING ──────────────────────────────────────
     function drawWheel() { drawWheelOnCanvas('wheel-canvas','wheel-wrap'); }
 
+    // Fit a string into a wedge: try one line at base size, drop to two
+    // lines split at the best word break, fall back to ellipsis truncation.
+    function fitWheelText(ctx, text, maxW, baseSize) {
+      ctx.font = `900 ${baseSize}px 'Barlow Condensed',sans-serif`;
+      if (ctx.measureText(text).width <= maxW) return { lines: [text], size: baseSize };
+      const smallSize = Math.max(10, Math.round(baseSize * 0.85));
+      ctx.font = `900 ${smallSize}px 'Barlow Condensed',sans-serif`;
+      if (ctx.measureText(text).width <= maxW) return { lines: [text], size: smallSize };
+      // Try two-line wrap on word boundaries — pick the most balanced split that fits both lines
+      const words = text.split(' ');
+      if (words.length >= 2) {
+        let best = null, bestDiff = Infinity;
+        for (let i = 1; i < words.length; i++) {
+          const a = words.slice(0, i).join(' ');
+          const b = words.slice(i).join(' ');
+          if (ctx.measureText(a).width <= maxW && ctx.measureText(b).width <= maxW) {
+            const diff = Math.abs(a.length - b.length);
+            if (diff < bestDiff) { bestDiff = diff; best = [a, b]; }
+          }
+        }
+        if (best) return { lines: best, size: smallSize };
+      }
+      // Truncate single line as last resort
+      let label = text;
+      while (ctx.measureText(label).width > maxW && label.length > 2) label = label.slice(0, -1);
+      return { lines: [label.trimEnd() + '\u2026'], size: smallSize };
+    }
+
     function drawWheelOnCanvas(canvasId, wrapId) {
       const canvas = document.getElementById(canvasId);
       const wrap   = document.getElementById(wrapId);
@@ -547,42 +636,110 @@
       canvas.style.width = size+'px'; canvas.style.height = size+'px';
       const ctx = canvas.getContext('2d');
       ctx.scale(dpr,dpr);
-      const cx=size/2, cy=size/2, outerR=size/2-8, innerR=outerR*0.2;
+      const cx=size/2, cy=size/2, outerR=size/2-10, innerR=outerR*0.22;
       const n=nominees.length;
       ctx.clearRect(0,0,size,size);
       if(!n) return;
       const arc=(Math.PI*2)/n;
       ctx.save(); ctx.translate(cx,cy); ctx.rotate(currentRotation-Math.PI/2);
+
+      // ── SLICES ──
       for(let i=0;i<n;i++){
         const start=i*arc,end=start+arc,mid=start+arc/2,isEven=i%2===0;
+
+        // Slice fill with subtle radial gradient for depth
+        const grad = ctx.createRadialGradient(0,0,innerR,0,0,outerR);
+        if (isEven) {
+          grad.addColorStop(0, '#1a1a1a');
+          grad.addColorStop(0.6, '#0e0e0e');
+          grad.addColorStop(1, '#050505');
+        } else {
+          grad.addColorStop(0, '#FFD740');
+          grad.addColorStop(0.55, '#F5C518');
+          grad.addColorStop(1, '#D9AC10');
+        }
         ctx.beginPath();
         ctx.moveTo(innerR*Math.cos(start),innerR*Math.sin(start));
         ctx.arc(0,0,outerR,start,end);
         ctx.arc(0,0,innerR,end,start,true);
         ctx.closePath();
-        ctx.fillStyle=isEven?'#111111':'#F5C518'; ctx.fill();
+        ctx.fillStyle = grad; ctx.fill();
+
+        // Divider on the leading edge — subtle, contrast-aware
         ctx.beginPath();
         ctx.moveTo(innerR*Math.cos(start),innerR*Math.sin(start));
         ctx.lineTo(outerR*Math.cos(start),outerR*Math.sin(start));
-        ctx.strokeStyle=isEven?'#F5C518':'#111'; ctx.lineWidth=1.5; ctx.stroke();
-        const rawName=nominees[i].teamName.replace(/High School/gi,'').replace(/\bHS\b/gi,'').trim();
-        const textR=(outerR+innerR)/2+(outerR-innerR)*0.1;
-        const maxW=(outerR-innerR)*0.82;
-        const sliceW=2*outerR*Math.sin(arc/2);
-        const fs=Math.min(13,Math.max(8,sliceW*0.28));
-        ctx.save(); ctx.rotate(mid); ctx.textAlign='right'; ctx.textBaseline='middle';
-        ctx.fillStyle=isEven?'#F5C518':'#111111';
-        ctx.font=`700 ${fs}px 'Barlow Condensed',sans-serif`;
-        let label=rawName;
-        while(ctx.measureText(label).width>maxW&&label.length>2) label=label.slice(0,-1);
-        if(label.length<rawName.length) label=label.trimEnd()+'\u2026';
-        ctx.fillText(label,outerR-10,0); ctx.restore();
+        ctx.strokeStyle = isEven ? 'rgba(245,197,24,0.5)' : 'rgba(0,0,0,0.6)';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // ── TEXT ──
+        const rawName = nominees[i].teamName.replace(/High School/gi,'').replace(/\bHS\b/gi,'').trim();
+        const textW   = (outerR - innerR) * 0.84;
+        const sliceW  = 2 * outerR * Math.sin(arc/2);
+        const baseFs  = Math.min(22, Math.max(10, sliceW * 0.20));
+        const { lines, size: fs } = fitWheelText(ctx, rawName, textW, baseFs);
+
+        ctx.save();
+        ctx.rotate(mid);
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = isEven ? '#F5C518' : '#0a0a0a';
+        ctx.font = `900 ${fs}px 'Barlow Condensed',sans-serif`;
+
+        const xAnchor = outerR - 14;
+        if (lines.length === 1) {
+          ctx.fillText(lines[0], xAnchor, 0);
+        } else {
+          const lineH = fs * 0.95;
+          ctx.fillText(lines[0], xAnchor, -lineH/2);
+          ctx.fillText(lines[1], xAnchor,  lineH/2);
+        }
+        ctx.restore();
       }
-      ctx.beginPath(); ctx.arc(0,0,outerR,0,Math.PI*2);
-      ctx.strokeStyle='#F5C518'; ctx.lineWidth=8; ctx.stroke();
-      ctx.beginPath(); ctx.arc(0,0,innerR+2,0,Math.PI*2);
-      ctx.fillStyle='#0a0a0a'; ctx.fill();
+
+      // ── OUTER RIM (layered) ──
+      // Outer dark stroke (frame)
+      ctx.beginPath(); ctx.arc(0,0,outerR+1,0,Math.PI*2);
+      ctx.strokeStyle='#050505'; ctx.lineWidth=4; ctx.stroke();
+      // Bright gold rim
+      ctx.beginPath(); ctx.arc(0,0,outerR-2,0,Math.PI*2);
+      ctx.strokeStyle='#F5C518'; ctx.lineWidth=6; ctx.stroke();
+      // Inset highlight ring
+      ctx.beginPath(); ctx.arc(0,0,outerR-7,0,Math.PI*2);
+      ctx.strokeStyle='rgba(255,215,64,0.55)'; ctx.lineWidth=1.5; ctx.stroke();
+
+      // ── INNER HUB ──
+      ctx.beginPath(); ctx.arc(0,0,innerR+3,0,Math.PI*2);
+      ctx.fillStyle='#050505'; ctx.fill();
       ctx.strokeStyle='#F5C518'; ctx.lineWidth=4; ctx.stroke();
+      ctx.beginPath(); ctx.arc(0,0,innerR-2,0,Math.PI*2);
+      ctx.strokeStyle='rgba(245,197,24,0.4)'; ctx.lineWidth=1.5; ctx.stroke();
+
+      ctx.restore();
+
+      // ── RIM STUDS (counter-rotated so they don't spin with the wheel) ──
+      // Drawn after restore so they sit in fixed canvas space, anchored relative to center.
+      ctx.save();
+      ctx.translate(cx, cy);
+      const studCount = 24;
+      const studR = outerR + 2;             // sit on the outer rim
+      const studSize = Math.max(2.5, size * 0.006);
+      for (let s = 0; s < studCount; s++) {
+        const ang = (s / studCount) * Math.PI * 2;
+        const x = studR * Math.cos(ang);
+        const y = studR * Math.sin(ang);
+        // Dark outer halo for depth
+        ctx.beginPath(); ctx.arc(x, y, studSize + 1.2, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fill();
+        // Gold stud with highlight
+        const studGrad = ctx.createRadialGradient(x - studSize*0.3, y - studSize*0.3, 0, x, y, studSize);
+        studGrad.addColorStop(0, '#FFE680');
+        studGrad.addColorStop(0.7, '#F5C518');
+        studGrad.addColorStop(1, '#A8820F');
+        ctx.beginPath(); ctx.arc(x, y, studSize, 0, Math.PI*2);
+        ctx.fillStyle = studGrad; ctx.fill();
+      }
       ctx.restore();
     }
 
@@ -623,7 +780,16 @@
       document.getElementById('spin-btn').disabled=true;
       if(document.getElementById('fs-spin-btn')) document.getElementById('fs-spin-btn').disabled=true;
       document.getElementById('wheel-status').textContent='';
-      if(document.getElementById('fs-wheel-status')) document.getElementById('fs-wheel-status').textContent='';
+      document.getElementById('wheel-status').classList.remove('winner');
+      if(document.getElementById('fs-wheel-status')) {
+        document.getElementById('fs-wheel-status').textContent='';
+        document.getElementById('fs-wheel-status').classList.remove('winner');
+      }
+      // Toggle visual states on the wheel containers (intense glow during spin)
+      document.querySelectorAll('.wheel-wrap, #fs-wheel-wrap').forEach(w => {
+        w.classList.remove('winner');
+        w.classList.add('spinning');
+      });
 
       const spinSpeed=Math.random()*8+18, spinDuration=Math.random()*3000+5000;
       let elapsed=0;
@@ -648,9 +814,16 @@
       const winner=nominees[idx];
       const epNum=document.getElementById('ep-number-input').value.trim();
 
-      document.getElementById('wheel-status').textContent=winner.teamName+' \uD83C\uDFC8';
-      if(document.getElementById('fs-wheel-status'))
-        document.getElementById('fs-wheel-status').textContent=winner.teamName+' \uD83C\uDFC8';
+      // Drop spinning state, fire winner flash on the wheel + status
+      document.querySelectorAll('.wheel-wrap, #fs-wheel-wrap').forEach(w => {
+        w.classList.remove('spinning');
+        w.classList.remove('winner'); void w.offsetWidth; w.classList.add('winner');
+      });
+      const statusEls = [document.getElementById('wheel-status'), document.getElementById('fs-wheel-status')].filter(Boolean);
+      statusEls.forEach(el => {
+        el.textContent = winner.teamName + ' \uD83C\uDFC8';
+        el.classList.remove('winner'); void el.offsetWidth; el.classList.add('winner');
+      });
       triggerConfetti();
 
       try {
