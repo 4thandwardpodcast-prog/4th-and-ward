@@ -73,16 +73,7 @@
     .winner-card-ep { background: rgba(245,197,24,0.1); border: 1px solid rgba(245,197,24,0.2); border-radius: 3px; padding: 4px 8px; font-size: 11px; font-weight: 700; color: var(--gold); white-space: nowrap; }
     .winners-loading { text-align: center; padding: 60px; color: var(--muted); }
     /* WHEEL */
-    .wheel-section { text-align: center; position: relative; padding: 40px 20px 60px; border-radius: 16px; overflow: hidden;
-                     background: radial-gradient(ellipse 60% 70% at 50% 30%, rgba(245,197,24,0.12) 0%, rgba(245,197,24,0.04) 35%, transparent 70%),
-                                 radial-gradient(ellipse 80% 50% at 50% 100%, rgba(0,0,0,0.7) 0%, transparent 70%),
-                                 linear-gradient(180deg, #0d0d0d 0%, #050505 100%); }
-    .wheel-section::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0.5;
-                             background-image: radial-gradient(circle at 20% 20%, rgba(245,197,24,0.05) 0%, transparent 35%),
-                                               radial-gradient(circle at 80% 70%, rgba(245,197,24,0.04) 0%, transparent 40%); }
-    .wheel-section::after { content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
-                            width: 110%; height: 110%; pointer-events: none;
-                            background: repeating-linear-gradient(0deg, transparent 0 6px, rgba(255,255,255,0.012) 6px 7px); opacity: 0.4; }
+    .wheel-section { text-align: center; padding: 20px 0 40px; }
 
     .wheel-wrap { position: relative; width: min(680px, 92vw); height: min(680px, 92vw); margin: 0 auto 36px;
                   filter: drop-shadow(0 30px 60px rgba(0,0,0,0.85)) drop-shadow(0 0 100px rgba(245,197,24,0.15));
@@ -734,18 +725,20 @@
 
         const xAnchor = outerR - 14;
         const drawLifted = (text, x, y) => {
-          // Dark outline + drop shadow gives white text "lift" so it reads
-          // on both gold and dark slices regardless of slice color.
-          ctx.shadowColor = 'rgba(0,0,0,0.65)';
-          ctx.shadowBlur = 5;
+          // Sharp drop shadow + thin outline. Heavier stroke/blur destroys
+          // letter shapes at small sizes (40+ slices) — keep this minimal.
+          ctx.shadowColor = 'rgba(0,0,0,0.85)';
+          ctx.shadowBlur = 0;
           ctx.shadowOffsetX = 0;
-          ctx.shadowOffsetY = 2;
+          ctx.shadowOffsetY = 1;
           ctx.lineJoin = 'round';
-          ctx.strokeStyle = 'rgba(0,0,0,0.92)';
-          ctx.lineWidth = Math.max(2.5, fs * 0.22);
+          ctx.miterLimit = 2;
+          ctx.strokeStyle = 'rgba(0,0,0,0.95)';
+          ctx.lineWidth = Math.min(2, Math.max(1.2, fs * 0.10));
           ctx.strokeText(text, x, y);
           ctx.shadowColor = 'transparent';
-          ctx.fillStyle = '#F4F2ED';
+          ctx.shadowOffsetY = 0;
+          ctx.fillStyle = '#FFFFFF';
           ctx.fillText(text, x, y);
         };
 
