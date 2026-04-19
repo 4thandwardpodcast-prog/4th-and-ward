@@ -218,6 +218,12 @@
         <span class="sidebar-icon">&#128171;</span> All Submissions
       </button>
 
+      <div class="sidebar-section">HS Blitz</div>
+      <button class="sidebar-item" onclick="showPage('blitz-feedback')">
+        <span class="sidebar-icon">&#128172;</span> Beta Feedback
+        <span id="blitz-fb-badge" style="margin-left:auto;display:none;background:#e05555;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;"></span>
+      </button>
+
       <div class="sidebar-section">Site</div>
       <button class="sidebar-item" onclick="showPage('visitors')">
         <span class="sidebar-icon">&#128100;</span> Visitors
@@ -591,6 +597,46 @@
         </div>
       </div>
 
+      <!-- ══ HS BLITZ FEEDBACK ══ -->
+      <div class="page" id="page-blitz-feedback">
+        <div class="page-header">
+          <div class="page-title">HS Blitz — Beta Feedback</div>
+          <div class="page-sub">Bug reports and suggestions submitted from the game page.</div>
+        </div>
+        <div class="stat-row" style="margin-bottom:28px;">
+          <div class="stat-card"><div class="stat-card-num" id="blitz-fb-open">—</div><div class="stat-card-label">Open</div></div>
+          <div class="stat-card green"><div class="stat-card-num" id="blitz-fb-resolved">—</div><div class="stat-card-label">Resolved</div></div>
+          <div class="stat-card blue"><div class="stat-card-num" id="blitz-fb-total">—</div><div class="stat-card-label">All-Time</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Submissions</div>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select id="blitz-fb-filter" style="background:var(--surface2);border:1px solid var(--border);color:var(--white);border-radius:6px;padding:6px 10px;font-size:13px;">
+                <option value="open">Open only</option>
+                <option value="all">All</option>
+                <option value="resolved">Resolved only</option>
+              </select>
+              <button class="btn btn-ghost btn-sm" onclick="loadBlitzFeedback()">&#8635; Refresh</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:120px">When</th>
+                  <th>From</th>
+                  <th>Message</th>
+                  <th style="width:80px">Diff</th>
+                  <th style="width:150px">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="blitz-fb-body"><tr><td colspan="5" class="loading-row">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- ══ VISITORS ══ -->
       <div class="page" id="page-visitors">
         <div class="page-header">
@@ -892,6 +938,7 @@
     if (id === 'totw-winners')         { loadWinnersAdmin(); }
     if (id === 'drip-pending')        { loadDripPending(); }
     if (id === 'drip-all')            { loadDripAll(); }
+    if (id === 'blitz-feedback')      { loadBlitzFeedback(); }
     if (id === 'visitors')            { loadVisitors(); }
   };
 
@@ -899,6 +946,7 @@
   async function initDashboard() {
     loadOverviewStats();
     loadRecentScores();
+    pollBlitzFbBadge();
   }
 
   // ── HELPERS ───────────────────────────────────────────────
@@ -1700,6 +1748,90 @@
       });
       tbody.innerHTML = html;
     } catch(e) {}
+  }
+
+  // ── HS BLITZ — BETA FEEDBACK ──────────────────────────────
+  const BLITZ_DIFF_SHORT = { easy:'FR', normal:'VAR', hard:'AD', elite:'AA' };
+  async function loadBlitzFeedback() {
+    const tbody = document.getElementById('blitz-fb-body');
+    tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Loading…</td></tr>';
+    try {
+      const q = query(collection(db, 'football_feedback'), orderBy('createdAt', 'desc'), limit(200));
+      const snap = await getDocs(q);
+      const all = [];
+      snap.forEach(d => all.push({ id: d.id, ...d.data() }));
+
+      const open     = all.filter(r => !r.resolved).length;
+      const resolved = all.filter(r =>  r.resolved).length;
+      document.getElementById('blitz-fb-open').textContent     = open;
+      document.getElementById('blitz-fb-resolved').textContent = resolved;
+      document.getElementById('blitz-fb-total').textContent    = all.length;
+      updateBlitzFbBadge(open);
+
+      const filter = document.getElementById('blitz-fb-filter').value;
+      const rows = filter === 'resolved' ? all.filter(r => r.resolved)
+                 : filter === 'all'      ? all
+                 :                         all.filter(r => !r.resolved);
+
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="loading-row">No feedback yet.</td></tr>';
+        return;
+      }
+
+      const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      tbody.innerHTML = rows.map(r => {
+        const when = r.createdAt && r.createdAt.toDate ? r.createdAt.toDate() : null;
+        const whenStr = when ? when.toLocaleString([], { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }) : '—';
+        const diff = BLITZ_DIFF_SHORT[r.difficulty] || '';
+        const nameLine = r.name || (r.schoolName ? r.schoolName + ' (school)' : 'Anonymous');
+        const resolvedTag = r.resolved ? '<span style="display:inline-block;padding:1px 7px;border-radius:3px;background:rgba(123,211,137,0.12);color:#7bd389;font-size:10px;font-weight:900;letter-spacing:.12em;margin-left:6px;vertical-align:2px">RESOLVED</span>' : '';
+        return `
+          <tr data-id="${esc(r.id)}">
+            <td style="font-size:12px;color:var(--muted);white-space:nowrap">${esc(whenStr)}</td>
+            <td>
+              <div style="font-size:13px;font-weight:600">${esc(nameLine)}${resolvedTag}</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(r.schoolName || '')}${r.mascot ? ' · ' + esc(r.mascot) : ''}</div>
+            </td>
+            <td style="font-size:13px;white-space:pre-wrap;line-height:1.5">${esc(r.message || '')}</td>
+            <td><span style="font-family:var(--condensed);font-size:11px;font-weight:900;letter-spacing:.1em;color:var(--gold)">${esc(diff)}</span></td>
+            <td style="white-space:nowrap">
+              <button class="btn btn-ghost btn-sm" onclick="blitzFbToggle('${esc(r.id)}', ${r.resolved ? 'true' : 'false'})">${r.resolved ? 'Reopen' : 'Resolve'}</button>
+              <button class="btn btn-ghost btn-sm" onclick="blitzFbDelete('${esc(r.id)}')" style="color:#e05555">Delete</button>
+            </td>
+          </tr>`;
+      }).join('');
+    } catch (e) {
+      console.warn('blitz feedback load failed', e);
+      tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Could not load — check permissions.</td></tr>';
+    }
+  }
+  document.getElementById('blitz-fb-filter').addEventListener('change', loadBlitzFeedback);
+
+  window.blitzFbToggle = async function(id, currentlyResolved) {
+    try {
+      await updateDoc(doc(db, 'football_feedback', id), { resolved: !currentlyResolved, resolvedAt: Date.now() });
+      loadBlitzFeedback();
+    } catch (e) { console.warn(e); }
+  };
+  window.blitzFbDelete = async function(id) {
+    if (!confirm('Delete this feedback permanently?')) return;
+    try {
+      await deleteDoc(doc(db, 'football_feedback', id));
+      loadBlitzFeedback();
+    } catch (e) { console.warn(e); }
+  };
+  async function updateBlitzFbBadge(count) {
+    const b = document.getElementById('blitz-fb-badge');
+    if (!b) return;
+    if (count && count > 0) { b.textContent = count; b.style.display = ''; }
+    else { b.style.display = 'none'; }
+  }
+  // Poll open count on initial load so admins see the badge
+  async function pollBlitzFbBadge() {
+    try {
+      const snap = await getDocs(query(collection(db, 'football_feedback'), where('resolved', '==', false), limit(100)));
+      updateBlitzFbBadge(snap.size);
+    } catch (e) { /* ignore */ }
   }
 
   // ── DRIP OR DROWN — PENDING REVIEW ────────────────────────

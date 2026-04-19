@@ -40,6 +40,16 @@
     .hsb-eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; }
     .hsb-title { font-family: var(--condensed); font-weight: 900; font-size: clamp(64px, 12vw, 128px); line-height: 0.85; text-transform: uppercase; letter-spacing: -0.02em; margin-bottom: 18px; text-shadow: 0 2px 18px rgba(0,0,0,0.6); }
     .hsb-title .amp { color: var(--gold); text-shadow: 0 0 40px rgba(245,197,24,0.5), 0 2px 14px rgba(0,0,0,0.5); }
+    .hsb-title-beta {
+      display: inline-block; vertical-align: middle; margin-left: 14px;
+      padding: 8px 18px; font-family: var(--condensed); font-size: clamp(16px, 2vw, 22px);
+      font-weight: 900; letter-spacing: 0.18em;
+      background: rgba(245,197,24,0.12); color: var(--gold);
+      border: 2px solid rgba(245,197,24,0.55); border-radius: 6px;
+      line-height: 1; text-shadow: none;
+      transform: rotate(-4deg) translateY(-10px);
+      box-shadow: 0 8px 22px rgba(245,197,24,0.22), inset 0 1px 0 rgba(255,255,255,0.08);
+    }
     .hsb-subtitle { font-size: 18px; color: var(--muted); line-height: 1.6; margin-bottom: 12px; max-width: 600px; margin-left: auto; margin-right: auto; }
     .hsb-rules { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; margin-bottom: 36px; }
     .hsb-rule { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); font-weight: 500; }
@@ -343,6 +353,32 @@
     .lb-tds { font-family: var(--condensed); font-size: 16px; font-weight: 700; color: var(--gold); text-align: right; }
     .lb-empty { padding: 30px; text-align: center; color: var(--muted); font-size: 13px; }
 
+    /* ── FEEDBACK ── */
+    .fb-section { max-width: 720px; margin: 48px auto 0; padding: 0 24px; }
+    .fb-card { background: linear-gradient(180deg, #141414, #0c0c0c); border: 1px solid var(--border); border-radius: 12px; padding: 26px 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+    .fb-eyebrow { font-family: var(--condensed); font-size: 11px; font-weight: 900; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+    .fb-title { font-family: var(--condensed); font-size: 26px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 6px; }
+    .fb-sub { color: var(--muted); font-size: 13px; line-height: 1.5; margin-bottom: 18px; }
+    .fb-form { display: flex; flex-direction: column; gap: 10px; }
+    .fb-name { background: #050505; border: 2px solid var(--border); border-radius: 8px; padding: 12px 14px; color: var(--white); font-family: var(--body); font-size: 14px; outline: none; transition: border-color .15s; }
+    .fb-msg { background: #050505; border: 2px solid var(--border); border-radius: 8px; padding: 12px 14px; color: var(--white); font-family: var(--body); font-size: 14px; outline: none; resize: vertical; min-height: 90px; transition: border-color .15s; }
+    .fb-name:focus, .fb-msg:focus { border-color: var(--gold); }
+    .fb-row { display: flex; gap: 12px; align-items: center; }
+    .fb-submit {
+      background: linear-gradient(180deg, #FFE066 0%, var(--gold) 50%, #D9AC10 100%);
+      color: #0a0a0a; border: 1px solid rgba(255,215,64,0.55); border-radius: 8px;
+      padding: 12px 26px; font-family: var(--condensed); font-size: 15px; font-weight: 900;
+      letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+      box-shadow: 0 6px 18px rgba(245,197,24,0.25), inset 0 1px 0 rgba(255,255,255,0.4);
+      transition: transform .1s;
+    }
+    .fb-submit:hover:not(:disabled) { transform: translateY(-1px); }
+    .fb-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .fb-status { font-size: 13px; color: var(--muted); flex: 1; }
+    .fb-status.ok  { color: #7bd389; }
+    .fb-status.err { color: #e05555; }
+    .fb-count { margin-left: auto; font-size: 11px; color: var(--muted); letter-spacing: 0.05em; }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 900px) {
       .hsb-hero { padding: 90px 20px 0; }
@@ -383,7 +419,7 @@
     <div class="hsb-hero-bg"></div>
     <div class="hsb-hero-inner">
       <div class="hsb-eyebrow">Friday Night Arcade</div>
-      <div class="hsb-title">High School<br><span class="amp">Blitz</span></div>
+      <div class="hsb-title">High School<br><span class="amp">Blitz</span><span class="hsb-title-beta">Beta</span></div>
       <p class="hsb-subtitle">Build your program. Pick your colors. Go score touchdowns under the lights.</p>
       <div class="hsb-rules">
         <div class="hsb-rule"><div class="hsb-rule-dot"></div>Customize your high school</div>
@@ -603,6 +639,23 @@
       <div class="lb-table" id="lb-table">
         <div class="lb-row header"><div>#</div><div>School</div><div style="text-align:right">Pts</div><div style="text-align:right">TDs</div></div>
         <div class="lb-empty" id="lb-empty">Loading leaderboard…</div>
+      </div>
+    </div>
+
+    <div class="fb-section">
+      <div class="fb-card">
+        <div class="fb-eyebrow">Beta Feedback</div>
+        <div class="fb-title">Find an error? Got a suggestion?</div>
+        <div class="fb-sub">High School Blitz is in beta — tell us what broke, what felt off, or what you'd want added. We read every one.</div>
+        <form class="fb-form" id="fb-form">
+          <input class="fb-name" type="text" id="fb-name" placeholder="Name or handle (optional)" maxlength="40" autocomplete="off">
+          <textarea class="fb-msg"  id="fb-msg"  placeholder="What happened? What would make it better?" maxlength="600" required></textarea>
+          <div class="fb-row">
+            <button type="submit" class="fb-submit" id="fb-submit">Send Feedback</button>
+            <div class="fb-status" id="fb-status"></div>
+            <div class="fb-count" id="fb-count">0 / 600</div>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -2240,6 +2293,51 @@
   }
   function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
   loadLeaderboard();
+
+  /* ══════════════════════════════════════════════════════════
+     BETA FEEDBACK FORM → Firestore `football_feedback`
+     ══════════════════════════════════════════════════════════ */
+  const fbForm   = document.getElementById('fb-form');
+  const fbName   = document.getElementById('fb-name');
+  const fbMsg    = document.getElementById('fb-msg');
+  const fbSubmit = document.getElementById('fb-submit');
+  const fbStatus = document.getElementById('fb-status');
+  const fbCount  = document.getElementById('fb-count');
+  fbMsg.addEventListener('input', () => { fbCount.textContent = fbMsg.value.length + ' / 600'; });
+  fbForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const message = fbMsg.value.trim();
+    if (message.length < 3) { fbStatus.textContent = 'Message is too short.'; fbStatus.className = 'fb-status err'; return; }
+    const name = fbName.value.trim();
+    fbSubmit.disabled = true;
+    const origLabel = fbSubmit.textContent;
+    fbSubmit.textContent = 'Sending…';
+    fbStatus.textContent = ''; fbStatus.className = 'fb-status';
+    try {
+      await addDoc(collection(db, 'football_feedback'), {
+        message: message.slice(0, 600),
+        name: name ? name.slice(0, 40) : null,
+        vid,
+        schoolName: (school.name || '').slice(0, 40) || null,
+        mascot: (school.mascot || '').slice(0, 40) || null,
+        difficulty: school.difficulty || null,
+        userAgent: (navigator.userAgent || '').slice(0, 220),
+        page: location.pathname,
+        resolved: false,
+        createdAt: serverTimestamp()
+      });
+      fbStatus.textContent = 'Thanks — appreciate the report!';
+      fbStatus.className = 'fb-status ok';
+      fbMsg.value = ''; fbName.value = '';
+      fbCount.textContent = '0 / 600';
+    } catch (err) {
+      console.warn('feedback save failed', err);
+      fbStatus.textContent = 'Could not send — try again in a minute.';
+      fbStatus.className = 'fb-status err';
+    }
+    fbSubmit.disabled = false;
+    fbSubmit.textContent = origLabel;
+  });
   </script>
 </body>
 </html>
