@@ -317,23 +317,73 @@
     @media (max-width: 900px) {
       .wardle-hero { padding: 90px 24px 0; }
       .clue-section, .score-bar, .guess-history, .input-section, .unlock-section { padding: 20px 24px; }
-      .result-card { padding: 28px 24px; }
+      .result-card { padding: 32px 24px; }
       .past-section, .stats-section { padding: 20px 24px 0; }
+      .score-num { font-size: 30px; }
+      .stat-num   { font-size: 36px; }
+      .lb-title   { font-size: 22px; }
+      .countdown-time { font-size: 32px; }
+      .clue-text { font-size: 18px; }
     }
     @media (max-width: 600px) {
       .wardle-hero { padding: 80px 16px 0; }
       .wardle-title { font-size: 72px; }
       .clue-section, .score-bar, .guess-history, .input-section, .unlock-section { padding: 16px; }
+      .clue-section { padding: 22px 16px; }
       .clue-text { font-size: 16px; }
-      .input-wrap { flex-direction: column; }
-      .guess-btn { width: 100%; }
-      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .clue-label { font-size: 11px; margin-bottom: 12px; }
+      .score-bar { padding: 16px; gap: 12px; justify-content: space-between; }
+      .score-item { min-width: 0; flex: 1; }
+      .score-num { font-size: 26px; }
+      .score-label { font-size: 9px; letter-spacing: 0.1em; }
+      .score-divider { display: none; }
+      .pip { width: 11px; height: 11px; }
+      .attempts-pips { gap: 5px; }
+      .input-wrap { flex-direction: column; gap: 10px; }
+      .guess-input { padding: 14px 18px; font-size: 16px; }
+      .guess-btn { width: 100%; padding: 14px; font-size: 17px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .stat-card { padding: 18px 14px; }
+      .stat-num   { font-size: 30px; }
+      .stat-label { font-size: 10px; }
       .past-section, .stats-section { padding: 16px 16px 0; }
       .past-inner { padding: 20px 16px; gap: 12px; }
-      .result-score { font-size: 40px; }
-      .result-headline { font-size: 32px; }
-      .leaderboard-section, .share-section { padding: 18px 16px; }
-      .unlock-grid { grid-template-columns: 1fr 1fr; }
+      .result-card { padding: 32px 18px; }
+      .result-emoji { font-size: 44px; margin-bottom: 10px; }
+      .result-headline { font-size: 30px; }
+      .result-answer { font-size: 18px; }
+      .result-score { font-size: 44px; }
+      .result-score-label { margin-bottom: 22px; }
+      .result-actions { flex-direction: column; gap: 8px; }
+      .result-actions .btn-gold, .result-actions .btn-ghost { width: 100%; justify-content: center; }
+      .leaderboard-section, .share-section { padding: 20px 16px; }
+      .lb-title { font-size: 20px; margin-bottom: 14px; }
+      .lb-name-row { flex-direction: column; gap: 8px; }
+      .lb-name-input, .lb-submit-btn { width: 100%; }
+      .lb-table { font-size: 13px; }
+      .lb-table th, .lb-table td { padding: 8px 6px; }
+      .lb-table td:last-child { font-size: 15px; }
+      .lb-rank { font-size: 16px; width: 26px; }
+      .share-title { font-size: 20px; }
+      .share-emoji-grid { font-size: 16px; padding: 10px 12px; }
+      .share-btns { gap: 8px; }
+      .share-btn { padding: 10px 14px; font-size: 12px; flex: 1; min-width: 0; justify-content: center; }
+      .countdown-bar { padding: 14px 18px; gap: 10px; }
+      .countdown-time { font-size: 26px; }
+      .countdown-label { font-size: 11px; }
+      .unlock-section { padding: 0 16px 24px; }
+      .unlock-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .unlock-btn { padding: 10px 12px; font-size: 12px; gap: 6px; }
+      .unlock-cost { font-size: 11px; padding: 2px 6px; }
+      .unlock-reveal { font-size: 14px; padding: 12px 14px; }
+      .answer-blanks { gap: 4px; }
+      .answer-blank { width: 22px; height: 30px; font-size: 18px; }
+      .guess-row { padding: 8px 10px; }
+      .guess-text { font-size: 13px; }
+    }
+    @media (max-width: 380px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      .unlock-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
