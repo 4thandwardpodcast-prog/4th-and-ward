@@ -347,55 +347,9 @@
         </div>
         <div class="card">
           <div class="card-header">
-            <div class="card-title">Add New Puzzle</div>
-          </div>
-          <div class="card-body">
-            <div class="form-grid">
-              <div class="form-group">
-                <label class="form-label">Puzzle Number</label>
-                <input type="number" class="form-input" id="p-num" placeholder="e.g. 10" min="1">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Answer (School Name)</label>
-                <input type="text" class="form-input" id="p-answer" placeholder="e.g. St. John Bosco">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Mascot</label>
-                <input type="text" class="form-input" id="p-mascot" placeholder="e.g. Braves">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Stadium</label>
-                <input type="text" class="form-input" id="p-stadium" placeholder="e.g. Panish Family Stadium">
-              </div>
-              <div class="form-group">
-                <label class="form-label">City</label>
-                <input type="text" class="form-input" id="p-city" placeholder="e.g. Bellflower">
-              </div>
-              <div class="form-group">
-                <label class="form-label">State</label>
-                <input type="text" class="form-input" id="p-state" placeholder="e.g. CA">
-              </div>
-              <div class="form-group span2">
-                <label class="form-label">Clues (5 required — hardest to easiest)</label>
-                <div class="clue-fields">
-                  <div class="clue-field-row"><span class="clue-field-label">Clue 1</span><input type="text" class="form-input" id="p-clue1" placeholder="Hardest clue — most obscure fact"></div>
-                  <div class="clue-field-row"><span class="clue-field-label">Clue 2</span><input type="text" class="form-input" id="p-clue2" placeholder="Still hard"></div>
-                  <div class="clue-field-row"><span class="clue-field-label">Clue 3</span><input type="text" class="form-input" id="p-clue3" placeholder="Medium difficulty"></div>
-                  <div class="clue-field-row"><span class="clue-field-label">Clue 4</span><input type="text" class="form-input" id="p-clue4" placeholder="Getting easier"></div>
-                  <div class="clue-field-row"><span class="clue-field-label">Clue 5</span><input type="text" class="form-input" id="p-clue5" placeholder="Easiest — most obvious clue"></div>
-                </div>
-              </div>
-            </div>
-            <div class="form-actions">
-              <button class="btn btn-gold" onclick="savePuzzle()">Save Puzzle</button>
-              <button class="btn btn-ghost" onclick="clearPuzzleForm()">Clear</button>
-            </div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header">
             <div class="card-title">All Puzzles</div>
             <div style="display:flex;gap:8px;">
+              <button class="btn btn-gold btn-sm" onclick="openCreatePuzzleModal()">+ New Puzzle</button>
               <button class="btn btn-gold btn-sm" onclick="bulkApproveSelected()" id="bulk-approve-btn" disabled>Approve Selected</button>
               <button class="btn btn-ghost btn-sm" onclick="bulkSelectUnapproved()">Select All Unapproved</button>
               <button class="btn btn-ghost btn-sm" onclick="loadPuzzleList()">&#8635; Refresh</button>
@@ -745,6 +699,64 @@
     <div class="form-actions">
       <button class="btn btn-gold" onclick="updatePuzzle()">Save Changes</button>
       <button class="btn btn-ghost" onclick="closeEditModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE PUZZLE MODAL -->
+<div class="modal-overlay" id="create-puzzle-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add New Puzzle</div>
+      <button class="modal-close" onclick="closeCreatePuzzleModal()">&#10005;</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Puzzle Number</label>
+        <input type="number" class="form-input" id="p-num" placeholder="e.g. 100" min="1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Answer (School Name)</label>
+        <input type="text" class="form-input" id="p-answer" placeholder="e.g. St. John Bosco">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mascot</label>
+        <input type="text" class="form-input" id="p-mascot" placeholder="e.g. Braves">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Stadium</label>
+        <input type="text" class="form-input" id="p-stadium" placeholder="e.g. Panish Family Stadium">
+      </div>
+      <div class="form-group">
+        <label class="form-label">City</label>
+        <input type="text" class="form-input" id="p-city" placeholder="e.g. Bellflower">
+      </div>
+      <div class="form-group">
+        <label class="form-label">State</label>
+        <input type="text" class="form-input" id="p-state" placeholder="e.g. CA">
+      </div>
+      <div class="form-group">
+        <label class="form-label">School Colors</label>
+        <input type="text" class="form-input" id="p-colors" placeholder="e.g. Red and Gold">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Famous Alumni</label>
+        <input type="text" class="form-input" id="p-alumni" placeholder="e.g. Patrick Mahomes">
+      </div>
+      <div class="form-group span2">
+        <label class="form-label">Clues (5 required — hardest to easiest)</label>
+        <div class="clue-fields">
+          <div class="clue-field-row"><span class="clue-field-label">Clue 1</span><input type="text" class="form-input" id="p-clue1" placeholder="Hardest clue — most obscure fact"></div>
+          <div class="clue-field-row"><span class="clue-field-label">Clue 2</span><input type="text" class="form-input" id="p-clue2" placeholder="Still hard"></div>
+          <div class="clue-field-row"><span class="clue-field-label">Clue 3</span><input type="text" class="form-input" id="p-clue3" placeholder="Medium difficulty"></div>
+          <div class="clue-field-row"><span class="clue-field-label">Clue 4</span><input type="text" class="form-input" id="p-clue4" placeholder="Getting easier"></div>
+          <div class="clue-field-row"><span class="clue-field-label">Clue 5</span><input type="text" class="form-input" id="p-clue5" placeholder="Easiest — most obvious clue"></div>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-gold" onclick="savePuzzle()">Save Puzzle</button>
+      <button class="btn btn-ghost" onclick="closeCreatePuzzleModal()">Cancel</button>
     </div>
   </div>
 </div>
@@ -1134,6 +1146,18 @@
     } catch(e) { tbody.innerHTML = '<tr><td colspan="5" class="loading-row">Error loading puzzles.</td></tr>'; }
   };
 
+  window.openCreatePuzzleModal = function() {
+    clearPuzzleForm();
+    // Pre-fill puzzle number with the next available id
+    const ids = Object.keys(window._puzzleData || {}).map(Number).filter(n => !isNaN(n));
+    const nextId = ids.length ? Math.max(...ids) + 1 : 38;
+    document.getElementById('p-num').value = nextId;
+    document.getElementById('create-puzzle-modal').classList.add('open');
+  };
+  window.closeCreatePuzzleModal = function() {
+    document.getElementById('create-puzzle-modal').classList.remove('open');
+  };
+
   window.savePuzzle = async function() {
     const num = document.getElementById('p-num').value.trim();
     const answer = document.getElementById('p-answer').value.trim();
@@ -1146,24 +1170,31 @@
       document.getElementById('p-clue5').value.trim()
     ];
     if (clues.some(c => !c)) { toast('All 5 clues are required.', 'error'); return; }
+    const colorsEl = document.getElementById('p-colors');
+    const alumniEl = document.getElementById('p-alumni');
     try {
       await setDoc(doc(db, 'puzzles', String(num)), {
-        answer:  answer,
-        mascot:  document.getElementById('p-mascot').value.trim(),
-        stadium: document.getElementById('p-stadium').value.trim(),
-        city:    document.getElementById('p-city').value.trim(),
-        state:   document.getElementById('p-state').value.trim(),
-        clues:   clues
+        answer:       answer,
+        mascot:       document.getElementById('p-mascot').value.trim(),
+        stadium:      document.getElementById('p-stadium').value.trim(),
+        city:         document.getElementById('p-city').value.trim(),
+        state:        document.getElementById('p-state').value.trim(),
+        colors:       colorsEl ? colorsEl.value.trim() : '',
+        famousAlumni: alumniEl ? alumniEl.value.trim() : '',
+        clues:        clues,
+        approved:     true   // hand-created puzzles go live immediately
       });
       toast('Puzzle #' + num + ' saved!');
       clearPuzzleForm();
+      closeCreatePuzzleModal();
       window.loadPuzzleList();
     } catch(e) { toast('Error saving puzzle: ' + e.message, 'error'); }
   };
 
   window.clearPuzzleForm = function() {
-    ['p-num','p-answer','p-mascot','p-stadium','p-city','p-state','p-clue1','p-clue2','p-clue3','p-clue4','p-clue5']
-      .forEach(id => document.getElementById(id).value = '');
+    ['p-num','p-answer','p-mascot','p-stadium','p-city','p-state','p-colors','p-alumni',
+     'p-clue1','p-clue2','p-clue3','p-clue4','p-clue5']
+      .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   };
 
   window.openEditModal = async function(id) {
