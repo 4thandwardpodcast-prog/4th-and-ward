@@ -608,8 +608,21 @@
       const val=document.getElementById('puzzleSelect').value;
       const num=val?parseInt(val):todayPuzzleNumber();
       resetGame();
-      try { puzzle=await loadPuzzle(num); startGame(); }
-      catch(e) { document.getElementById('clue-text').textContent='Error loading puzzle #'+num+'. It may not exist yet.'; }
+      try {
+        puzzle = await loadPuzzle(num);
+        // Pending puzzles (auto-generated, not yet admin-approved) shouldn't go live
+        if (puzzle.approved === false) {
+          document.getElementById('clue-text').classList.remove('loading');
+          document.getElementById('clue-text').textContent = 'Today\u2019s puzzle is being prepared \u2014 check back soon!';
+          document.getElementById('input-section').style.display = 'none';
+          document.getElementById('unlock-section').style.display = 'none';
+          return;
+        }
+        startGame();
+      } catch(e) {
+        document.getElementById('clue-text').classList.remove('loading');
+        document.getElementById('clue-text').textContent='Error loading puzzle #'+num+'. It may not exist yet.';
+      }
     }
 
     // ── GAME ──────────────────────────────────────────────────────────────────

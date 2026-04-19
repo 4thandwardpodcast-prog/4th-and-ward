@@ -668,6 +668,16 @@
         await addDoc(collection(db,'totw_nominees'), {
           teamName: school, mascot, city, state, location, logoUrl, submittedAt: Date.now()
         });
+        // Phase 3: also queue this school for Wardle puzzle generation. Admin
+        // runs the regen script to turn queued schools into auto-generated
+        // puzzles (which start as approved:false and need admin approval).
+        try {
+          await addDoc(collection(db,'puzzle_queue'), {
+            teamName: school, mascot, city, state, location, logoUrl,
+            source: 'totw_nomination', status: 'pending',
+            queuedAt: Date.now()
+          });
+        } catch(qe) { console.warn('puzzle_queue write failed (non-fatal):', qe); }
         document.getElementById('nom-school').value = '';
         document.getElementById('nom-mascot').value = '';
         document.getElementById('nom-city').value   = '';
