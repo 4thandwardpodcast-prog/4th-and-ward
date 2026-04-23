@@ -668,6 +668,21 @@
       return Math.round((dripVotes||0) / total * 100);
     }
 
+    // Wilson score interval (lower bound) — used for ranking Top/Bottom/Hall of Fame.
+    // Gives the lower end of a 95% confidence interval for the true success rate,
+    // which penalizes small sample sizes automatically. E.g. 3/3 (100%) scores
+    // ~0.29, but 35/45 (78%) scores ~0.64, so higher-confidence wins.
+    // Pass (drips, total) for best-drip ranking, (drowns, total) for worst-drip.
+    function wilsonLowerBound(success, total) {
+      if (!total || total <= 0) return 0;
+      const z = 1.96; // 95% CI
+      const p = (success || 0) / total;
+      const z2 = z * z;
+      const center = p + z2 / (2 * total);
+      const margin = z * Math.sqrt((p * (1 - p) + z2 / (4 * total)) / total);
+      return (center - margin) / (1 + z2 / total);
+    }
+
     function scoreEmoji(pct) {
       if (pct == null) return '\u2796';
       if (pct >= 60) return '\uD83D\uDD25'; // fire
@@ -859,8 +874,16 @@
       const grid = document.getElementById('top3-grid');
       const eligible = window._submissions
         .filter(s => ((s.dripVotes||0) + (s.drownVotes||0)) >= 3)
-        .map(s => ({...s, _pct: dripScore(s.dripVotes, s.drownVotes)}))
-        .sort((a,b) => b._pct - a._pct)
+        .map(s => {
+          const total = (s.dripVotes||0) + (s.drownVotes||0);
+          return { ...s,
+            _pct: dripScore(s.dripVotes, s.drownVotes),
+            _dripLB: wilsonLowerBound(s.dripVotes||0, total),
+            _total: total
+          };
+        })
+        // Rank by confidence-adjusted drip rate; tie-break by total votes, then raw pct
+        .sort((a,b) => (b._dripLB - a._dripLB) || (b._total - a._total) || (b._pct - a._pct))
         .slice(0,3);
       if (!eligible.length) { wrap.style.display = 'none'; return; }
       wrap.style.display = 'block';
@@ -872,12 +895,24 @@
       const grid = document.getElementById('bottom3-grid');
       const pool = window._submissions
         .filter(s => ((s.dripVotes||0) + (s.drownVotes||0)) >= 3)
-        .map(s => ({...s, _pct: dripScore(s.dripVotes, s.drownVotes)}));
+        .map(s => {
+          const total = (s.dripVotes||0) + (s.drownVotes||0);
+          return { ...s,
+            _pct: dripScore(s.dripVotes, s.drownVotes),
+            _dripLB:  wilsonLowerBound(s.dripVotes||0,  total),
+            _drownLB: wilsonLowerBound(s.drownVotes||0, total),
+            _total: total
+          };
+        });
       // Exclude anything already shown in Top 3 so the same fit can't appear twice
-      const top3Ids = new Set([...pool].sort((a,b) => b._pct - a._pct).slice(0,3).map(s => s.id));
+      const top3Ids = new Set(
+        [...pool].sort((a,b) => (b._dripLB - a._dripLB) || (b._total - a._total) || (b._pct - a._pct))
+                 .slice(0,3).map(s => s.id)
+      );
       const eligible = pool
         .filter(s => !top3Ids.has(s.id))
-        .sort((a,b) => a._pct - b._pct)
+        // Most confidently bad = highest Wilson LB on DROWN rate
+        .sort((a,b) => (b._drownLB - a._drownLB) || (b._total - a._total) || (a._pct - b._pct))
         .slice(0,3);
       if (!eligible.length) { wrap.style.display = 'none'; return; }
       wrap.style.display = 'block';
@@ -1081,8 +1116,15 @@
       const grid = document.getElementById('hof-grid');
       const eligible = window._submissions
         .filter(s => ((s.dripVotes||0) + (s.drownVotes||0)) >= 5)
-        .map(s => ({...s, _pct: dripScore(s.dripVotes, s.drownVotes)}))
-        .sort((a,b) => b._pct - a._pct);
+        .map(s => {
+          const total = (s.dripVotes||0) + (s.drownVotes||0);
+          return { ...s,
+            _pct: dripScore(s.dripVotes, s.drownVotes),
+            _dripLB: wilsonLowerBound(s.dripVotes||0, total),
+            _total: total
+          };
+        })
+        .sort((a,b) => (b._dripLB - a._dripLB) || (b._total - a._total) || (b._pct - a._pct));
       if (!eligible.length) {
         grid.innerHTML = '<div class="empty-state">No qualifying submissions yet (min. 5 votes). Get out there and vote!</div>';
         return;
@@ -1361,13 +1403,27 @@
       if (filter === 'top-drips') {
         list = base
           .filter(s => ((s.dripVotes||0) + (s.drownVotes||0)) >= 3)
-          .map(s => ({...s, _pct: dripScore(s.dripVotes, s.drownVotes)}))
-          .sort((a,b) => (b._pct ?? -1) - (a._pct ?? -1));
+          .map(s => {
+            const total = (s.dripVotes||0) + (s.drownVotes||0);
+            return { ...s,
+              _pct: dripScore(s.dripVotes, s.drownVotes),
+              _dripLB: wilsonLowerBound(s.dripVotes||0, total),
+              _total: total
+            };
+          })
+          .sort((a,b) => (b._dripLB - a._dripLB) || (b._total - a._total) || ((b._pct ?? -1) - (a._pct ?? -1)));
       } else if (filter === 'top-drowns') {
         list = base
           .filter(s => ((s.dripVotes||0) + (s.drownVotes||0)) >= 3)
-          .map(s => ({...s, _pct: dripScore(s.dripVotes, s.drownVotes)}))
-          .sort((a,b) => (a._pct ?? 101) - (b._pct ?? 101));
+          .map(s => {
+            const total = (s.dripVotes||0) + (s.drownVotes||0);
+            return { ...s,
+              _pct: dripScore(s.dripVotes, s.drownVotes),
+              _drownLB: wilsonLowerBound(s.drownVotes||0, total),
+              _total: total
+            };
+          })
+          .sort((a,b) => (b._drownLB - a._drownLB) || (b._total - a._total) || ((a._pct ?? 101) - (b._pct ?? 101)));
       } else if (filter === 'featured') {
         list = base.filter(s => s.featuredThisWeek)
           .sort((a,b) => (b.submittedAt||0) - (a.submittedAt||0));
