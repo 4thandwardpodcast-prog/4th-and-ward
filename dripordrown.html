@@ -210,27 +210,43 @@
     .gallery-icon-btn.playing { background: var(--gold); color: var(--black); border-color: var(--gold); }
     .gallery-icon-btn.close:hover { border-color: #e05555; color: #e05555; }
     .gallery-stage { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; min-height: 0; user-select: none; -webkit-user-select: none; padding: 24px 80px; }
-    .gallery-card-wrap { position: relative; width: min(440px, 100%); max-height: 100%; display: flex; flex-direction: column; touch-action: pan-y; will-change: transform; animation: cardIn 0.32s cubic-bezier(.2,.7,.3,1); }
+    .gallery-stack { position: relative; display: grid; grid-template-areas: "stack"; place-items: stretch; width: min(440px, 100%); max-height: 100%; }
+    .gallery-stack > * { grid-area: stack; min-width: 0; }
+
+    /* Under-card (next in queue) — sits behind, scaled down, fades up as active exits */
+    .gallery-card-under { position: relative; z-index: 1; display: flex; flex-direction: column; transform: scale(0.92) translateY(16px); opacity: 0.7; filter: brightness(0.72) saturate(0.9); transition: transform 0.5s cubic-bezier(.25,.85,.3,1.05), opacity 0.45s ease, filter 0.45s ease; pointer-events: none; will-change: transform, opacity; }
+    .gallery-card-under.no-transition { transition: none !important; }
+    .gallery-card-under.hidden { opacity: 0; }
+    .gallery-card-under.promoted { transform: none; opacity: 1; filter: none; }
+    .gallery-card-under .sub-card { box-shadow: 0 16px 40px rgba(0,0,0,0.45); }
+
+    .gallery-card-wrap { position: relative; z-index: 2; display: flex; flex-direction: column; touch-action: pan-y; will-change: transform; animation: cardIn 0.55s cubic-bezier(.2,.9,.3,1.08); }
     .gallery-card-wrap.dragging,
     .gallery-card-wrap.no-transition { transition: none !important; }
-    .gallery-card-wrap:not(.dragging):not(.no-transition) { transition: transform 0.26s cubic-bezier(.2,.7,.3,1), opacity 0.26s; }
-    .gallery-card-wrap.exit-left  { transform: translateX(-130vw) rotate(-22deg) !important; opacity: 0; }
-    .gallery-card-wrap.exit-right { transform: translateX( 130vw) rotate( 22deg) !important; opacity: 0; }
-    @keyframes cardIn { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: none; } }
-    /* Enlarged card look inside the gallery — reuse the regular card markup */
-    .gallery-card-wrap .sub-card { width: 100%; max-height: 100%; display: flex; flex-direction: column; overflow: hidden; cursor: grab; box-shadow: 0 24px 80px rgba(0,0,0,0.6); border-width: 1px; }
+    .gallery-card-wrap:not(.dragging):not(.no-transition) { transition: transform 0.55s cubic-bezier(.3,.65,.35,1), opacity 0.45s ease-out; }
+    .gallery-card-wrap.exit-left  { transform: translateX(-150vw) translateY(40px) rotate(-28deg) !important; opacity: 0; }
+    .gallery-card-wrap.exit-right { transform: translateX( 150vw) translateY(40px) rotate( 28deg) !important; opacity: 0; }
+    @keyframes cardIn {
+      0%   { opacity: 0; transform: scale(0.9) translateY(22px); }
+      60%  { opacity: 1; }
+      100% { opacity: 1; transform: none; }
+    }
+    /* Enlarged card look inside the gallery — reuse the regular card markup.
+       Selectors target the whole stack so both the active card and the under-card match. */
+    .gallery-stack .sub-card { width: 100%; max-height: 100%; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 24px 80px rgba(0,0,0,0.6); border-width: 1px; }
+    .gallery-card-wrap .sub-card { cursor: grab; }
     .gallery-card-wrap.dragging .sub-card { cursor: grabbing; }
-    .gallery-card-wrap .sub-card:hover { transform: none; border-color: var(--border); }
-    .gallery-card-wrap .sub-card.featured { border-color: var(--gold); }
-    .gallery-card-wrap .sub-photo-wrap { cursor: inherit; flex: 1 1 auto; min-height: 0; aspect-ratio: 3/4; }
-    .gallery-card-wrap .sub-photo-wrap::after { display: none; }
-    .gallery-card-wrap .sub-photo { transform: none !important; pointer-events: none; }
-    .gallery-card-wrap .sub-info { padding: 18px 20px 18px; flex: 0 0 auto; }
-    .gallery-card-wrap .sub-school { font-size: 22px; }
-    .gallery-card-wrap .sub-caption { font-size: 14px; }
-    .gallery-card-wrap .sub-score-pct { font-size: 28px; }
-    .gallery-card-wrap .sub-score-emoji { font-size: 28px; }
-    .gallery-card-wrap .vote-btn { padding: 14px 8px; font-size: 13px; }
+    .gallery-stack .sub-card:hover { transform: none; border-color: var(--border); }
+    .gallery-stack .sub-card.featured { border-color: var(--gold); }
+    .gallery-stack .sub-photo-wrap { cursor: inherit; flex: 1 1 auto; min-height: 0; aspect-ratio: 3/4; }
+    .gallery-stack .sub-photo-wrap::after { display: none; }
+    .gallery-stack .sub-photo { transform: none !important; pointer-events: none; }
+    .gallery-stack .sub-info { padding: 18px 20px 18px; flex: 0 0 auto; }
+    .gallery-stack .sub-school { font-size: 22px; }
+    .gallery-stack .sub-caption { font-size: 14px; }
+    .gallery-stack .sub-score-pct { font-size: 28px; }
+    .gallery-stack .sub-score-emoji { font-size: 28px; }
+    .gallery-stack .vote-btn { padding: 14px 8px; font-size: 13px; }
 
     .gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.15); color: var(--white); width: 48px; height: 48px; border-radius: 50%; cursor: pointer; font-size: 24px; display: flex; align-items: center; justify-content: center; transition: background 0.15s, color 0.15s, border-color 0.15s; z-index: 5; font-family: var(--body); line-height: 1; padding-bottom: 3px; }
     .gallery-nav:hover { background: var(--gold); color: var(--black); border-color: var(--gold); }
@@ -257,11 +273,11 @@
       .gallery-nav.prev { left: 4px; }
       .gallery-nav.next { right: 4px; }
       .gallery-stage { padding: 12px 52px; }
-      .gallery-card-wrap { width: 100%; }
-      .gallery-card-wrap .sub-info { padding: 14px 16px; }
+      .gallery-stack { width: 100%; }
+      .gallery-stack .sub-info { padding: 14px 16px; }
     }
     @media (max-height: 720px) {
-      .gallery-card-wrap { width: min(360px, 100%); }
+      .gallery-stack { width: min(360px, 100%); }
     }
 
     /* EMPTY/LOADING STATES */
@@ -521,7 +537,10 @@
     </div>
     <div class="gallery-stage" id="gallery-stage">
       <button class="gallery-nav prev" data-action="gallery-prev" title="Previous (&larr;)" aria-label="Previous">&#8249;</button>
-      <div class="gallery-card-wrap" id="gallery-card-wrap"></div>
+      <div class="gallery-stack">
+        <div class="gallery-card-under" id="gallery-card-under" aria-hidden="true"></div>
+        <div class="gallery-card-wrap" id="gallery-card-wrap"></div>
+      </div>
       <button class="gallery-nav next" data-action="gallery-next" title="Next (&rarr;)" aria-label="Next">&#8250;</button>
     </div>
   </div>
@@ -1436,6 +1455,7 @@
       const sub = galleryList[galleryIdx];
       if (!sub) { closeGallery(); return; }
       const wrap = document.getElementById('gallery-card-wrap');
+      const under = document.getElementById('gallery-card-under');
       const counter = document.getElementById('gallery-counter');
       counter.textContent = (galleryIdx + 1) + ' / ' + galleryList.length;
 
@@ -1448,7 +1468,7 @@
       void wrap.offsetWidth; // flush
       wrap.classList.remove('no-transition');
 
-      // Swap in the new card
+      // Swap in the new active card
       wrap.innerHTML = cardHtml(sub);
 
       // Retrigger the cardIn entrance so each new card "pops in"
@@ -1456,9 +1476,26 @@
       void wrap.offsetWidth;
       wrap.style.animation = '';
 
-      // Preload next image for smoother swipes
-      const next = galleryList[(galleryIdx + 1) % galleryList.length];
-      if (next && next.photoUrl) { const pre = new Image(); pre.src = next.photoUrl; }
+      // Render the NEXT card behind (stacked Tinder effect).
+      // Reset its transform state so it starts scaled-down again.
+      if (under) {
+        under.classList.remove('promoted');
+        under.style.transform = '';
+        under.style.opacity = '';
+        under.style.filter = '';
+        if (galleryList.length > 1) {
+          const nextSub = galleryList[(galleryIdx + 1) % galleryList.length];
+          under.classList.remove('hidden');
+          under.innerHTML = cardHtml(nextSub);
+        } else {
+          under.classList.add('hidden');
+          under.innerHTML = '';
+        }
+      }
+
+      // Preload the card-after-next for smoother consecutive swipes
+      const nextNext = galleryList[(galleryIdx + 2) % galleryList.length];
+      if (nextNext && nextNext.photoUrl) { const pre = new Image(); pre.src = nextNext.photoUrl; }
     }
 
     // Refresh gallery UI if a vote changes state while it's open
@@ -1546,6 +1583,19 @@
           const rot = dx / 22; // subtle rotation
           card.style.transform = `translate(${dx}px, ${dy * 0.25}px) rotate(${rot}deg)`;
           card.style.opacity = String(Math.max(0.55, 1 - Math.abs(dx) / 600));
+          // Scale the under-card up proportionally to drag progress
+          const under = document.getElementById('gallery-card-under');
+          if (under) {
+            under.classList.add('no-transition');
+            const p = Math.min(1, Math.abs(dx) / THRESHOLD);
+            const s = 0.92 + 0.08 * p;
+            const y = 16 * (1 - p);
+            const o = 0.7 + 0.3 * p;
+            const b = 0.72 + 0.28 * p;
+            under.style.transform = `scale(${s}) translateY(${y}px)`;
+            under.style.opacity = String(o);
+            under.style.filter = `brightness(${b}) saturate(${0.9 + 0.1 * p})`;
+          }
         }
       }, { passive: true });
 
@@ -1555,6 +1605,14 @@
         tracking = false;
         lockedAxis = null;
         card.classList.remove('dragging');
+        const under = document.getElementById('gallery-card-under');
+        if (under) {
+          // Let the under-card's transition re-engage for the promote/spring-back animation
+          under.classList.remove('no-transition');
+          under.style.transform = '';
+          under.style.opacity = '';
+          under.style.filter = '';
+        }
         if (wasX && Math.abs(dx) > THRESHOLD) {
           stopSlideshow();
           const dir = dx > 0 ? 'right' : 'left';
@@ -1562,10 +1620,11 @@
           card.style.transform = '';
           card.style.opacity = '';
           card.classList.add('exit-' + dir);
+          if (under) under.classList.add('promoted');
           const targetIdx = galleryIdx + (dir === 'left' ? 1 : -1);
-          setTimeout(() => gotoGallery(targetIdx), 220);
+          setTimeout(() => gotoGallery(targetIdx), 520);
         } else {
-          // Spring back to center
+          // Spring back to center — under-card naturally eases back to its scaled state
           card.style.transform = '';
           card.style.opacity = '';
         }
@@ -1615,6 +1674,7 @@
         if (inGallery) {
           if (myVotes.has(id)) { toast('You already voted on this!', 'error'); return; }
           const card = document.getElementById('gallery-card-wrap');
+          const under = document.getElementById('gallery-card-under');
           const dir = v === 'drip' ? 'right' : 'left';
           stopSlideshow();
           if (card) {
@@ -1625,9 +1685,11 @@
             void card.offsetWidth;
             card.classList.add('exit-' + dir);
           }
+          // Promote the card underneath so it glides forward like a real card stack
+          if (under) under.classList.add('promoted');
           // Record the vote in the background without letting it re-render the gallery mid-animation
           vote(id, v, { skipGalleryRender: true });
-          setTimeout(() => gotoGallery(galleryIdx + 1), 260);
+          setTimeout(() => gotoGallery(galleryIdx + 1), 520);
           return;
         }
         vote(id, v);
