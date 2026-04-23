@@ -218,7 +218,6 @@
     .gallery-card-under.no-transition { transition: none !important; }
     .gallery-card-under.hidden { opacity: 0; }
     .gallery-card-under.promoted { transform: none; opacity: 1; filter: none; }
-    .gallery-card-under .sub-card { box-shadow: 0 16px 40px rgba(0,0,0,0.45); }
 
     .gallery-card-wrap { position: relative; z-index: 2; display: flex; flex-direction: column; touch-action: pan-y; will-change: transform; animation: cardIn 0.55s cubic-bezier(.2,.9,.3,1.08); }
     .gallery-card-wrap.dragging,
@@ -1443,15 +1442,21 @@
       if (gallerySlideshowTimer) { stopSlideshow(); toggleSlideshow(); }
     }
 
-    function gotoGallery(idx) {
+    function gotoGallery(idx, opts) {
       if (!galleryList.length) return;
       if (idx < 0) idx = galleryList.length - 1;
       if (idx >= galleryList.length) idx = 0;
       galleryIdx = idx;
-      renderGallerySlide();
+      renderGallerySlide(opts);
     }
 
-    function renderGallerySlide() {
+    // opts.skipEntry — suppresses the cardIn entrance on the active card AND
+    // instantly snaps the under-card back to its scaled-down state. Use this
+    // when the transition came from a swipe/vote: the under-card has already
+    // "arrived" at center, so we just swap it under the active card without
+    // replaying a pop-in animation.
+    function renderGallerySlide(opts) {
+      opts = opts || {};
       const sub = galleryList[galleryIdx];
       if (!sub) { closeGallery(); return; }
       const wrap = document.getElementById('gallery-card-wrap');
@@ -1471,14 +1476,23 @@
       // Swap in the new active card
       wrap.innerHTML = cardHtml(sub);
 
-      // Retrigger the cardIn entrance so each new card "pops in"
-      wrap.style.animation = 'none';
-      void wrap.offsetWidth;
-      wrap.style.animation = '';
+      if (opts.skipEntry) {
+        // Active card appears instantly on top of the promoted under-card.
+        // Setting inline animation:none overrides the CSS cardIn declaration.
+        wrap.style.animation = 'none';
+      } else {
+        // Retrigger the cardIn entrance so each new card "pops in"
+        wrap.style.animation = 'none';
+        void wrap.offsetWidth;
+        wrap.style.animation = '';
+      }
 
       // Render the NEXT card behind (stacked Tinder effect).
-      // Reset its transform state so it starts scaled-down again.
       if (under) {
+        // When skipEntry is true, snap the under-card back to its scaled-down
+        // state without transition — otherwise the user sees it visibly
+        // shrink behind the newly-placed active card.
+        if (opts.skipEntry) under.classList.add('no-transition');
         under.classList.remove('promoted');
         under.style.transform = '';
         under.style.opacity = '';
@@ -1490,6 +1504,10 @@
         } else {
           under.classList.add('hidden');
           under.innerHTML = '';
+        }
+        if (opts.skipEntry) {
+          void under.offsetWidth;
+          under.classList.remove('no-transition');
         }
       }
 
@@ -1622,7 +1640,11 @@
           card.classList.add('exit-' + dir);
           if (under) under.classList.add('promoted');
           const targetIdx = galleryIdx + (dir === 'left' ? 1 : -1);
-          setTimeout(() => gotoGallery(targetIdx), 520);
+          // Only the forward direction uses the promoted under-card, so only
+          // skip the entry animation when advancing. Going backwards the
+          // under-card wasn't "the card coming in", so let cardIn play normally.
+          const skipEntry = dir === 'left';
+          setTimeout(() => gotoGallery(targetIdx, skipEntry ? { skipEntry: true } : {}), 520);
         } else {
           // Spring back to center — under-card naturally eases back to its scaled state
           card.style.transform = '';
@@ -1689,7 +1711,7 @@
           if (under) under.classList.add('promoted');
           // Record the vote in the background without letting it re-render the gallery mid-animation
           vote(id, v, { skipGalleryRender: true });
-          setTimeout(() => gotoGallery(galleryIdx + 1), 520);
+          setTimeout(() => gotoGallery(galleryIdx + 1, { skipEntry: true }), 520);
           return;
         }
         vote(id, v);
