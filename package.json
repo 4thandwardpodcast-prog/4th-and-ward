@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.89.0"
+  },
+  "devDependencies": {
+    "cheerio": "^1.2.0",
+    "firebase-admin": "^13.8.0"
+  }
+}

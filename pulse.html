@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Friday Night Pulse — 4th &amp; Ward</title>
+  <meta name="description" content="Rate the atmosphere, energy, and vibe of high school football stadiums across the country. The Friday Night Pulse leaderboard.">
+  <link rel="icon" href="logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700;800&family=Barlow+Condensed:wght@800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    /* ── PULSE-SPECIFIC STYLES ──────────────────────────────────── */
+
+    .pulse-hero {
+      position: relative;
+      padding: 80px 48px 48px;
+      text-align: center;
+      isolation: isolate;
+    }
+    .pulse-hero-bg {
+      position: absolute; inset: 0; z-index: -1; pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 30%, rgba(245,197,24,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 20% 80%, rgba(16,185,129,0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(239,68,68,0.06) 0%, transparent 70%);
+    }
+    .pulse-hero-bg::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(245,197,24,0.025) 79px 80px),
+        repeating-linear-gradient(0deg, transparent 0 6px, rgba(255,255,255,0.010) 6px 7px);
+    }
+    .pulse-eyebrow {
+      font-family: var(--condensed); font-weight: 800; font-size: 14px;
+      letter-spacing: 0.32em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 18px;
+      text-shadow: 0 0 24px rgba(245,197,24,0.35);
+    }
+    .pulse-title {
+      font-family: var(--condensed); font-weight: 900;
+      font-size: clamp(54px, 10vw, 110px);
+      line-height: 0.92; letter-spacing: -0.01em;
+      text-transform: uppercase; margin-bottom: 18px;
+      text-shadow: 0 0 60px rgba(245,197,24,0.18), 0 4px 20px rgba(0,0,0,0.5);
+    }
+    .pulse-title .accent { color: var(--gold); }
+    .pulse-subtitle {
+      max-width: 580px; margin: 0 auto 36px;
+      font-size: clamp(15px, 1.5vw, 18px); color: var(--muted); line-height: 1.55;
+    }
+
+    /* ── PULSE GAUGE — EA Sports format, 4th & Ward branding ─── */
+    .pulse-gauge {
+      position: relative; max-width: 520px; margin: 0 auto;
+      transform-origin: center;
+    }
+    /* Outer black-and-gold trimmed frame */
+    .pulse-gauge-frame {
+      position: relative;
+      padding: 18px 18px 14px;
+      background: linear-gradient(180deg, #1d1d1d 0%, #0a0a0a 100%);
+      border: 1px solid #3a3a3a;
+      border-radius: 8px;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        inset 0 -1px 0 rgba(0,0,0,0.6),
+        0 14px 40px rgba(0,0,0,0.7),
+        0 0 70px rgba(245,197,24,0.06);
+    }
+    /* Subtle gold hairlines top + bottom (4th & Ward accent) */
+    .pulse-gauge-frame::before,
+    .pulse-gauge-frame::after {
+      content: ''; position: absolute; left: 14%; right: 14%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, var(--gold) 50%, transparent 100%);
+      opacity: 0.55; pointer-events: none;
+    }
+    .pulse-gauge-frame::before { top: 4px; }
+    .pulse-gauge-frame::after  { bottom: 4px; }
+
+    /* Inset window holding the bars */
+    .pulse-gauge-bars {
+      display: flex; gap: 5px; align-items: flex-end;
+      height: 150px; padding: 12px 10px;
+      background: radial-gradient(ellipse at center top, #0e0e0e 0%, #050505 100%);
+      border: 1px solid #1f1f1f;
+      border-radius: 4px;
+      box-shadow:
+        inset 0 2px 8px rgba(0,0,0,0.85),
+        inset 0 -1px 0 rgba(245,197,24,0.04);
+    }
+
+    /* LED bar */
+    .pulse-bar {
+      flex: 1; border-radius: 1.5px;
+      background-color: rgba(0,0,0,0.5);
+      background-image: radial-gradient(circle at center, rgba(60,60,60,0.35) 38%, transparent 42%);
+      background-size: 5px 5px;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5);
+      transition: background-image 0.35s, box-shadow 0.35s, background-color 0.35s;
+    }
+    /* Ascending crescendo heights, 1 → 10 */
+    .pulse-bar[data-step="1"]  { height: 28%; }
+    .pulse-bar[data-step="2"]  { height: 36%; }
+    .pulse-bar[data-step="3"]  { height: 44%; }
+    .pulse-bar[data-step="4"]  { height: 52%; }
+    .pulse-bar[data-step="5"]  { height: 60%; }
+    .pulse-bar[data-step="6"]  { height: 70%; }
+    .pulse-bar[data-step="7"]  { height: 78%; }
+    .pulse-bar[data-step="8"]  { height: 86%; }
+    .pulse-bar[data-step="9"]  { height: 94%; }
+    .pulse-bar[data-step="10"] { height: 100%; }
+
+    /* Lit colors — green → yellow → orange → red */
+    .pulse-bar.lit[data-step="1"],
+    .pulse-bar.lit[data-step="2"],
+    .pulse-bar.lit[data-step="3"]  {
+      background-image: radial-gradient(circle at center, #22d97e 38%, transparent 42%);
+      background-color: rgba(20,80,40,0.18);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5), 0 0 14px rgba(34,217,126,0.55);
+    }
+    .pulse-bar.lit[data-step="4"],
+    .pulse-bar.lit[data-step="5"]  {
+      background-image: radial-gradient(circle at center, #ffd400 38%, transparent 42%);
+      background-color: rgba(80,60,0,0.18);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5), 0 0 16px rgba(255,212,0,0.6);
+    }
+    .pulse-bar.lit[data-step="6"],
+    .pulse-bar.lit[data-step="7"]  {
+      background-image: radial-gradient(circle at center, #ff8c1a 38%, transparent 42%);
+      background-color: rgba(80,40,0,0.18);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5), 0 0 16px rgba(255,140,26,0.65);
+    }
+    .pulse-bar.lit[data-step="8"],
+    .pulse-bar.lit[data-step="9"],
+    .pulse-bar.lit[data-step="10"] {
+      background-image: radial-gradient(circle at center, #ff3b3b 38%, transparent 42%);
+      background-color: rgba(80,0,0,0.22);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5), 0 0 18px rgba(255,59,59,0.7);
+    }
+
+    /* Subtle "alive" breathing on lit bars */
+    @keyframes bar-pulse {
+      0%, 100% { filter: brightness(1); }
+      50%      { filter: brightness(1.18); }
+    }
+    .pulse-bar.lit { animation: bar-pulse 1.6s ease-in-out infinite; }
+    .pulse-bar.lit:nth-child(2n)  { animation-delay: 0.1s; }
+    .pulse-bar.lit:nth-child(3n)  { animation-delay: 0.25s; }
+
+    /* Title + score block */
+    .pulse-gauge-labels { text-align: center; margin-top: 16px; }
+    .pulse-gauge-title {
+      font-family: var(--condensed); font-weight: 900;
+      font-size: 30px; letter-spacing: 0.14em; line-height: 1;
+      text-transform: uppercase; color: var(--white);
+      text-shadow: 0 0 26px rgba(245,197,24,0.4), 0 2px 8px rgba(0,0,0,0.5);
+      margin-bottom: 10px;
+    }
+    .pulse-gauge-rank {
+      display: inline-flex; align-items: center; gap: 12px;
+      padding: 7px 16px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(20,20,20,0.85) 100%);
+      border: 1px solid rgba(245,197,24,0.3);
+      border-radius: 4px;
+      font-family: var(--condensed); font-weight: 800;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .pulse-gauge-rank-label { color: var(--muted); font-size: 13px; }
+    .pulse-gauge-rank-divider { width: 1px; height: 14px; background: rgba(245,197,24,0.35); }
+    .pulse-gauge-rank-value { color: var(--gold); font-size: 19px; }
+    .pulse-gauge-meta {
+      margin-top: 14px; text-align: center;
+      font-size: 11px; font-weight: 600;
+      color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .pulse-gauge-meta .dot { color: #444; padding: 0 6px; }
+
+    /* Empty state */
+    .pulse-gauge.empty .pulse-gauge-title { color: var(--muted); text-shadow: none; }
+    .pulse-gauge.empty .pulse-gauge-rank { opacity: 0.5; }
+
+    /* SHAKE — escalates with score (the EA "crowd noise" feel) */
+    @keyframes pulse-shake-low {
+      0%, 100% { transform: translate3d(0, 0, 0); }
+      25%      { transform: translate3d(-0.5px, 0.5px, 0); }
+      75%      { transform: translate3d(0.5px, -0.5px, 0); }
+    }
+    @keyframes pulse-shake-mid {
+      0%, 100% { transform: translate3d(0, 0, 0) rotate(0); }
+      10% { transform: translate3d(-1px, 0, 0); }
+      30% { transform: translate3d(1px, -1px, 0) rotate(-0.1deg); }
+      50% { transform: translate3d(-1px, 1px, 0); }
+      70% { transform: translate3d(1px, 0, 0) rotate(0.1deg); }
+      90% { transform: translate3d(-1px, 1px, 0); }
+    }
+    @keyframes pulse-shake-high {
+      0%, 100% { transform: translate3d(0, 0, 0) rotate(0); }
+      10% { transform: translate3d(-2px, 1px, 0) rotate(-0.3deg); }
+      20% { transform: translate3d(2px, -1px, 0) rotate(0.3deg); }
+      30% { transform: translate3d(-2px, 0, 0); }
+      40% { transform: translate3d(2px, 1px, 0) rotate(-0.2deg); }
+      50% { transform: translate3d(-1px, -1px, 0) rotate(0.2deg); }
+      60% { transform: translate3d(2px, 0, 0); }
+      70% { transform: translate3d(-1px, 1px, 0) rotate(-0.2deg); }
+      80% { transform: translate3d(1px, -1px, 0); }
+      90% { transform: translate3d(-2px, 0, 0) rotate(0.3deg); }
+    }
+    .pulse-gauge.shake-low  { animation: pulse-shake-low  0.6s ease-in-out infinite; }
+    .pulse-gauge.shake-mid  { animation: pulse-shake-mid  0.45s ease-in-out infinite; }
+    .pulse-gauge.shake-high { animation: pulse-shake-high 0.4s ease-in-out infinite; }
+
+    /* Reduced motion — kill shake + bar-pulse for accessibility */
+    @media (prefers-reduced-motion: reduce) {
+      .pulse-gauge, .pulse-bar.lit { animation: none !important; }
+    }
+
+    /* ── TAB BAR (matches Drip pattern) ─────────────────────────── */
+    .tab-bar {
+      display: flex; gap: 8px; padding: 28px 48px 0;
+      border-bottom: 1px solid var(--border);
+      justify-content: center;
+    }
+    .tab-btn {
+      padding: 14px 22px;
+      background: none; border: none;
+      color: var(--muted);
+      font-family: var(--condensed); font-weight: 800; font-size: 16px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .tab-btn:hover { color: var(--white); }
+    .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+    .pulse-body { padding: 48px 48px 80px; max-width: 1280px; margin: 0 auto; }
+
+    .section-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 24px; gap: 16px; flex-wrap: wrap;
+    }
+    .section-head h2 {
+      font-family: var(--condensed); font-weight: 900;
+      font-size: 32px; text-transform: uppercase; letter-spacing: -0.01em;
+    }
+    .section-head h2 .accent { color: var(--gold); }
+    .section-head .section-meta { font-size: 12px; color: var(--muted); font-weight: 600; }
+
+    /* ── STADIUM CARD GRID ──────────────────────────────────────── */
+    .stadium-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 18px;
+    }
+
+    .stadium-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.25s, border-color 0.2s, box-shadow 0.25s;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      text-decoration: none; color: inherit;
+    }
+    .stadium-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(245,197,24,0.4);
+      box-shadow: 0 18px 44px rgba(0,0,0,0.55), 0 0 40px rgba(245,197,24,0.12);
+    }
+
+    .stadium-rank {
+      position: absolute; top: 12px; left: 12px;
+      width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%; z-index: 5;
+      background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dim) 100%);
+      color: var(--black);
+      font-family: var(--condensed); font-weight: 900; font-size: 18px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4), 0 0 16px rgba(245,197,24,0.3);
+    }
+    .stadium-rank--top3 {
+      background: linear-gradient(180deg, #FFD700 0%, #C9A012 100%);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 0 24px rgba(245,197,24,0.5);
+    }
+
+    .stadium-photo-wrap {
+      position: relative;
+      width: 100%; aspect-ratio: 16/10;
+      overflow: hidden; background: #0a0a0a;
+    }
+    .stadium-photo {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.5s;
+    }
+    .stadium-card:hover .stadium-photo { transform: scale(1.04); }
+    .stadium-photo-placeholder {
+      width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+      color: var(--muted);
+      font-family: var(--condensed); font-weight: 900; font-size: 36px;
+      letter-spacing: 0.04em;
+    }
+    .stadium-photo-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.85) 100%);
+      pointer-events: none;
+    }
+
+    .stadium-info { padding: 16px 18px 18px; }
+    .stadium-name {
+      font-family: var(--condensed); font-weight: 900;
+      font-size: 19px; line-height: 1.15;
+      margin-bottom: 4px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .stadium-loc {
+      font-size: 12px; color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase; font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .stadium-loc .state-pill {
+      display: inline-block;
+      background: rgba(245,197,24,0.12);
+      color: var(--gold);
+      padding: 1px 6px; border-radius: 3px;
+      font-size: 10px; font-weight: 800; margin-left: 4px;
+    }
+
+    .stadium-pulse {
+      display: flex; align-items: center; gap: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .stadium-pulse-bar {
+      flex: 1; height: 8px;
+      background: #0d0d0d;
+      border: 1px solid #1f1f1f;
+      border-radius: 99px; overflow: hidden;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+    }
+    .stadium-pulse-fill {
+      height: 100%;
+      background: linear-gradient(90deg,
+        #10b981 0%, #f5c518 55%, #f97316 80%, #ef4444 100%);
+    }
+    .stadium-pulse-score {
+      font-family: var(--condensed); font-weight: 900;
+      font-size: 17px; min-width: 36px; text-align: right;
+      letter-spacing: -0.01em;
+    }
+    .stadium-no-rating {
+      flex: 1; padding: 6px 0;
+      font-family: var(--condensed); font-weight: 800;
+      font-size: 12px; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted);
+      text-align: center;
+    }
+    .stadium-no-rating .be-first {
+      color: var(--gold); margin-left: 6px;
+    }
+
+    .stadium-meta-row {
+      display: flex; gap: 16px; font-size: 11px; color: var(--muted);
+      margin-top: 8px; letter-spacing: 0.04em;
+    }
+    .stadium-meta-row span strong { color: var(--white); margin-left: 4px; font-weight: 700; }
+
+    /* ── FILTERS ─────────────────────────────────────────────── */
+    .filter-row {
+      display: flex; gap: 12px; flex-wrap: wrap;
+      margin-bottom: 24px; align-items: center;
+    }
+    .filter-input, .filter-select {
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--white); border-radius: 6px;
+      padding: 10px 14px; font-family: var(--body);
+      font-size: 14px; min-width: 200px;
+      transition: border-color 0.2s;
+    }
+    .filter-input:focus, .filter-select:focus {
+      outline: none; border-color: var(--gold);
+    }
+    .filter-input::placeholder { color: #555; }
+
+    /* ── SUBMIT TAB PLACEHOLDER ──────────────────────────────── */
+    .submit-placeholder {
+      max-width: 600px; margin: 0 auto;
+      padding: 60px 40px; text-align: center;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+    .submit-placeholder h3 {
+      font-family: var(--condensed); font-weight: 900;
+      font-size: 30px; text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .submit-placeholder p { color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
+    .submit-placeholder .coming-soon {
+      display: inline-block;
+      padding: 8px 16px;
+      background: rgba(245,197,24,0.1);
+      border: 1px solid rgba(245,197,24,0.3);
+      color: var(--gold);
+      font-family: var(--condensed); font-weight: 800;
+      font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase;
+      border-radius: 4px;
+    }
+
+    /* ── LOADING SKELETON ────────────────────────────────────── */
+    .skeleton-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 18px;
+    }
+    .skeleton-card {
+      aspect-ratio: 16/22;
+      background: linear-gradient(110deg, var(--surface) 8%, var(--surface2) 18%, var(--surface) 33%);
+      background-size: 200% 100%;
+      border-radius: 12px;
+      animation: shimmer 1.4s linear infinite;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    .empty-state {
+      padding: 60px 20px; text-align: center;
+      color: var(--muted); font-size: 15px;
+    }
+
+    /* ── RESPONSIVE ──────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .pulse-hero { padding: 60px 20px 36px; }
+      .pulse-body { padding: 32px 20px 60px; }
+      .tab-bar { padding: 24px 12px 0; overflow-x: auto; flex-wrap: nowrap; justify-content: flex-start; }
+      .tab-btn { padding: 12px 14px; font-size: 14px; flex-shrink: 0; }
+      .stadium-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+      .pulse-meter { padding: 22px 22px 18px; }
+      .pulse-meter-score .num { font-size: 64px; }
+    }
+    @media (max-width: 600px) {
+      .pulse-hero { padding: 48px 16px 28px; }
+      .stadium-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+      .stadium-info { padding: 12px 14px 14px; }
+      .stadium-name { font-size: 16px; }
+      .pulse-meter-score .num { font-size: 56px; }
+      .filter-input, .filter-select { min-width: 0; flex: 1; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo"><img src="logo-cover.svg" alt="4th &amp; Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="totw.html">Team of the Week</a></li>
+      <li><a href="wardle.html">4th &amp; Wardle</a></li>
+      <li><a href="hsblitz.html">HS Blitz<span class="nav-beta">Beta</span></a></li>
+      <li><a href="dripordrown.html">Drip or Drown</a></li>
+      <li><a href="pulse.html" class="active">Friday Night Pulse<span class="nav-beta">New</span></a></li>
+      <li><a href="merch.html">Merch</a></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+  </nav>
+
+  <section class="pulse-hero">
+    <div class="pulse-hero-bg"></div>
+    <div class="pulse-eyebrow">A 4th &amp; Ward Original</div>
+    <h1 class="pulse-title">Friday Night <span class="accent">Pulse</span></h1>
+    <p class="pulse-subtitle">
+      Rate the atmosphere, energy, and home-field advantage of every high school football stadium in the country.
+      The crowd decides. The pulse goes up.
+    </p>
+    <!-- Hero gauge (EA Sports format, 4th & Ward branding) -->
+    <div class="pulse-gauge empty" id="hero-gauge">
+      <div class="pulse-gauge-frame">
+        <div class="pulse-gauge-bars">
+          <div class="pulse-bar" data-step="1"></div>
+          <div class="pulse-bar" data-step="2"></div>
+          <div class="pulse-bar" data-step="3"></div>
+          <div class="pulse-bar" data-step="4"></div>
+          <div class="pulse-bar" data-step="5"></div>
+          <div class="pulse-bar" data-step="6"></div>
+          <div class="pulse-bar" data-step="7"></div>
+          <div class="pulse-bar" data-step="8"></div>
+          <div class="pulse-bar" data-step="9"></div>
+          <div class="pulse-bar" data-step="10"></div>
+        </div>
+      </div>
+      <div class="pulse-gauge-labels">
+        <div class="pulse-gauge-title">Friday Night Pulse</div>
+        <div class="pulse-gauge-rank">
+          <span class="pulse-gauge-rank-label">Score</span>
+          <span class="pulse-gauge-rank-divider"></span>
+          <span class="pulse-gauge-rank-value" id="hero-gauge-score">—</span>
+        </div>
+      </div>
+      <div class="pulse-gauge-meta" id="hero-gauge-meta">
+        Awaiting first ratings <span class="dot">•</span> Be the first to rate
+      </div>
+    </div>
+  </section>
+
+  <div class="tab-bar" role="tablist">
+    <button class="tab-btn active" data-tab="top">National Top 25</button>
+    <button class="tab-btn" data-tab="state">By State</button>
+    <button class="tab-btn" data-tab="all">All Stadiums</button>
+    <button class="tab-btn" data-tab="submit">Submit</button>
+  </div>
+
+  <main class="pulse-body">
+    <!-- TOP 25 TAB -->
+    <div id="tab-top">
+      <div class="section-head">
+        <h2>National <span class="accent">Top 25</span></h2>
+        <span class="section-meta" id="top-meta">Loading…</span>
+      </div>
+      <div id="top-grid">
+        <div class="skeleton-grid">
+          <div class="skeleton-card"></div><div class="skeleton-card"></div>
+          <div class="skeleton-card"></div><div class="skeleton-card"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATE TAB -->
+    <div id="tab-state" style="display:none;">
+      <div class="section-head">
+        <h2><span id="state-h2-name" class="accent">Texas</span> Top 25</h2>
+        <span class="section-meta" id="state-meta"></span>
+      </div>
+      <div class="filter-row">
+        <select class="filter-select" id="state-picker">
+          <option value="TX">Texas</option>
+          <option value="PA">Pennsylvania</option>
+          <option value="GA">Georgia</option>
+          <option value="AL">Alabama</option>
+          <option value="OK">Oklahoma</option>
+          <option value="TN">Tennessee</option>
+          <option value="LA">Louisiana</option>
+          <option value="AR">Arkansas</option>
+          <option value="WV">West Virginia</option>
+          <option value="NM">New Mexico</option>
+          <option value="CA">California</option>
+        </select>
+      </div>
+      <div id="state-grid"></div>
+    </div>
+
+    <!-- ALL STADIUMS TAB -->
+    <div id="tab-all" style="display:none;">
+      <div class="section-head">
+        <h2>All <span class="accent">Stadiums</span></h2>
+        <span class="section-meta" id="all-meta"></span>
+      </div>
+      <div class="filter-row">
+        <input class="filter-input" id="all-search" type="search" placeholder="Search stadium, school, or city…">
+        <select class="filter-select" id="all-state-filter">
+          <option value="">All states</option>
+          <option value="TX">Texas</option>
+          <option value="PA">Pennsylvania</option>
+          <option value="GA">Georgia</option>
+          <option value="AL">Alabama</option>
+          <option value="OK">Oklahoma</option>
+          <option value="TN">Tennessee</option>
+          <option value="LA">Louisiana</option>
+          <option value="AR">Arkansas</option>
+          <option value="WV">West Virginia</option>
+          <option value="NM">New Mexico</option>
+          <option value="CA">California</option>
+        </select>
+        <select class="filter-select" id="all-sort">
+          <option value="capacity">Sort: Capacity (largest)</option>
+          <option value="name">Sort: Name (A-Z)</option>
+          <option value="recent">Sort: Recently rated</option>
+        </select>
+      </div>
+      <div id="all-grid">
+        <div class="skeleton-grid">
+          <div class="skeleton-card"></div><div class="skeleton-card"></div>
+          <div class="skeleton-card"></div><div class="skeleton-card"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBMIT TAB -->
+    <div id="tab-submit" style="display:none;">
+      <div class="submit-placeholder">
+        <span class="coming-soon">Coming next</span>
+        <h3 style="margin-top:18px;">Submit Your Stadium</h3>
+        <p>
+          Don't see your school's stadium yet? You'll soon be able to add it,
+          upload a photo, and become the first to rate it.
+        </p>
+        <p style="font-size:13px;">
+          For now, every stadium in <strong>Texas, Pennsylvania, Georgia, Alabama, Oklahoma, Tennessee, Louisiana, Arkansas, West Virginia, New Mexico,</strong> and <strong>California</strong> is already in the system. Browse and rate any of them.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.png" alt="4th &amp; Ward"></div>
+    <ul class="footer-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="merch.html">Merch</a></li>
+    </ul>
+    <p class="footer-copy">&copy; 2026 4th &amp; Ward Podcast. All rights reserved.</p>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, collection, query, where, orderBy, limit, getDocs }
+      from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyB5EJMsZT4WsfJjaFQ-srIdNwAINr7Q2yY",
+      authDomain: "th-and-ward-b8f1c.firebaseapp.com",
+      projectId: "th-and-ward-b8f1c",
+      storageBucket: "th-and-ward-b8f1c.firebasestorage.app",
+      messagingSenderId: "499057353962",
+      appId: "1:499057353962:web:18f42748c242a6e0be2393"
+    };
+
+    const app = initializeApp(FIREBASE_CONFIG);
+    const db = getFirestore(app);
+
+    // ── visitor id ─────────────────────────────────────────────
+    let visitorId = localStorage.getItem('4ward_vid');
+    if (!visitorId) {
+      visitorId = 'v_' + Math.random().toString(36).slice(2) + Date.now();
+      localStorage.setItem('4ward_vid', visitorId);
+    }
+
+    // ── state ──────────────────────────────────────────────────
+    let topStadiums = [];      // National top 25
+    let stateStadiums = [];    // Currently selected state's top 25
+    let allStadiums = [];      // For All tab — fetched lazily
+    let allFetched = false;
+
+    const STATE_NAMES = {
+      TX: 'Texas', PA: 'Pennsylvania', GA: 'Georgia', AL: 'Alabama',
+      OK: 'Oklahoma', TN: 'Tennessee', LA: 'Louisiana', AR: 'Arkansas',
+      WV: 'West Virginia', NM: 'New Mexico', CA: 'California',
+    };
+
+    // ── helpers ────────────────────────────────────────────────
+    function escapeHtml(s) {
+      return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function getStadiumInitials(name) {
+      const cleaned = String(name || '').replace(/Stadium|Field|Memorial/gi, '').trim();
+      const parts = cleaned.split(/\s+/).filter(w => w.length > 1);
+      return parts.slice(0, 2).map(w => w[0].toUpperCase()).join('') || '?';
+    }
+
+    function fmtCapacity(n) {
+      if (!n) return '—';
+      if (n >= 10000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+      return n.toLocaleString();
+    }
+
+    // ── stadium card rendering ─────────────────────────────────
+    function renderCard(s, rank) {
+      const photo = (s.photos && s.photos[0]) || null;
+      const pulse = (s.ratingsCount && s.ratingsCount > 0) ? s.bayesianScore : null;
+      const pulsePct = pulse != null ? Math.max(0, Math.min(100, pulse * 10)) : 0;
+
+      const photoHtml = photo
+        ? `<img class="stadium-photo" src="${escapeHtml(photo.url)}" alt="${escapeHtml(s.stadiumName)}" loading="lazy" onerror="this.parentNode.innerHTML='<div class=&quot;stadium-photo-placeholder&quot;>${getStadiumInitials(s.stadiumName)}</div>';">`
+        : `<div class="stadium-photo-placeholder">${getStadiumInitials(s.stadiumName)}</div>`;
+
+      const pulseHtml = pulse != null
+        ? `<div class="stadium-pulse-bar"><div class="stadium-pulse-fill" style="width:${pulsePct}%"></div></div>
+           <div class="stadium-pulse-score">${pulse.toFixed(1)}</div>`
+        : `<div class="stadium-no-rating">No ratings yet<span class="be-first">→ Be the first</span></div>`;
+
+      const rankClass = rank && rank <= 3 ? 'stadium-rank stadium-rank--top3' : 'stadium-rank';
+
+      return `
+        <a class="stadium-card" href="pulse-stadium.html?slug=${encodeURIComponent(s.slug)}">
+          ${rank ? `<div class="${rankClass}">${rank}</div>` : ''}
+          <div class="stadium-photo-wrap">
+            ${photoHtml}
+            <div class="stadium-photo-overlay"></div>
+          </div>
+          <div class="stadium-info">
+            <div class="stadium-name">${escapeHtml(s.stadiumName)}</div>
+            <div class="stadium-loc">
+              ${escapeHtml(s.city || 'Unknown')}<span class="state-pill">${escapeHtml(s.state)}</span>
+            </div>
+            <div class="stadium-pulse">${pulseHtml}</div>
+            <div class="stadium-meta-row">
+              <span>Cap<strong>${fmtCapacity(s.capacity)}</strong></span>
+              ${s.yearOpened ? `<span>Built<strong>${s.yearOpened}</strong></span>` : ''}
+              ${s.hasTrack === false ? `<span style="color:var(--gold);">No-track</span>` : ''}
+            </div>
+          </div>
+        </a>
+      `;
+    }
+
+    function renderGrid(container, stadiums, withRank = false) {
+      if (!stadiums.length) {
+        container.innerHTML = `<div class="empty-state">No stadiums match those filters.</div>`;
+        return;
+      }
+      container.innerHTML = `<div class="stadium-grid">${stadiums.map((s, i) => renderCard(s, withRank ? i + 1 : null)).join('')}</div>`;
+    }
+
+    // ── data loading ───────────────────────────────────────────
+    async function loadTop25() {
+      // Day 1: orderBy capacity. Once ratings flow, switch to bayesianScore.
+      const q = query(collection(db, 'stadiums'), orderBy('capacity', 'desc'), limit(25));
+      const snap = await getDocs(q);
+      const out = [];
+      snap.forEach(d => out.push(d.data()));
+      topStadiums = out;
+      renderGrid(document.getElementById('top-grid'), topStadiums, true);
+      document.getElementById('top-meta').textContent =
+        `${topStadiums.length} stadiums • Sorted by capacity until ratings begin`;
+    }
+
+    async function loadStateTop25(stateCode) {
+      const stateGrid = document.getElementById('state-grid');
+      stateGrid.innerHTML = `<div class="skeleton-grid">${'<div class="skeleton-card"></div>'.repeat(4)}</div>`;
+      const q = query(
+        collection(db, 'stadiums'),
+        where('state', '==', stateCode),
+        orderBy('capacity', 'desc'),
+        limit(25),
+      );
+      try {
+        const snap = await getDocs(q);
+        const out = [];
+        snap.forEach(d => out.push(d.data()));
+        stateStadiums = out;
+        renderGrid(stateGrid, stateStadiums, true);
+        document.getElementById('state-h2-name').textContent = STATE_NAMES[stateCode] || stateCode;
+        document.getElementById('state-meta').textContent = `${out.length} stadiums`;
+      } catch (e) {
+        // Likely missing composite index — Firebase prints a link in the console
+        console.error('state query failed', e);
+        stateGrid.innerHTML = `<div class="empty-state">Loading… first run may need a Firestore index. Check console.</div>`;
+      }
+    }
+
+    async function loadAllStadiums() {
+      if (allFetched) return;
+      // Fetch a generous chunk for client-side filter/sort. 500 is plenty for MVP.
+      const q = query(collection(db, 'stadiums'), orderBy('capacity', 'desc'), limit(500));
+      const snap = await getDocs(q);
+      const out = [];
+      snap.forEach(d => out.push(d.data()));
+      allStadiums = out;
+      allFetched = true;
+      applyAllFilters();
+    }
+
+    function applyAllFilters() {
+      const q = (document.getElementById('all-search').value || '').toLowerCase().trim();
+      const stateFilter = document.getElementById('all-state-filter').value;
+      const sortBy = document.getElementById('all-sort').value;
+
+      let list = allStadiums.slice();
+      if (stateFilter) list = list.filter(s => s.state === stateFilter);
+      if (q) {
+        list = list.filter(s =>
+          (s.stadiumName || '').toLowerCase().includes(q) ||
+          (s.city || '').toLowerCase().includes(q) ||
+          (s.homeTeams || []).some(t => t.toLowerCase().includes(q))
+        );
+      }
+      if (sortBy === 'name') list.sort((a, b) => a.stadiumName.localeCompare(b.stadiumName));
+      else if (sortBy === 'recent') list.sort((a, b) => (b.lastRatedAt || 0) - (a.lastRatedAt || 0));
+      // 'capacity' = default order (already sorted)
+
+      renderGrid(document.getElementById('all-grid'), list, false);
+      document.getElementById('all-meta').textContent = `${list.length} of ${allStadiums.length}`;
+    }
+
+    // ── tab switching ──────────────────────────────────────────
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.tab === name));
+      ['top', 'state', 'all', 'submit'].forEach(t => {
+        document.getElementById('tab-' + t).style.display = t === name ? '' : 'none';
+      });
+      const params = new URLSearchParams(window.location.search);
+      params.set('tab', name);
+      window.history.replaceState({}, '', `?${params.toString()}`);
+      if (name === 'state' && stateStadiums.length === 0) loadStateTop25('TX');
+      if (name === 'all') loadAllStadiums();
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    // ── state picker ───────────────────────────────────────────
+    document.getElementById('state-picker').addEventListener('change', (e) => {
+      loadStateTop25(e.target.value);
+    });
+
+    // ── all-tab filters ────────────────────────────────────────
+    document.getElementById('all-search').addEventListener('input', applyAllFilters);
+    document.getElementById('all-state-filter').addEventListener('change', applyAllFilters);
+    document.getElementById('all-sort').addEventListener('change', applyAllFilters);
+
+    // ── pulse gauge: light bars + apply shake based on score ───
+    // score: number 0–10, or null for empty state
+    function setGaugeScore(gauge, score) {
+      const bars = gauge.querySelectorAll('.pulse-bar');
+      const litCount = score == null ? 0 : Math.max(0, Math.min(10, Math.round(score)));
+      bars.forEach((bar, i) => bar.classList.toggle('lit', i < litCount));
+      gauge.classList.remove('shake-low', 'shake-mid', 'shake-high', 'empty');
+      const valueEl = gauge.querySelector('.pulse-gauge-rank-value');
+      if (score == null) {
+        gauge.classList.add('empty');
+        if (valueEl) valueEl.textContent = '—';
+        return;
+      }
+      if (valueEl) valueEl.textContent = score.toFixed(1);
+      // Shake escalates with crowd noise — subtle to violent
+      if (score >= 9)        gauge.classList.add('shake-high');
+      else if (score >= 7.5) gauge.classList.add('shake-mid');
+      else if (score >= 6)   gauge.classList.add('shake-low');
+    }
+
+    // ── hero gauge demo animation ──────────────────────────────
+    function animateHeroMeter() {
+      // Cycle a range of sample scores so the shake/color escalation is visible
+      const samples = [9.4, 7.8, 6.1, 4.3, 8.7];
+      let i = 0;
+      const gauge = document.getElementById('hero-gauge');
+      const meta  = document.getElementById('hero-gauge-meta');
+
+      meta.innerHTML = 'Sample preview <span class="dot">•</span> Real ratings begin at launch';
+
+      function tick() {
+        setGaugeScore(gauge, samples[i % samples.length]);
+        i++;
+      }
+      tick();
+      setInterval(tick, 2800);
+    }
+
+    // ── init ───────────────────────────────────────────────────
+    (async function init() {
+      const params = new URLSearchParams(window.location.search);
+      const initialTab = params.get('tab') || 'top';
+      if (initialTab !== 'top') switchTab(initialTab);
+
+      animateHeroMeter();
+      await loadTop25();
+    })();
+  </script>
+</body>
+</html>
