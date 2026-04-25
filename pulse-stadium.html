@@ -268,63 +268,108 @@
       padding: 48px 48px 32px;
       max-width: 980px; margin: 0 auto;
     }
+    /* Breakdown stat-card grid — readout, NOT a rating UI */
     .pulse-breakdown {
-      max-width: 720px; margin: 36px auto 0;
-      display: grid; gap: 12px;
+      max-width: 760px; margin: 36px auto 0;
     }
-    .breakdown-row {
-      display: grid;
-      grid-template-columns: 220px 1fr 56px;
-      align-items: center; gap: 16px;
-      padding: 10px 16px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      transition: border-color 0.2s, background 0.2s;
-    }
-    .breakdown-row:hover {
-      border-color: rgba(245,197,24,0.25);
-      background: var(--surface2);
-    }
-    .breakdown-label {
+    .pulse-breakdown-head {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 14px;
       font-family: var(--condensed); font-weight: 800;
-      font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--white);
+      font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
     }
-    .breakdown-bar {
-      position: relative; height: 8px;
-      background: #0d0d0d;
-      border: 1px solid #1f1f1f;
-      border-radius: 99px; overflow: hidden;
+    .pulse-breakdown-head .label { color: var(--gold); }
+    .pulse-breakdown-head .meta  { color: var(--muted); font-size: 10px; }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
     }
-    .breakdown-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #22d97e 0%, #ffd400 50%, #ff8c1a 75%, #ff3b3b 100%);
-      transition: width 1s cubic-bezier(0.65, 0, 0.35, 1);
-      box-shadow: 0 0 12px rgba(245,197,24,0.25);
+    .stat-card-bd {
+      position: relative;
+      padding: 14px 12px 16px;
+      background: linear-gradient(180deg, rgba(20,20,20,0.92) 0%, rgba(10,10,10,0.92) 100%);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      text-align: center;
+      overflow: hidden;
     }
-    .breakdown-score {
+    /* tier-color top accent bar */
+    .stat-card-bd::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--tier-color, #2a2a2a);
+      box-shadow: 0 0 8px var(--tier-glow, transparent);
+    }
+    .bd-label {
+      font-family: var(--condensed); font-weight: 800;
+      font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+      min-height: 26px;
+      display: flex; align-items: center; justify-content: center;
+      line-height: 1.1;
+    }
+    .bd-value {
       font-family: var(--condensed); font-weight: 900;
-      font-size: 18px; text-align: right;
-      letter-spacing: -0.01em;
+      font-size: 36px; line-height: 1;
+      letter-spacing: -0.02em;
+      color: var(--tier-color, var(--white));
+      text-shadow: 0 0 16px var(--tier-glow, transparent);
     }
-    .breakdown-score.empty { color: #444; }
+    .bd-out-of {
+      display: block; margin-top: 2px;
+      font-size: 10px; color: var(--muted); font-weight: 600;
+      letter-spacing: 0.12em;
+    }
+    @media (max-width: 700px) {
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+      .bd-value { font-size: 30px; }
+    }
 
     .rate-cta-wrap {
-      text-align: center; padding: 36px 0;
+      display: flex; gap: 14px; justify-content: center; align-items: center;
+      padding: 36px 0; flex-wrap: wrap;
     }
     .rate-cta {
       display: inline-flex; align-items: center; gap: 10px;
       background: linear-gradient(180deg, #FFE066 0%, var(--gold) 50%, #D9AC10 100%);
-      color: #0a0a0a; padding: 18px 40px;
+      color: #0a0a0a; padding: 18px 36px;
       border: 1px solid rgba(255,215,64,0.5); border-radius: 4px;
       font-family: var(--condensed); font-weight: 900;
-      font-size: 16px; letter-spacing: 0.14em; text-transform: uppercase;
+      font-size: 15px; letter-spacing: 0.14em; text-transform: uppercase;
       cursor: pointer; text-decoration: none;
       box-shadow: 0 6px 24px rgba(245,197,24,0.32), inset 0 1px 0 rgba(255,255,255,0.4);
       transition: transform 0.15s, box-shadow 0.2s;
     }
     .rate-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(245,197,24,0.5); }
+    /* Share CTA — sibling of rate, styled as ghost so rate stays primary */
+    .share-cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: rgba(0,0,0,0.4);
+      color: var(--white); padding: 18px 30px;
+      border: 1px solid rgba(245,197,24,0.35); border-radius: 4px;
+      font-family: var(--condensed); font-weight: 800;
+      font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase;
+      cursor: pointer; text-decoration: none;
+      backdrop-filter: blur(6px);
+      transition: transform 0.15s, border-color 0.2s, color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    .share-cta:hover {
+      transform: translateY(-2px);
+      border-color: var(--gold); color: var(--gold);
+      background: rgba(245,197,24,0.06);
+      box-shadow: 0 6px 20px rgba(245,197,24,0.18);
+    }
+    .share-cta.copied {
+      background: #22d97e; color: #0a0a0a;
+      border-color: #22d97e;
+    }
+    .share-cta svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .share-tagline {
+      width: 100%; text-align: center; font-size: 12px; color: var(--muted);
+      letter-spacing: 0.04em; margin-top: -8px;
+    }
+    .share-tagline strong { color: var(--gold); }
 
     /* ── RATE FORM ────────────────────────────────────────────── */
     .rate-section {
@@ -703,7 +748,18 @@
       <div class="pulse-breakdown" id="breakdown"></div>
 
       <div class="rate-cta-wrap">
-        <a class="rate-cta" href="#rate-section" id="rate-cta">Rate this stadium →</a>
+        <a class="rate-cta" href="#rate-section" id="rate-cta">⚡ Rate this stadium</a>
+        <button type="button" class="share-cta" id="share-btn" aria-label="Share this stadium">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/>
+            <line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/>
+          </svg>
+          <span class="share-cta-label">Share</span>
+        </button>
+        <div class="share-tagline">Boost your school's pulse — <strong>share with your fans</strong></div>
       </div>
     </section>
 
@@ -982,18 +1038,34 @@
         meta.innerHTML = `Based on <strong>${n}</strong> rating${n === 1 ? '' : 's'} <span class="dot">•</span> ${fmtTime(Math.max(...ratings.map(r => r.submittedAt)))}`;
       }
 
-      // 8-category breakdown
-      const bdHtml = CATEGORIES.map(c => {
+      // Category breakdown — only shown when ratings exist; styled as a stat
+      // readout (different visual language than the rate-form sliders below)
+      const bdEl = document.getElementById('breakdown');
+      if (n === 0) {
+        bdEl.style.display = 'none';
+        bdEl.innerHTML = '';
+        return;
+      }
+      bdEl.style.display = '';
+      const cards = CATEGORIES.map(c => {
         const vals = ratings.map(r => r.scores[c.key]).filter(v => typeof v === 'number');
-        const avg = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
-        const pct = avg != null ? Math.max(0, Math.min(100, avg * 10)) : 0;
-        return `<div class="breakdown-row">
-                  <span class="breakdown-label">${escapeHtml(c.label)}</span>
-                  <div class="breakdown-bar"><div class="breakdown-fill" style="width:${pct}%"></div></div>
-                  <span class="breakdown-score ${avg == null ? 'empty' : ''}">${avg == null ? '—' : avg.toFixed(1)}</span>
+        const avg = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+        let color, glow;
+        if (avg >= 8)      { color = '#ff3b3b'; glow = 'rgba(255,59,59,0.55)'; }
+        else if (avg >= 6) { color = '#ff8c1a'; glow = 'rgba(255,140,26,0.5)'; }
+        else if (avg >= 4) { color = '#ffd400'; glow = 'rgba(255,212,0,0.45)'; }
+        else                { color = '#22d97e'; glow = 'rgba(34,217,126,0.45)'; }
+        return `<div class="stat-card-bd" style="--tier-color:${color};--tier-glow:${glow};">
+                  <div class="bd-label">${escapeHtml(c.label)}</div>
+                  <div class="bd-value">${avg.toFixed(1)}</div>
+                  <span class="bd-out-of">/ 10</span>
                 </div>`;
       }).join('');
-      document.getElementById('breakdown').innerHTML = bdHtml;
+      bdEl.innerHTML = `<div class="pulse-breakdown-head">
+                          <span class="label">Category Breakdown</span>
+                          <span class="meta">avg of ${ratings.length} rating${ratings.length === 1 ? '' : 's'}</span>
+                        </div>
+                        <div class="stat-grid">${cards}</div>`;
     }
 
     // ── render rate form sliders (EA-style LED bar gauges) ────
@@ -1296,6 +1368,42 @@
     });
 
     document.getElementById('rate-form').addEventListener('submit', handleSubmit);
+
+    // ── share button: native share sheet, clipboard fallback ──
+    document.getElementById('share-btn').addEventListener('click', async () => {
+      const url = window.location.href;
+      const teams = (stadium?.homeTeams || []).filter(Boolean).slice(0, 2).join(' & ');
+      const title = `${stadium?.stadiumName || 'Friday Night Pulse'} — Friday Night Pulse`;
+      const text = teams
+        ? `Rate ${stadium.stadiumName} (home of the ${teams}) on Friday Night Pulse — let's get the pulse up. ⚡`
+        : `Rate ${stadium?.stadiumName || 'this stadium'} on Friday Night Pulse — let's get the pulse up. ⚡`;
+
+      const btn = document.getElementById('share-btn');
+      const labelEl = btn.querySelector('.share-cta-label');
+
+      if (navigator.share) {
+        try {
+          await navigator.share({ title, text, url });
+        } catch (err) {
+          if (err.name !== 'AbortError') console.warn('share failed', err);
+        }
+        return;
+      }
+
+      // Desktop fallback — copy link to clipboard
+      try {
+        await navigator.clipboard.writeText(url);
+        btn.classList.add('copied');
+        labelEl.textContent = '✓ Link Copied';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          labelEl.textContent = 'Share';
+        }, 2200);
+      } catch (err) {
+        // Last-ditch fallback for browsers without clipboard API
+        prompt('Copy this link to share:', url);
+      }
+    });
 
     // ── init ──────────────────────────────────────────────────
     (async function init() {
