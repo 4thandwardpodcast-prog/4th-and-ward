@@ -391,28 +391,148 @@
     }
     .filter-input::placeholder { color: #555; }
 
-    /* ── SUBMIT TAB PLACEHOLDER ──────────────────────────────── */
-    .submit-placeholder {
-      max-width: 600px; margin: 0 auto;
-      padding: 60px 40px; text-align: center;
+    /* ── SUBMIT TAB — fan-submitted stadiums ───────────────── */
+    .submit-form-card {
+      max-width: 720px; margin: 0 auto;
+      padding: 40px;
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 14px;
     }
-    .submit-placeholder h3 {
+    .submit-form-card h2 {
       font-family: var(--condensed); font-weight: 900;
-      font-size: 30px; text-transform: uppercase;
-      margin-bottom: 12px;
+      font-size: 36px; text-transform: uppercase; line-height: 1;
+      margin-bottom: 8px;
     }
-    .submit-placeholder p { color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
-    .submit-placeholder .coming-soon {
-      display: inline-block;
-      padding: 8px 16px;
-      background: rgba(245,197,24,0.1);
-      border: 1px solid rgba(245,197,24,0.3);
-      color: var(--gold);
+    .submit-form-card h2 .accent { color: var(--gold); }
+    .submit-form-intro { color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
+    .submit-guidelines {
+      padding: 14px 18px; margin-bottom: 24px;
+      background: rgba(245,197,24,0.06);
+      border: 1px solid rgba(245,197,24,0.25);
+      border-radius: 8px;
+      font-size: 13px; line-height: 1.55; color: var(--white);
+    }
+    .submit-guidelines strong { color: var(--gold); }
+    .submit-guidelines ul { list-style: none; padding-left: 0; margin-top: 6px; }
+    .submit-guidelines li { padding-left: 18px; position: relative; padding-bottom: 4px; }
+    .submit-guidelines li::before {
+      content: '•'; position: absolute; left: 4px; color: var(--gold); font-weight: 700;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px 16px;
+    }
+    .form-grid > .full { grid-column: 1 / -1; }
+    .form-field { display: flex; flex-direction: column; gap: 6px; }
+    .form-field label {
       font-family: var(--condensed); font-weight: 800;
-      font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase;
-      border-radius: 4px;
+      font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--white);
+    }
+    .form-field label .req { color: var(--gold); }
+    .form-field label .hint { font-weight: 600; color: var(--muted); margin-left: 6px; letter-spacing: 0.04em; text-transform: none; font-size: 11px; }
+    .form-field input, .form-field select, .form-field textarea {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--white); padding: 11px 14px;
+      border-radius: 6px; font-family: var(--body); font-size: 14px;
+      transition: border-color 0.2s;
+    }
+    .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+      outline: none; border-color: var(--gold);
+    }
+    .form-field textarea { resize: vertical; min-height: 80px; }
+    .form-field .field-meta {
+      font-size: 11px; color: var(--muted); margin-top: 2px;
+      display: flex; justify-content: space-between;
+    }
+
+    .photo-drop {
+      grid-column: 1 / -1;
+      padding: 36px 20px; text-align: center;
+      background: var(--surface2);
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+    .photo-drop:hover { border-color: var(--gold); background: rgba(245,197,24,0.04); }
+    .photo-drop input { display: none; }
+    .photo-drop .plus { font-size: 28px; line-height: 1; color: var(--muted); margin-bottom: 6px; }
+    .photo-drop .text {
+      font-family: var(--condensed); font-weight: 800;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--white); font-size: 14px;
+    }
+    .photo-drop .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .photo-preview {
+      grid-column: 1 / -1;
+      position: relative;
+      max-height: 360px; overflow: hidden;
+      border-radius: 10px; background: #000;
+    }
+    .photo-preview img { width: 100%; height: 100%; max-height: 360px; object-fit: contain; display: block; }
+    .photo-preview .clear {
+      position: absolute; top: 10px; right: 10px;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(0,0,0,0.75);
+      border: 1px solid var(--border); color: var(--white);
+      cursor: pointer; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .photo-preview .clear:hover { background: #e05555; border-color: #e05555; }
+
+    .form-checkbox {
+      grid-column: 1 / -1;
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 12px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px; line-height: 1.5;
+    }
+    .form-checkbox input { accent-color: var(--gold); width: 16px; height: 16px; margin-top: 3px; flex-shrink: 0; }
+    .form-checkbox span strong { color: var(--gold); }
+
+    .submit-submit-btn {
+      grid-column: 1 / -1;
+      background: linear-gradient(180deg, #FFE066 0%, var(--gold) 50%, #D9AC10 100%);
+      color: #0a0a0a; padding: 16px;
+      border: 1px solid rgba(255,215,64,0.5); border-radius: 6px;
+      font-family: var(--condensed); font-weight: 900;
+      font-size: 16px; letter-spacing: 0.14em; text-transform: uppercase;
+      cursor: pointer; margin-top: 8px;
+      transition: transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 6px 18px rgba(245,197,24,0.3);
+    }
+    .submit-submit-btn:hover:not(:disabled) { transform: translateY(-2px); }
+    .submit-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .submit-submit-btn.success { background: #22d97e; }
+    .submit-progress {
+      grid-column: 1 / -1;
+      height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden;
+      display: none; margin-top: 6px;
+    }
+    .submit-progress.show { display: block; }
+    .submit-progress-bar {
+      height: 100%; background: var(--gold); width: 0%;
+      transition: width 0.3s;
+    }
+    .submit-error {
+      grid-column: 1 / -1;
+      display: none;
+      padding: 10px 14px;
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.4);
+      color: #fca5a5; border-radius: 6px; font-size: 13px;
+    }
+    .submit-success {
+      grid-column: 1 / -1;
+      display: none;
+      padding: 14px 18px;
+      background: rgba(34,217,126,0.10);
+      border: 1px solid rgba(34,217,126,0.4);
+      color: #6dd9a3; border-radius: 6px; font-size: 14px; line-height: 1.5;
     }
 
     /* ── LOADING SKELETON ────────────────────────────────────── */
@@ -594,16 +714,129 @@
 
     <!-- SUBMIT TAB -->
     <div id="tab-submit" style="display:none;">
-      <div class="submit-placeholder">
-        <span class="coming-soon">Coming next</span>
-        <h3 style="margin-top:18px;">Submit Your Stadium</h3>
-        <p>
-          Don't see your school's stadium yet? You'll soon be able to add it,
-          upload a photo, and become the first to rate it.
+      <div class="submit-form-card">
+        <h2>Submit a <span class="accent">Stadium</span></h2>
+        <p class="submit-form-intro">
+          Don't see your school's stadium yet? Add it. We already have every HS stadium in Texas, Pennsylvania, Georgia, Alabama, Oklahoma, Tennessee, Louisiana, Arkansas, West Virginia, New Mexico, and California. Anywhere else &mdash; or anything we missed &mdash; you can submit below.
         </p>
-        <p style="font-size:13px;">
-          For now, every stadium in <strong>Texas, Pennsylvania, Georgia, Alabama, Oklahoma, Tennessee, Louisiana, Arkansas, West Virginia, New Mexico,</strong> and <strong>California</strong> is already in the system. Browse and rate any of them.
-        </p>
+
+        <div class="submit-guidelines">
+          <strong>Quick rules</strong>
+          <ul>
+            <li>High school football stadiums only &mdash; no college, no NFL.</li>
+            <li>Photos must be yours or used with permission. <strong>No people's faces close up.</strong></li>
+            <li>An admin reviews every submission before it goes live.</li>
+          </ul>
+        </div>
+
+        <form id="submit-form" autocomplete="off">
+          <div class="form-grid">
+            <div class="form-field full">
+              <label>Stadium Name <span class="req">*</span></label>
+              <input type="text" id="sf-name" maxlength="120" required placeholder="e.g. Eagle Stadium">
+            </div>
+
+            <div class="form-field">
+              <label>City <span class="req">*</span></label>
+              <input type="text" id="sf-city" maxlength="80" required placeholder="e.g. Allen">
+            </div>
+            <div class="form-field">
+              <label>State <span class="req">*</span></label>
+              <select id="sf-state" required>
+                <option value="">— Select —</option>
+                <option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
+                <option>CA</option><option>CO</option><option>CT</option><option>DE</option>
+                <option>FL</option><option>GA</option><option>HI</option><option>ID</option>
+                <option>IL</option><option>IN</option><option>IA</option><option>KS</option>
+                <option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+                <option>MA</option><option>MI</option><option>MN</option><option>MS</option>
+                <option>MO</option><option>MT</option><option>NE</option><option>NV</option>
+                <option>NH</option><option>NJ</option><option>NM</option><option>NY</option>
+                <option>NC</option><option>ND</option><option>OH</option><option>OK</option>
+                <option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+                <option>SD</option><option>TN</option><option>TX</option><option>UT</option>
+                <option>VT</option><option>VA</option><option>WA</option><option>WV</option>
+                <option>WI</option><option>WY</option><option>DC</option>
+              </select>
+            </div>
+
+            <div class="form-field full">
+              <label>Home Team(s) <span class="hint">comma-separated</span></label>
+              <input type="text" id="sf-teams" maxlength="200" placeholder="e.g. Allen Eagles, Plano West Wolves">
+            </div>
+
+            <div class="form-field">
+              <label>Capacity <span class="hint">optional</span></label>
+              <input type="number" id="sf-capacity" min="0" max="100000" placeholder="e.g. 18000">
+            </div>
+            <div class="form-field">
+              <label>Year Opened <span class="hint">optional</span></label>
+              <input type="number" id="sf-year" min="1880" max="2026" placeholder="e.g. 2012">
+            </div>
+
+            <div class="form-field">
+              <label>Surface</label>
+              <select id="sf-surface">
+                <option value="">— Unknown —</option>
+                <option>Grass</option>
+                <option>Artificial</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Track around field?</label>
+              <select id="sf-track">
+                <option value="">— Unknown —</option>
+                <option value="false">No (no-track bonus)</option>
+                <option value="true">Yes</option>
+              </select>
+            </div>
+
+            <div class="form-field full">
+              <label>Owner / School District <span class="hint">optional</span></label>
+              <input type="text" id="sf-owner" maxlength="120" placeholder="e.g. Allen ISD">
+            </div>
+
+            <div class="form-field full">
+              <label>What makes this stadium special? <span class="hint">optional</span></label>
+              <textarea id="sf-notes" maxlength="400" placeholder="Famous traditions, big games, why fans should know about it…"></textarea>
+              <div class="field-meta"><span><span id="sf-notes-count">0</span> / 400</span></div>
+            </div>
+
+            <!-- Photo upload -->
+            <label class="photo-drop" id="sf-photo-drop">
+              <input type="file" id="sf-photo" accept="image/*">
+              <div class="plus">＋</div>
+              <div class="text">Add a photo</div>
+              <div class="hint">JPG / PNG, up to 8 MB · optional but recommended</div>
+            </label>
+            <div class="photo-preview" id="sf-photo-preview" style="display:none;">
+              <img id="sf-photo-img" alt="">
+              <button type="button" class="clear" id="sf-photo-clear" title="Remove photo">×</button>
+            </div>
+
+            <div class="form-field">
+              <label>Your Name <span class="hint">optional</span></label>
+              <input type="text" id="sf-uploader" maxlength="60" placeholder="So we can credit you (optional)">
+            </div>
+            <div class="form-field">
+              <label>Email <span class="hint">optional, never published</span></label>
+              <input type="email" id="sf-email" maxlength="120" placeholder="In case we have questions">
+            </div>
+
+            <label class="form-checkbox">
+              <input type="checkbox" id="sf-rights">
+              <span>I confirm this is a <strong>high school football</strong> stadium and any photo I'm uploading is mine or I have permission to share it.</span>
+            </label>
+
+            <div class="submit-error"   id="sf-error"></div>
+            <div class="submit-success" id="sf-success">
+              <strong>Thanks for submitting!</strong> An admin will review and add it to the catalog within 24 hours. You'll see it on the leaderboards once it's approved.
+            </div>
+            <div class="submit-progress" id="sf-progress"><div class="submit-progress-bar" id="sf-progress-bar"></div></div>
+
+            <button type="submit" class="submit-submit-btn" id="sf-btn">Submit Stadium</button>
+          </div>
+        </form>
       </div>
     </div>
   </main>
@@ -621,8 +854,10 @@
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-    import { getFirestore, collection, query, where, orderBy, limit, getDocs }
+    import { getFirestore, collection, query, where, orderBy, limit, getDocs, addDoc }
       from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getStorage, ref as sref, uploadBytes, getDownloadURL }
+      from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyB5EJMsZT4WsfJjaFQ-srIdNwAINr7Q2yY",
@@ -635,6 +870,7 @@
 
     const app = initializeApp(FIREBASE_CONFIG);
     const db = getFirestore(app);
+    const storage = getStorage(app);
 
     // ── visitor id ─────────────────────────────────────────────
     let visitorId = localStorage.getItem('4ward_vid');
@@ -869,6 +1105,116 @@
       tick();
       setInterval(tick, 2800);
     }
+
+    // ── submit form: photo preview + char counter ──────────────
+    let pendingPhotoBlob = null;
+    const sfPhotoInput   = document.getElementById('sf-photo');
+    const sfPhotoDrop    = document.getElementById('sf-photo-drop');
+    const sfPhotoPreview = document.getElementById('sf-photo-preview');
+    const sfPhotoImg     = document.getElementById('sf-photo-img');
+    const sfPhotoClear   = document.getElementById('sf-photo-clear');
+    const sfNotes        = document.getElementById('sf-notes');
+    const sfNotesCount   = document.getElementById('sf-notes-count');
+
+    sfPhotoInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (file.size > 8 * 1024 * 1024) { showSubmitError('Photo must be under 8 MB.'); sfPhotoInput.value = ''; return; }
+      pendingPhotoBlob = file;
+      sfPhotoImg.src = URL.createObjectURL(file);
+      sfPhotoPreview.style.display = '';
+      sfPhotoDrop.style.display = 'none';
+    });
+    sfPhotoClear.addEventListener('click', () => {
+      pendingPhotoBlob = null;
+      sfPhotoInput.value = '';
+      sfPhotoImg.src = '';
+      sfPhotoPreview.style.display = 'none';
+      sfPhotoDrop.style.display = '';
+    });
+    sfNotes.addEventListener('input', () => { sfNotesCount.textContent = sfNotes.value.length; });
+
+    function showSubmitError(msg) {
+      const el = document.getElementById('sf-error');
+      el.textContent = msg; el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 6000);
+    }
+
+    document.getElementById('submit-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl     = document.getElementById('sf-error');
+      const okEl      = document.getElementById('sf-success');
+      const btn       = document.getElementById('sf-btn');
+      const progress  = document.getElementById('sf-progress');
+      const progressBar = document.getElementById('sf-progress-bar');
+      errEl.style.display = 'none';
+      okEl.style.display  = 'none';
+
+      const name     = document.getElementById('sf-name').value.trim();
+      const city     = document.getElementById('sf-city').value.trim();
+      const state    = document.getElementById('sf-state').value;
+      const teams    = document.getElementById('sf-teams').value.trim();
+      const capacity = parseInt(document.getElementById('sf-capacity').value) || null;
+      const year     = parseInt(document.getElementById('sf-year').value) || null;
+      const surface  = document.getElementById('sf-surface').value || null;
+      const trackVal = document.getElementById('sf-track').value;
+      const hasTrack = trackVal === 'true' ? true : trackVal === 'false' ? false : null;
+      const owner    = document.getElementById('sf-owner').value.trim() || null;
+      const notes    = document.getElementById('sf-notes').value.trim() || null;
+      const uploader = document.getElementById('sf-uploader').value.trim() || null;
+      const email    = document.getElementById('sf-email').value.trim() || null;
+      const rights   = document.getElementById('sf-rights').checked;
+
+      if (!name)   { showSubmitError('Stadium name is required.'); return; }
+      if (!city)   { showSubmitError('City is required.'); return; }
+      if (!state)  { showSubmitError('State is required.'); return; }
+      if (!rights) { showSubmitError('Please confirm the rules box.'); return; }
+
+      btn.disabled = true; btn.textContent = 'Submitting…';
+      progress.classList.add('show'); progressBar.style.width = '20%';
+
+      try {
+        let imageUrl = null;
+        if (pendingPhotoBlob) {
+          const tempId = 's_' + Math.random().toString(36).slice(2) + Date.now();
+          const path = `pulse-submissions/${tempId}.jpg`;
+          progressBar.style.width = '45%';
+          await uploadBytes(sref(storage, path), pendingPhotoBlob, { contentType: pendingPhotoBlob.type || 'image/jpeg' });
+          progressBar.style.width = '75%';
+          imageUrl = await getDownloadURL(sref(storage, path));
+        }
+
+        progressBar.style.width = '90%';
+        await addDoc(collection(db, 'pulse_stadium_submissions'), {
+          stadiumName: name,
+          city, state,
+          homeTeams:  teams ? teams.split(',').map((t) => t.trim()).filter(Boolean) : [],
+          capacity, yearOpened: year,
+          surface, hasTrack,
+          owner, notes,
+          uploaderName: uploader,
+          uploaderEmail: email,
+          imageUrl,
+          submittedBy: visitorId,
+          submittedAt: Date.now(),
+          approved: false,
+        });
+
+        progressBar.style.width = '100%';
+        okEl.style.display = 'block';
+        document.getElementById('submit-form').reset();
+        sfNotesCount.textContent = '0';
+        if (pendingPhotoBlob) sfPhotoClear.click();
+        btn.classList.add('success'); btn.textContent = '✓ Submitted!';
+        setTimeout(() => { btn.classList.remove('success'); btn.textContent = 'Submit Stadium'; btn.disabled = false; }, 2500);
+        setTimeout(() => { progress.classList.remove('show'); progressBar.style.width = '0%'; }, 1200);
+      } catch (err) {
+        console.error('submit failed', err);
+        showSubmitError('Submission failed: ' + (err.message || 'try again in a moment.'));
+        btn.disabled = false; btn.textContent = 'Submit Stadium';
+        progress.classList.remove('show'); progressBar.style.width = '0%';
+      }
+    });
 
     // ── init ───────────────────────────────────────────────────
     (async function init() {
