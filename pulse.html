@@ -1003,12 +1003,11 @@
 
     async function loadAllStadiums() {
       if (allFetched) return;
-      // Fetch a generous chunk for client-side filter/sort. 500 is plenty for MVP.
+      // Fetch the full HS-venue catalog so search/filter sees every stadium.
       const q = query(
         collection(db, 'stadiums'),
         where('isHsVenue', '==', true),
         orderBy('capacity', 'desc'),
-        limit(500),
       );
       const snap = await getDocs(q);
       const out = [];

@@ -231,6 +231,9 @@
         <span class="sidebar-icon">&#128172;</span> Pending Comments
         <span id="pulse-comments-badge" style="margin-left:auto;display:none;background:#e05555;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;"></span>
       </button>
+      <button class="sidebar-item" onclick="showPage('pulse-stadiums-all')">
+        <span class="sidebar-icon">&#9881;</span> Edit Stadiums
+      </button>
 
       <div class="sidebar-section">HS Blitz</div>
       <button class="sidebar-item" onclick="showPage('blitz-feedback')">
@@ -680,6 +683,40 @@
         </div>
       </div>
 
+      <!-- ══ FRIDAY NIGHT PULSE — EDIT STADIUMS ══ -->
+      <div class="page" id="page-pulse-stadiums-all">
+        <div class="page-header">
+          <div class="page-title">Pulse — Edit Stadiums</div>
+          <div class="page-sub">Search and edit any stadium for updates or corrections (capacity, name, owner, HS-venue flag, publish state, etc.).</div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Stadium Catalog</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadAllStadiumsForEdit()" id="load-all-stadiums-btn">Load all (~3,500)</button>
+          </div>
+          <div class="card-body" style="padding:20px">
+            <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
+              <input type="text" class="form-input" id="stadium-search" placeholder="Search by name, city, or slug…" style="flex:1;min-width:280px;" disabled>
+              <select id="stadium-state-filter" class="form-input" style="width:160px;" disabled>
+                <option value="">All states</option>
+                <option>AL</option><option>AR</option><option>CA</option><option>GA</option>
+                <option>LA</option><option>NM</option><option>OK</option><option>PA</option>
+                <option>TN</option><option>TX</option><option>WV</option>
+              </select>
+              <span style="font-size:12px;color:var(--muted);" id="stadium-search-meta">Click "Load all" to begin.</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr><th style="width:80px">Photo</th><th>Stadium</th><th>Cap</th><th>Ratings</th><th>Flags</th><th style="width:80px">Actions</th></tr>
+              </thead>
+              <tbody id="stadium-edit-body">
+                <tr><td colspan="6" class="loading-row">Click <strong>Load all</strong> in the top right to enable search.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- ══ HS BLITZ FEEDBACK ══ -->
       <div class="page" id="page-blitz-feedback">
         <div class="page-header">
@@ -950,6 +987,111 @@
   </div>
 </div>
 
+<!-- STADIUM EDIT MODAL -->
+<div class="modal-overlay" id="stadium-edit-modal">
+  <div class="modal" style="max-width:780px;">
+    <div class="modal-header">
+      <div class="modal-title">Edit Stadium</div>
+      <button class="modal-close" onclick="closeStadiumEdit()">&#10005;</button>
+    </div>
+    <input type="hidden" id="stadium-edit-slug">
+    <div style="display:flex;gap:20px;margin-bottom:20px;flex-wrap:wrap;">
+      <img id="stadium-edit-photo" alt="" style="width:200px;height:130px;object-fit:cover;border-radius:6px;flex-shrink:0;background:#0a0a0a;">
+      <div style="flex:1;min-width:240px;font-size:12px;color:var(--muted);line-height:1.7;">
+        <div><strong style="color:var(--white)">Slug:</strong> <span id="stadium-edit-slug-display" style="font-family:monospace;font-size:11px;">—</span></div>
+        <div><strong style="color:var(--white)">Source:</strong> <span id="stadium-edit-source">—</span></div>
+        <div><strong style="color:var(--white)">Ratings:</strong> <span id="stadium-edit-ratings">0</span></div>
+        <div><strong style="color:var(--white)">Pulse Score:</strong> <span id="stadium-edit-pulse">—</span></div>
+        <div style="margin-top:8px;"><a href="#" id="stadium-edit-view-link" target="_blank" style="color:var(--gold);">View on site &rarr;</a></div>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="form-group span2">
+        <label class="form-label">Stadium Name</label>
+        <input type="text" class="form-input" id="stadium-edit-name" maxlength="120">
+      </div>
+      <div class="form-group span2">
+        <label class="form-label">Secondary Name <span style="color:var(--muted);font-weight:400;">(optional, e.g. "at Campbell Williams Field")</span></label>
+        <input type="text" class="form-input" id="stadium-edit-secondary" maxlength="120">
+      </div>
+      <div class="form-group">
+        <label class="form-label">City</label>
+        <input type="text" class="form-input" id="stadium-edit-city" maxlength="80">
+      </div>
+      <div class="form-group">
+        <label class="form-label">State</label>
+        <input type="text" class="form-input" id="stadium-edit-state" maxlength="2" style="text-transform:uppercase;">
+      </div>
+      <div class="form-group">
+        <label class="form-label">County</label>
+        <input type="text" class="form-input" id="stadium-edit-county" maxlength="60">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Capacity</label>
+        <input type="number" class="form-input" id="stadium-edit-capacity" min="0" max="120000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Year Opened</label>
+        <input type="number" class="form-input" id="stadium-edit-year" min="1880" max="2030">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Surface</label>
+        <select class="form-input" id="stadium-edit-surface">
+          <option value="">— Unknown —</option>
+          <option>Grass</option>
+          <option>Artificial</option>
+          <option>Hybrid</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Has Track</label>
+        <select class="form-input" id="stadium-edit-track">
+          <option value="">— Unknown —</option>
+          <option value="false">No (no-track bonus)</option>
+          <option value="true">Yes</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Has Video Scoreboard</label>
+        <select class="form-input" id="stadium-edit-videoboard">
+          <option value="">— Unknown —</option>
+          <option value="false">No</option>
+          <option value="true">Yes</option>
+        </select>
+      </div>
+      <div class="form-group span2">
+        <label class="form-label">Owner / School District</label>
+        <input type="text" class="form-input" id="stadium-edit-owner" maxlength="160">
+      </div>
+      <div class="form-group span2">
+        <label class="form-label">Home Teams <span style="color:var(--muted);font-weight:400;">(comma-separated)</span></label>
+        <input type="text" class="form-input" id="stadium-edit-teams" maxlength="240">
+      </div>
+      <div class="form-group span2">
+        <label class="form-label">Flags</label>
+        <div style="display:flex;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--white);">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="stadium-edit-published" style="accent-color:var(--gold);"> Published <span style="color:var(--muted);font-weight:400;">(visible on site)</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="stadium-edit-hsvenue" style="accent-color:var(--gold);"> HS Venue <span style="color:var(--muted);font-weight:400;">(eligible for leaderboards)</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="stadium-edit-featured" style="accent-color:var(--gold);"> Featured
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions" style="display:flex;justify-content:space-between;align-items:center;">
+      <button class="btn btn-danger" onclick="deleteStadiumPermanently()">Delete Stadium</button>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" onclick="closeStadiumEdit()">Cancel</button>
+        <button class="btn btn-gold" onclick="saveStadiumEdit()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div id="toast"></div>
 
@@ -1024,6 +1166,7 @@
     if (id === 'pulse-photos-pending')   { loadPulsePhotosPending(); }
     if (id === 'pulse-stadiums-pending') { loadPulseStadiumsPending(); }
     if (id === 'pulse-comments-pending') { loadPulseCommentsPending(); }
+    if (id === 'pulse-stadiums-all')     { /* manual load via button */ }
     if (id === 'blitz-feedback')      { loadBlitzFeedback(); }
     if (id === 'visitors')            { loadVisitors(); }
   };
@@ -2364,6 +2507,191 @@
   }
   // fire once after auth is ready
   setTimeout(pollPulseBadges, 1500);
+
+  // ── PULSE — STADIUM EDITOR ───────────────────────────────────
+  window._allStadiums = null;
+  let _stadiumSearchTimer = null;
+
+  async function loadAllStadiumsForEdit() {
+    const btn = document.getElementById('load-all-stadiums-btn');
+    const tbody = document.getElementById('stadium-edit-body');
+    const search = document.getElementById('stadium-search');
+    const stateFilter = document.getElementById('stadium-state-filter');
+
+    btn.disabled = true;
+    btn.textContent = 'Loading...';
+    tbody.innerHTML = '<tr><td colspan="6" class="loading-row">Fetching all stadiums (this takes ~10–30s)...</td></tr>';
+
+    try {
+      const snap = await getDocs(collection(db, 'stadiums'));
+      const all = [];
+      snap.forEach(d => all.push({ id: d.id, ...d.data() }));
+      all.sort((a, b) => (a.stadiumName || '').localeCompare(b.stadiumName || ''));
+      window._allStadiums = all;
+      btn.textContent = `✓ Loaded ${all.length}`;
+      btn.disabled = false;
+      search.disabled = false;
+      stateFilter.disabled = false;
+      renderStadiumEditTable();
+    } catch(e) {
+      tbody.innerHTML = '<tr><td colspan="6" class="loading-row">Error: ' + escapeHtml(e.message) + '</td></tr>';
+      btn.disabled = false;
+      btn.textContent = 'Load all (~3,500)';
+    }
+  }
+  window.loadAllStadiumsForEdit = loadAllStadiumsForEdit;
+
+  function renderStadiumEditTable() {
+    const tbody = document.getElementById('stadium-edit-body');
+    const search = (document.getElementById('stadium-search').value || '').toLowerCase().trim();
+    const stateFilter = document.getElementById('stadium-state-filter').value;
+
+    let list = window._allStadiums || [];
+    if (stateFilter) list = list.filter(s => s.state === stateFilter);
+    if (search) {
+      list = list.filter(s =>
+        (s.stadiumName || '').toLowerCase().includes(search) ||
+        (s.city || '').toLowerCase().includes(search) ||
+        (s.id || '').toLowerCase().includes(search) ||
+        (s.homeTeams || []).some(t => t.toLowerCase().includes(search))
+      );
+    }
+
+    const limited = list.slice(0, 100);
+    document.getElementById('stadium-search-meta').textContent =
+      `${list.length} match${list.length === 1 ? '' : 'es'}${list.length > 100 ? ' (showing first 100)' : ''}`;
+
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="loading-row">No matches.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = limited.map(s => {
+      const photo = (s.photos && s.photos[s.primaryPhotoIndex || 0])?.url || '';
+      const flags = [];
+      if (s.isPublished === false) flags.push('<span style="color:#888;">hidden</span>');
+      if (s.isHsVenue === false)   flags.push('<span style="color:#ff8c1a;">non-HS</span>');
+      if (s.isFeatured)            flags.push('<span style="color:var(--gold);">★ featured</span>');
+      const score = (typeof s.bayesianScore === 'number')
+        ? ` · <span style="color:var(--gold);">${s.bayesianScore.toFixed(1)}</span>` : '';
+      return `<tr>
+        <td><img src="${escapeHtml(photo)}" alt="" style="width:64px;height:42px;object-fit:cover;border-radius:4px;background:#0a0a0a;" loading="lazy"></td>
+        <td>
+          <div><strong>${escapeHtml(s.stadiumName || '')}</strong></div>
+          <div style="font-size:11px;color:var(--muted);">${escapeHtml(s.city || '?')}, ${escapeHtml(s.state || '?')}</div>
+        </td>
+        <td>${s.capacity ? s.capacity.toLocaleString() : '—'}</td>
+        <td>${s.ratingsCount || 0}${score}</td>
+        <td style="font-size:11px;line-height:1.5;">${flags.join('<br>') || '—'}</td>
+        <td><button class="btn btn-ghost btn-sm" data-stadium-action="edit" data-id="${escapeHtml(s.id)}">Edit</button></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Wire search + filter
+  document.getElementById('stadium-search').addEventListener('input', () => {
+    clearTimeout(_stadiumSearchTimer);
+    _stadiumSearchTimer = setTimeout(renderStadiumEditTable, 180);
+  });
+  document.getElementById('stadium-state-filter').addEventListener('change', renderStadiumEditTable);
+
+  // Action delegation
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-stadium-action]');
+    if (!btn) return;
+    const action = btn.dataset.stadiumAction;
+    const id = btn.dataset.id;
+    if (action === 'edit') {
+      const s = (window._allStadiums || []).find(x => x.id === id);
+      if (s) openStadiumEdit(s);
+    }
+  });
+
+  function openStadiumEdit(s) {
+    document.getElementById('stadium-edit-slug').value         = s.id;
+    document.getElementById('stadium-edit-slug-display').textContent = s.id;
+    document.getElementById('stadium-edit-source').textContent = s.sourceProvider || '—';
+    document.getElementById('stadium-edit-ratings').textContent = s.ratingsCount || 0;
+    document.getElementById('stadium-edit-pulse').textContent  = (typeof s.bayesianScore === 'number') ? s.bayesianScore.toFixed(2) : '—';
+    document.getElementById('stadium-edit-photo').src = (s.photos && s.photos[s.primaryPhotoIndex || 0])?.url || '';
+    document.getElementById('stadium-edit-view-link').href = `/pulse-stadium.html?slug=${encodeURIComponent(s.id)}`;
+
+    document.getElementById('stadium-edit-name').value      = s.stadiumName || '';
+    document.getElementById('stadium-edit-secondary').value = s.secondaryName || '';
+    document.getElementById('stadium-edit-city').value      = s.city || '';
+    document.getElementById('stadium-edit-state').value     = (s.state || '').toUpperCase();
+    document.getElementById('stadium-edit-county').value    = s.county || '';
+    document.getElementById('stadium-edit-capacity').value  = s.capacity || '';
+    document.getElementById('stadium-edit-year').value      = s.yearOpened || '';
+    document.getElementById('stadium-edit-surface').value   = s.surface || '';
+    document.getElementById('stadium-edit-track').value     = s.hasTrack === true ? 'true' : s.hasTrack === false ? 'false' : '';
+    document.getElementById('stadium-edit-videoboard').value = s.hasVideoScoreboard === true ? 'true' : s.hasVideoScoreboard === false ? 'false' : '';
+    document.getElementById('stadium-edit-owner').value     = s.owner || '';
+    document.getElementById('stadium-edit-teams').value     = (s.homeTeams || []).join(', ');
+    document.getElementById('stadium-edit-published').checked = s.isPublished !== false;
+    document.getElementById('stadium-edit-hsvenue').checked   = s.isHsVenue !== false;
+    document.getElementById('stadium-edit-featured').checked  = !!s.isFeatured;
+
+    document.getElementById('stadium-edit-modal').classList.add('open');
+  }
+  window.closeStadiumEdit = function() { document.getElementById('stadium-edit-modal').classList.remove('open'); };
+
+  window.saveStadiumEdit = async function() {
+    const slug = document.getElementById('stadium-edit-slug').value;
+    if (!slug) return;
+    const trackVal = document.getElementById('stadium-edit-track').value;
+    const videoVal = document.getElementById('stadium-edit-videoboard').value;
+    const teams = document.getElementById('stadium-edit-teams').value.trim();
+    const updates = {
+      stadiumName:    document.getElementById('stadium-edit-name').value.trim(),
+      secondaryName:  document.getElementById('stadium-edit-secondary').value.trim() || null,
+      city:           document.getElementById('stadium-edit-city').value.trim(),
+      state:          document.getElementById('stadium-edit-state').value.trim().toUpperCase(),
+      county:         document.getElementById('stadium-edit-county').value.trim() || null,
+      capacity:       parseInt(document.getElementById('stadium-edit-capacity').value) || null,
+      yearOpened:     parseInt(document.getElementById('stadium-edit-year').value) || null,
+      surface:        document.getElementById('stadium-edit-surface').value || null,
+      hasTrack:       trackVal === 'true' ? true : trackVal === 'false' ? false : null,
+      hasVideoScoreboard: videoVal === 'true' ? true : videoVal === 'false' ? false : null,
+      owner:          document.getElementById('stadium-edit-owner').value.trim() || null,
+      homeTeams:      teams ? teams.split(',').map(t => t.trim()).filter(Boolean) : [],
+      isPublished:    document.getElementById('stadium-edit-published').checked,
+      isHsVenue:      document.getElementById('stadium-edit-hsvenue').checked,
+      isFeatured:     document.getElementById('stadium-edit-featured').checked,
+      lastEditedAt:   Date.now(),
+    };
+    if (!updates.stadiumName) { toast('Stadium name is required', 'error'); return; }
+    if (!updates.state || updates.state.length !== 2) { toast('State must be a 2-letter code', 'error'); return; }
+    try {
+      await updateDoc(doc(db, 'stadiums', slug), updates);
+      const idx = (window._allStadiums || []).findIndex(x => x.id === slug);
+      if (idx >= 0) window._allStadiums[idx] = { ...window._allStadiums[idx], ...updates };
+      closeStadiumEdit();
+      renderStadiumEditTable();
+      toast('Stadium saved.');
+    } catch(err) {
+      console.error('save stadium failed', err);
+      toast('Save failed: ' + err.message, 'error');
+    }
+  };
+
+  window.deleteStadiumPermanently = async function() {
+    const slug = document.getElementById('stadium-edit-slug').value;
+    const name = document.getElementById('stadium-edit-name').value;
+    if (!slug) return;
+    if (!confirm(`Permanently delete "${name}"? This removes the stadium from the catalog. Existing ratings/photos for this stadium will become orphaned.`)) return;
+    if (!confirm('Are you absolutely sure? This cannot be undone.')) return;
+    try {
+      await deleteDoc(doc(db, 'stadiums', slug));
+      window._allStadiums = (window._allStadiums || []).filter(x => x.id !== slug);
+      closeStadiumEdit();
+      renderStadiumEditTable();
+      toast(name + ' deleted.', 'error');
+    } catch(err) {
+      console.error('delete stadium failed', err);
+      toast('Delete failed: ' + err.message, 'error');
+    }
+  };
 
 </script>
 </body>
