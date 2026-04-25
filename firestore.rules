@@ -102,5 +102,17 @@ service cloud.firestore {
                     && request.resource.data.state is string;
       allow update, delete: if isAdmin();
     }
+
+    // Fan-submitted corrections to existing stadium info.
+    // Anyone can submit a pending correction; only admin reads pending or
+    // updates/deletes. Approved corrections (kept for audit) stay public-readable.
+    match /pulse_corrections/{id} {
+      allow read: if resource.data.approved == true || isAdmin();
+      allow create: if request.resource.data.approved == false
+                    && request.resource.data.stadiumSlug is string
+                    && request.resource.data.field is string
+                    && request.resource.data.suggestedValue is string;
+      allow update, delete: if isAdmin();
+    }
   }
 }

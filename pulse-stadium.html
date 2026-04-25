@@ -617,6 +617,121 @@
     }
     .empty-state strong { color: var(--gold); }
 
+    /* ── SUGGEST CORRECTION ─────────────────────────────────── */
+    .suggest-correction-row {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px dashed rgba(255,255,255,0.07);
+    }
+    .suggest-correction-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: none; border: none;
+      color: var(--muted);
+      font-family: var(--body); font-weight: 600; font-size: 12px;
+      letter-spacing: 0.04em;
+      cursor: pointer; padding: 0;
+      transition: color 0.2s;
+    }
+    .suggest-correction-btn:hover { color: var(--gold); }
+    .suggest-correction-btn strong {
+      color: var(--gold);
+      text-decoration: underline;
+      text-decoration-color: rgba(245,197,24,0.4);
+      text-underline-offset: 2px;
+    }
+    .suggest-correction-btn:hover strong {
+      text-decoration-color: var(--gold);
+    }
+
+    /* Modal — also used for the correction dialog */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 999;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; animation: fade-in 0.2s ease; }
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    .modal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 32px;
+      max-width: 540px; width: 100%;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+    }
+    .modal-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; gap: 16px; }
+    .modal-head h3 {
+      font-family: var(--condensed); font-weight: 900;
+      font-size: 26px; text-transform: uppercase; line-height: 1;
+      margin-bottom: 6px;
+    }
+    .modal-head p { color: var(--muted); font-size: 13px; line-height: 1.4; }
+    .modal-head p strong { color: var(--gold); }
+    .modal-x {
+      background: none; border: none; color: var(--muted);
+      cursor: pointer; font-size: 20px; padding: 4px 8px;
+      transition: color 0.15s;
+      flex-shrink: 0;
+    }
+    .modal-x:hover { color: var(--white); }
+    .modal-form { display: grid; gap: 14px; }
+    .modal-form input, .modal-form select, .modal-form textarea {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--white); padding: 10px 12px;
+      border-radius: 6px; font-family: var(--body); font-size: 14px;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    .modal-form input:focus, .modal-form select:focus, .modal-form textarea:focus {
+      outline: none; border-color: var(--gold);
+    }
+    .modal-form input[readonly] { color: var(--muted); cursor: not-allowed; background: rgba(0,0,0,0.4); }
+    .modal-form textarea { resize: vertical; min-height: 70px; }
+    .modal-form label {
+      display: block;
+      font-family: var(--condensed); font-weight: 800;
+      font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--white); margin-bottom: 5px;
+    }
+    .modal-form label .req { color: var(--gold); }
+    .modal-form label .hint { color: var(--muted); font-size: 10px; font-weight: 600; margin-left: 6px; letter-spacing: 0.04em; text-transform: none; }
+    .modal-actions {
+      display: flex; gap: 10px; justify-content: flex-end;
+      margin-top: 8px;
+    }
+    .modal-btn-primary {
+      background: linear-gradient(180deg, #FFE066 0%, var(--gold) 50%, #D9AC10 100%);
+      color: #0a0a0a; padding: 11px 22px;
+      border: 1px solid rgba(255,215,64,0.5); border-radius: 6px;
+      font-family: var(--condensed); font-weight: 900;
+      font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase;
+      cursor: pointer;
+    }
+    .modal-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .modal-btn-ghost {
+      background: transparent;
+      color: var(--white); padding: 11px 22px;
+      border: 1px solid var(--border); border-radius: 6px;
+      font-family: var(--condensed); font-weight: 800;
+      font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase;
+      cursor: pointer;
+    }
+    .modal-btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+    .modal-error {
+      padding: 8px 12px;
+      background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.4);
+      color: #fca5a5; border-radius: 6px; font-size: 12px;
+    }
+    .modal-success {
+      padding: 12px 16px;
+      background: rgba(34,217,126,0.10); border: 1px solid rgba(34,217,126,0.4);
+      color: #6dd9a3; border-radius: 6px; font-size: 13px; line-height: 1.5;
+    }
+
     /* ── TOAST ────────────────────────────────────────────────── */
     .toast {
       position: fixed; bottom: 24px; left: 50%;
@@ -717,6 +832,11 @@
           <div class="stadium-teams" id="hero-teams"></div>
         </div>
         <div class="stadium-stats" id="hero-stats"></div>
+        <div class="suggest-correction-row">
+          <button type="button" class="suggest-correction-btn" id="suggest-correction-btn">
+            🛠 Spot something wrong? <strong>Suggest a correction</strong>
+          </button>
+        </div>
       </div>
     </section>
 
@@ -830,6 +950,63 @@
   </footer>
 
   <div class="toast" id="toast"></div>
+
+  <!-- Suggest a Correction modal -->
+  <div class="modal-overlay" id="correction-modal" role="dialog" aria-modal="true" aria-labelledby="correction-title">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <h3 id="correction-title">Suggest a Correction</h3>
+          <p>Help us fix <strong id="correction-stadium-name">this stadium</strong></p>
+        </div>
+        <button type="button" class="modal-x" id="correction-close" aria-label="Close">✕</button>
+      </div>
+      <form class="modal-form" id="correction-form" autocomplete="off">
+        <div>
+          <label>Which field is wrong? <span class="req">*</span></label>
+          <select id="correction-field" required>
+            <option value="">— Select —</option>
+            <option value="stadiumName">Stadium Name</option>
+            <option value="city">City</option>
+            <option value="state">State</option>
+            <option value="capacity">Capacity</option>
+            <option value="yearOpened">Year Opened</option>
+            <option value="surface">Surface (Grass / Artificial)</option>
+            <option value="hasTrack">Track around field?</option>
+            <option value="hasVideoScoreboard">Video scoreboard?</option>
+            <option value="owner">Owner / School District</option>
+            <option value="homeTeams">Home Teams</option>
+            <option value="county">County</option>
+            <option value="other">Other (describe in context)</option>
+          </select>
+        </div>
+        <div>
+          <label>Current value</label>
+          <input type="text" id="correction-current" readonly placeholder="(pick a field above)">
+        </div>
+        <div>
+          <label>What should it be? <span class="req">*</span></label>
+          <input type="text" id="correction-suggested" maxlength="200" required placeholder="e.g. 6500">
+        </div>
+        <div>
+          <label>How do you know? <span class="hint">optional but helps us verify</span></label>
+          <textarea id="correction-context" maxlength="400" placeholder="e.g. 'I'm the AD here', 'school's official site says 6,500', 'local newspaper article'"></textarea>
+        </div>
+        <div>
+          <label>Email <span class="hint">optional, never published</span></label>
+          <input type="email" id="correction-email" maxlength="120" placeholder="In case we have questions">
+        </div>
+        <div class="modal-error" id="correction-error" style="display:none;"></div>
+        <div class="modal-success" id="correction-success" style="display:none;">
+          <strong>Thanks!</strong> An admin will review your suggestion. Tap × to close.
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="modal-btn-ghost" id="correction-cancel">Cancel</button>
+          <button type="submit" class="modal-btn-primary" id="correction-submit">Submit Suggestion</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -1374,6 +1551,102 @@
     });
 
     document.getElementById('rate-form').addEventListener('submit', handleSubmit);
+
+    // ── suggest a correction: modal form → pulse_corrections ──
+    const correctionFields = {
+      stadiumName: { label: 'Stadium Name', kind: 'text' },
+      city:        { label: 'City', kind: 'text' },
+      state:       { label: 'State', kind: 'text' },
+      capacity:    { label: 'Capacity', kind: 'number' },
+      yearOpened:  { label: 'Year Opened', kind: 'number' },
+      surface:     { label: 'Surface', kind: 'text' },
+      hasTrack:    { label: 'Has Track', kind: 'bool' },
+      hasVideoScoreboard: { label: 'Has Video Scoreboard', kind: 'bool' },
+      owner:       { label: 'Owner', kind: 'text' },
+      homeTeams:   { label: 'Home Teams', kind: 'array' },
+      county:      { label: 'County', kind: 'text' },
+      other:       { label: 'Other', kind: 'text' },
+    };
+    function fmtCorrectionValue(field, val) {
+      if (val == null) return '(empty)';
+      const f = correctionFields[field];
+      if (!f) return String(val);
+      if (f.kind === 'bool')  return val === true ? 'Yes' : val === false ? 'No' : '(unknown)';
+      if (f.kind === 'array') return Array.isArray(val) ? val.join(', ') : String(val);
+      return String(val);
+    }
+
+    function openCorrectionModal() {
+      if (!stadium) return;
+      document.getElementById('correction-stadium-name').textContent = stadium.stadiumName || 'this stadium';
+      document.getElementById('correction-form').reset();
+      document.getElementById('correction-current').value = '';
+      document.getElementById('correction-error').style.display = 'none';
+      document.getElementById('correction-success').style.display = 'none';
+      document.getElementById('correction-modal').classList.add('open');
+    }
+    function closeCorrectionModal() {
+      document.getElementById('correction-modal').classList.remove('open');
+    }
+    document.getElementById('suggest-correction-btn').addEventListener('click', openCorrectionModal);
+    document.getElementById('correction-close').addEventListener('click', closeCorrectionModal);
+    document.getElementById('correction-cancel').addEventListener('click', closeCorrectionModal);
+    document.getElementById('correction-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'correction-modal') closeCorrectionModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeCorrectionModal();
+    });
+    document.getElementById('correction-field').addEventListener('change', (e) => {
+      const field = e.target.value;
+      const cur = field === 'other' || !field ? '' : fmtCorrectionValue(field, stadium?.[field]);
+      document.getElementById('correction-current').value = cur;
+    });
+
+    document.getElementById('correction-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById('correction-error');
+      const okEl  = document.getElementById('correction-success');
+      const btn   = document.getElementById('correction-submit');
+      errEl.style.display = 'none';
+      okEl.style.display  = 'none';
+
+      const field     = document.getElementById('correction-field').value;
+      const suggested = document.getElementById('correction-suggested').value.trim();
+      const context   = document.getElementById('correction-context').value.trim() || null;
+      const email     = document.getElementById('correction-email').value.trim() || null;
+
+      if (!field || !suggested) {
+        errEl.textContent = 'Please pick a field and enter a suggested correction.';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true; btn.textContent = 'Submitting…';
+      try {
+        await addDoc(collection(db, 'pulse_corrections'), {
+          stadiumSlug: stadium.slug,
+          field,
+          currentValue:   field === 'other' ? null : (stadium?.[field] ?? null),
+          suggestedValue: suggested,
+          context,
+          email,
+          visitorId,
+          submittedAt: Date.now(),
+          approved: false,
+        });
+        okEl.style.display = 'block';
+        document.getElementById('correction-form').reset();
+        document.getElementById('correction-current').value = '';
+        toast('Correction submitted ✓');
+      } catch (err) {
+        console.error('correction failed', err);
+        errEl.textContent = 'Submission failed: ' + (err.message || 'try again.');
+        errEl.style.display = 'block';
+      } finally {
+        btn.disabled = false; btn.textContent = 'Submit Suggestion';
+      }
+    });
 
     // ── share button: native share sheet, clipboard fallback ──
     document.getElementById('share-btn').addEventListener('click', async () => {

@@ -150,7 +150,8 @@ function yesNoToBool(s) {
 
 function resolvePhotoUrl(rawSrc, source, texasbobId) {
   if (!rawSrc) return null;
-  if (/blank\.gif|nophoto/i.test(rawSrc)) return null;
+  // "No photo available" placeholders served by both sources
+  if (/blank\.gif$|nophoto|nopic\.jpg/i.test(rawSrc)) return null;
   if (rawSrc.startsWith('http')) {
     // SC has a typo bug: "https://stadiumconnection/simages/..." — patch it
     return rawSrc.replace(/^https:\/\/stadiumconnection\//, 'https://stadiumconnection.com/');

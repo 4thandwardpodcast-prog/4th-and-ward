@@ -234,6 +234,10 @@
       <button class="sidebar-item" onclick="showPage('pulse-stadiums-all')">
         <span class="sidebar-icon">&#9881;</span> Edit Stadiums
       </button>
+      <button class="sidebar-item" onclick="showPage('pulse-corrections-pending')">
+        <span class="sidebar-icon">&#128736;</span> Pending Corrections
+        <span id="pulse-corrections-badge" style="margin-left:auto;display:none;background:#e05555;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;"></span>
+      </button>
 
       <div class="sidebar-section">HS Blitz</div>
       <button class="sidebar-item" onclick="showPage('blitz-feedback')">
@@ -677,6 +681,29 @@
           </div>
           <div class="card-body" style="padding:0">
             <div id="pulse-comments-list" style="padding:20px;display:grid;gap:14px;">
+              <div class="loading-row">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ FRIDAY NIGHT PULSE — PENDING CORRECTIONS ══ -->
+      <div class="page" id="page-pulse-corrections-pending">
+        <div class="page-header">
+          <div class="page-title">Pulse — Pending Corrections</div>
+          <div class="page-sub">Fan-submitted corrections to existing stadium info. Apply to update the stadium directly, or reject.</div>
+        </div>
+        <div class="stat-row" style="margin-bottom:28px;">
+          <div class="stat-card blue"><div class="stat-card-num" id="pulse-corrections-pending-count">—</div><div class="stat-card-label">Pending</div></div>
+          <div class="stat-card green"><div class="stat-card-num" id="pulse-corrections-applied-count">—</div><div class="stat-card-label">Applied</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Pending Corrections</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadPulseCorrectionsPending()">&#8635; Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div id="pulse-corrections-list" style="padding:20px;display:grid;gap:14px;">
               <div class="loading-row">Loading...</div>
             </div>
           </div>
@@ -1167,6 +1194,7 @@
     if (id === 'pulse-stadiums-pending') { loadPulseStadiumsPending(); }
     if (id === 'pulse-comments-pending') { loadPulseCommentsPending(); }
     if (id === 'pulse-stadiums-all')     { /* manual load via button */ }
+    if (id === 'pulse-corrections-pending') { loadPulseCorrectionsPending(); }
     if (id === 'blitz-feedback')      { loadBlitzFeedback(); }
     if (id === 'visitors')            { loadVisitors(); }
   };
@@ -2495,18 +2523,153 @@
   // ── Pulse pending-counts poll on load (sidebar badges) ───────
   async function pollPulseBadges() {
     try {
-      const [photos, stadiums, comments] = await Promise.all([
+      const [photos, stadiums, comments, corrections] = await Promise.all([
         getDocs(query(collection(db, 'pulse_photo_submissions'), where('approved', '==', false))),
         getDocs(query(collection(db, 'pulse_stadium_submissions'), where('approved', '==', false))),
         getDocs(query(collection(db, 'pulse_ratings'), where('commentApproved', '==', false))),
+        getDocs(query(collection(db, 'pulse_corrections'), where('approved', '==', false))),
       ]);
       pulseUpdateBadge('pulse-photos-badge', photos.size);
       pulseUpdateBadge('pulse-stadiums-badge', stadiums.size);
       pulseUpdateBadge('pulse-comments-badge', comments.size);
+      pulseUpdateBadge('pulse-corrections-badge', corrections.size);
     } catch(e) { /* ignore */ }
   }
   // fire once after auth is ready
   setTimeout(pollPulseBadges, 1500);
+
+  // ── PULSE — PENDING CORRECTIONS ──────────────────────────────
+  window._pulseCorrections = {};
+
+  const CORRECTION_FIELD_LABELS = {
+    stadiumName: 'Stadium Name',
+    city: 'City', state: 'State', county: 'County',
+    capacity: 'Capacity', yearOpened: 'Year Opened',
+    surface: 'Surface', hasTrack: 'Has Track',
+    hasVideoScoreboard: 'Has Video Scoreboard',
+    owner: 'Owner', homeTeams: 'Home Teams',
+    other: 'Other',
+  };
+
+  function fmtCorrectionVal(field, val) {
+    if (val == null || val === '') return '(empty)';
+    if (Array.isArray(val)) return val.join(', ');
+    if (typeof val === 'boolean') return val ? 'Yes' : 'No';
+    return String(val);
+  }
+
+  // Coerce a string suggestion into the right type for the target field
+  function coerceSuggestedValue(field, raw) {
+    const s = String(raw || '').trim();
+    if (field === 'capacity' || field === 'yearOpened') {
+      const n = parseInt(s.replace(/[^\d-]/g, ''));
+      return isNaN(n) ? null : n;
+    }
+    if (field === 'hasTrack' || field === 'hasVideoScoreboard') {
+      const lc = s.toLowerCase();
+      if (['yes','y','true','1'].includes(lc))  return true;
+      if (['no','n','false','0'].includes(lc))  return false;
+      return null;
+    }
+    if (field === 'homeTeams') {
+      return s ? s.split(',').map(t => t.trim()).filter(Boolean) : [];
+    }
+    if (field === 'state') return s.toUpperCase();
+    return s;
+  }
+
+  async function loadPulseCorrectionsPending() {
+    const list = document.getElementById('pulse-corrections-list');
+    list.innerHTML = '<div class="loading-row">Loading...</div>';
+    try {
+      const snap = await getDocs(collection(db, 'pulse_corrections'));
+      const all = [];
+      snap.forEach(d => all.push({ id: d.id, ...d.data() }));
+      window._pulseCorrections = Object.fromEntries(all.map(c => [c.id, c]));
+
+      const pending = all.filter(c => !c.approved).sort((a,b) => (b.submittedAt||0) - (a.submittedAt||0));
+      const applied = all.filter(c =>  c.approved);
+
+      document.getElementById('pulse-corrections-pending-count').textContent = pending.length;
+      document.getElementById('pulse-corrections-applied-count').textContent = applied.length;
+      pulseUpdateBadge('pulse-corrections-badge', pending.length);
+
+      if (!pending.length) {
+        list.innerHTML = '<div class="loading-row">No pending corrections.</div>';
+        return;
+      }
+
+      list.innerHTML = pending.map(c => {
+        const fieldLabel = CORRECTION_FIELD_LABELS[c.field] || c.field;
+        const cur = fmtCorrectionVal(c.field, c.currentValue);
+        return `<div class="card" style="padding:18px;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center">
+          <div>
+            <div style="font-family:var(--condensed);font-weight:900;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;">
+              <span style="color:var(--gold);">${escapeHtml(fieldLabel)}</span>
+              <span style="color:var(--muted);font-weight:600;font-size:11px;letter-spacing:0.04em;text-transform:none;margin-left:6px;">on</span>
+              <a href="/pulse-stadium.html?slug=${encodeURIComponent(c.stadiumSlug||'')}" target="_blank" style="color:var(--white);text-decoration:underline;">${escapeHtml(c.stadiumSlug || '')}</a>
+            </div>
+            <div style="font-size:13px;line-height:1.6;color:var(--white);margin-bottom:8px;">
+              <span style="color:var(--muted);">Current:</span> <code style="color:var(--white);background:var(--surface2);padding:2px 6px;border-radius:3px;">${escapeHtml(cur)}</code>
+              <span style="color:var(--muted);margin:0 6px;">→</span>
+              <code style="color:var(--gold);background:rgba(245,197,24,0.1);padding:2px 6px;border-radius:3px;">${escapeHtml(String(c.suggestedValue || ''))}</code>
+            </div>
+            ${c.context ? `<div style="font-size:13px;color:var(--white);font-style:italic;margin-bottom:6px;line-height:1.5;">"${escapeHtml(c.context)}"</div>` : ''}
+            <div style="font-size:11px;color:var(--muted);">Submitted ${c.submittedAt ? new Date(c.submittedAt).toLocaleString() : '—'}${c.email ? ` · ${escapeHtml(c.email)}` : ''}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <button class="btn btn-sm" style="background:#1DB954;color:#000;border:none" data-correction-action="apply" data-id="${escapeHtml(c.id)}">✓ Apply</button>
+            <button class="btn btn-danger btn-sm" data-correction-action="reject" data-id="${escapeHtml(c.id)}">✗ Reject</button>
+          </div>
+        </div>`;
+      }).join('');
+    } catch(e) { list.innerHTML = '<div class="loading-row">Error: ' + escapeHtml(e.message) + '</div>'; }
+  }
+  window.loadPulseCorrectionsPending = loadPulseCorrectionsPending;
+
+  // Action handler — applies or rejects a correction
+  document.addEventListener('click', async function(e) {
+    const btn = e.target.closest('[data-correction-action]');
+    if (!btn) return;
+    const action = btn.dataset.correctionAction;
+    const id = btn.dataset.id;
+    const c = window._pulseCorrections[id];
+    if (!c) return;
+
+    try {
+      if (action === 'apply') {
+        if (c.field === 'other') {
+          if (!confirm('"Other" corrections need manual edits via the Edit Stadiums tab. Mark as applied anyway?')) return;
+          await updateDoc(doc(db, 'pulse_corrections', id), {
+            approved: true, appliedAt: Date.now(), appliedToStadium: false,
+          });
+          toast('Correction noted (no auto-update).');
+          loadPulseCorrectionsPending();
+          return;
+        }
+        const value = coerceSuggestedValue(c.field, c.suggestedValue);
+        if (!confirm(`Apply correction:\n\n  ${c.field}: ${fmtCorrectionVal(c.field, c.currentValue)} → ${fmtCorrectionVal(c.field, value)}\n\non ${c.stadiumSlug}?`)) return;
+        await updateDoc(doc(db, 'stadiums', c.stadiumSlug), {
+          [c.field]: value,
+          lastEditedAt: Date.now(),
+        });
+        await updateDoc(doc(db, 'pulse_corrections', id), {
+          approved: true, appliedAt: Date.now(), appliedToStadium: true,
+          appliedValue: value,
+        });
+        toast('Correction applied.');
+        loadPulseCorrectionsPending();
+      } else if (action === 'reject') {
+        if (!confirm('Reject this correction? It will be deleted.')) return;
+        await deleteDoc(doc(db, 'pulse_corrections', id));
+        toast('Correction rejected.', 'error');
+        loadPulseCorrectionsPending();
+      }
+    } catch(err) {
+      console.error(err);
+      toast('Error: ' + err.message, 'error');
+    }
+  });
 
   // ── PULSE — STADIUM EDITOR ───────────────────────────────────
   window._allStadiums = null;
