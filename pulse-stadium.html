@@ -23,14 +23,58 @@
       background: #0a0a0a;
     }
     .stadium-hero-photo img {
+      position: absolute; inset: 0;
       width: 100%; height: 100%; object-fit: cover;
       filter: brightness(0.55) contrast(1.05);
+      opacity: 0;
+      transition: opacity 1.4s ease-in-out;
     }
+    .stadium-hero-photo img.active { opacity: 1; }
     .stadium-hero-photo::after {
       content: ''; position: absolute; inset: 0;
       background:
         linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 30%, transparent 50%, rgba(0,0,0,0.95) 100%),
         linear-gradient(90deg, rgba(0,0,0,0.6) 0%, transparent 50%);
+    }
+    /* Carousel controls */
+    .hero-controls {
+      position: absolute; bottom: 16px; right: 24px;
+      z-index: 3;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .hero-dots { display: flex; gap: 6px; }
+    .hero-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      cursor: pointer;
+      transition: background 0.2s, width 0.25s;
+    }
+    .hero-dot:hover { background: rgba(255,255,255,0.8); }
+    .hero-dot.active {
+      background: var(--gold);
+      width: 24px; border-radius: 4px;
+      box-shadow: 0 0 8px rgba(245,197,24,0.5);
+    }
+    .hero-arrow {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 50%;
+      color: var(--white);
+      cursor: pointer;
+      font-size: 20px; line-height: 1;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      padding: 0; padding-bottom: 2px;
+    }
+    .hero-arrow:hover {
+      background: rgba(0,0,0,0.85);
+      border-color: var(--gold); color: var(--gold);
+    }
+    @media (max-width: 600px) {
+      .hero-controls { right: 14px; bottom: 12px; gap: 8px; }
+      .hero-arrow { width: 32px; height: 32px; font-size: 18px; }
     }
     .stadium-hero-inner {
       position: relative; z-index: 1;
@@ -461,7 +505,37 @@
       color: var(--gold); font-family: var(--condensed); font-weight: 800;
       font-size: 12px;
     }
-    .comment-body { line-height: 1.6; color: var(--white); }
+    .comment-body { line-height: 1.6; color: var(--white); margin-bottom: 10px; }
+    .comment-foot {
+      display: flex; align-items: center; justify-content: flex-end;
+      margin-top: 4px;
+    }
+    .comment-like {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 6px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      color: var(--muted);
+      font-family: var(--body); font-weight: 600; font-size: 12px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s, transform 0.1s;
+      letter-spacing: 0.04em;
+    }
+    .comment-like:hover {
+      border-color: var(--gold);
+      color: var(--white);
+    }
+    .comment-like:active { transform: scale(0.96); }
+    .comment-like.liked {
+      background: rgba(245,197,24,0.12);
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+    .comment-like .thumb { font-size: 13px; line-height: 1; }
+    .comment-like .count { font-weight: 700; min-width: 8px; text-align: center; }
+    @keyframes like-pop { 0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); } }
+    .comment-like.popping { animation: like-pop 0.32s ease-out; }
     .empty-state {
       padding: 48px 24px; text-align: center;
       color: var(--muted); font-size: 14px;
@@ -667,7 +741,7 @@
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-    import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc,
+    import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, increment,
              query, where, orderBy, limit, serverTimestamp }
       from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
     import { getStorage, ref as sref, uploadBytes, getDownloadURL }
@@ -763,12 +837,73 @@
     }
 
     // ── render hero ────────────────────────────────────────────
-    function renderHero() {
-      const photo = stadium.photos && stadium.photos[stadium.primaryPhotoIndex || 0];
-      if (photo) {
-        document.getElementById('hero-photo').innerHTML =
-          `<img src="${escapeHtml(photo.url)}" alt="${escapeHtml(stadium.stadiumName)}">`;
+    // ── hero carousel state ────────────────────────────────────
+    let heroPhotos = [];
+    let heroIdx = 0;
+    let heroTimer = null;
+    const HERO_INTERVAL_MS = 6000;
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function setHeroPhoto(idx) {
+      if (!heroPhotos.length) return;
+      const n = heroPhotos.length;
+      heroIdx = ((idx % n) + n) % n;
+      document.querySelectorAll('.stadium-hero-photo img').forEach((img, i) => {
+        img.classList.toggle('active', i === heroIdx);
+      });
+      document.querySelectorAll('.hero-dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === heroIdx);
+      });
+    }
+    function startHeroTimer() {
+      stopHeroTimer();
+      if (heroPhotos.length < 2 || reducedMotion) return;
+      heroTimer = setInterval(() => setHeroPhoto(heroIdx + 1), HERO_INTERVAL_MS);
+    }
+    function stopHeroTimer() {
+      if (heroTimer) { clearInterval(heroTimer); heroTimer = null; }
+    }
+
+    function renderHero(extraPhotos = []) {
+      // Combine seeded photos + approved user-submitted photos
+      const seeded = (stadium.photos || []).filter(p => p.approved !== false);
+      heroPhotos = [...seeded, ...extraPhotos];
+
+      const heroEl = document.getElementById('hero-photo');
+      stopHeroTimer();
+      heroIdx = 0;
+
+      if (heroPhotos.length === 0) {
+        heroEl.innerHTML = '';
+      } else {
+        const stack = heroPhotos.map((p, i) =>
+          `<img src="${escapeHtml(p.url)}" alt="${escapeHtml(stadium.stadiumName)}" class="${i === 0 ? 'active' : ''}" loading="${i === 0 ? 'eager' : 'lazy'}">`
+        ).join('');
+        const controls = heroPhotos.length > 1
+          ? `<div class="hero-controls">
+               <button class="hero-arrow" data-hero-arrow="-1" aria-label="Previous photo">‹</button>
+               <div class="hero-dots">${heroPhotos.map((_, i) => `<span class="hero-dot ${i === 0 ? 'active' : ''}" data-hero-idx="${i}"></span>`).join('')}</div>
+               <button class="hero-arrow" data-hero-arrow="1" aria-label="Next photo">›</button>
+             </div>`
+          : '';
+        heroEl.innerHTML = stack + controls;
+
+        // Wire interaction once per page
+        if (!heroEl.dataset.wired) {
+          heroEl.dataset.wired = '1';
+          heroEl.addEventListener('click', (e) => {
+            const dot   = e.target.closest('[data-hero-idx]');
+            const arrow = e.target.closest('[data-hero-arrow]');
+            if (dot)   { setHeroPhoto(parseInt(dot.dataset.heroIdx)); startHeroTimer(); }
+            if (arrow) { setHeroPhoto(heroIdx + parseInt(arrow.dataset.heroArrow)); startHeroTimer(); }
+          });
+          heroEl.addEventListener('mouseenter', stopHeroTimer);
+          heroEl.addEventListener('mouseleave', startHeroTimer);
+        }
+
+        startHeroTimer();
       }
+
       document.getElementById('hero-name').textContent = stadium.stadiumName;
       if (stadium.secondaryName) {
         const sec = document.getElementById('hero-secondary');
@@ -887,6 +1022,12 @@
       document.getElementById('photo-input').addEventListener('change', handlePhotoUpload);
     }
 
+    // ── like dedup (per-device) ────────────────────────────────
+    const myLikedComments = new Set(JSON.parse(localStorage.getItem('4ward_pulse_likes') || '[]'));
+    function saveMyLikes() {
+      localStorage.setItem('4ward_pulse_likes', JSON.stringify([...myLikedComments]));
+    }
+
     // ── render comments ────────────────────────────────────────
     function renderComments() {
       const approved = ratings.filter(r => r.comment && r.commentApproved === true);
@@ -900,15 +1041,64 @@
         .sort((a, b) => b.submittedAt - a.submittedAt)
         .map(r => {
           const meanScore = CATEGORIES.reduce((s, c) => s + (r.scores[c.key] || 0), 0) / CATEGORIES.length;
+          const likes = r.likes || 0;
+          const liked = myLikedComments.has(r.id);
           return `<div class="comment">
                     <div class="comment-head">
                       <span>${fmtTime(r.submittedAt)}</span>
                       <span class="comment-score">⚡ ${meanScore.toFixed(1)} / 10</span>
                     </div>
                     <div class="comment-body">${escapeHtml(r.comment)}</div>
+                    <div class="comment-foot">
+                      <button class="comment-like ${liked ? 'liked' : ''}" data-rating-id="${escapeHtml(r.id)}" aria-pressed="${liked}">
+                        <span class="thumb">${liked ? '👍' : '👍🏻'}</span>
+                        <span class="count">${likes}</span>
+                      </button>
+                    </div>
                   </div>`;
         }).join('');
     }
+
+    // ── like click handler (event delegation) ─────────────────
+    document.getElementById('comment-list').addEventListener('click', async (e) => {
+      const btn = e.target.closest('.comment-like');
+      if (!btn) return;
+      const ratingId = btn.dataset.ratingId;
+      const wasLiked = myLikedComments.has(ratingId);
+      const delta = wasLiked ? -1 : 1;
+
+      // Optimistic UI
+      if (wasLiked) myLikedComments.delete(ratingId);
+      else myLikedComments.add(ratingId);
+      saveMyLikes();
+      btn.classList.toggle('liked', !wasLiked);
+      btn.setAttribute('aria-pressed', String(!wasLiked));
+      btn.classList.add('popping');
+      setTimeout(() => btn.classList.remove('popping'), 320);
+      const countEl = btn.querySelector('.count');
+      const newCount = Math.max(0, (parseInt(countEl.textContent) || 0) + delta);
+      countEl.textContent = newCount;
+
+      // Reflect into local rating cache so re-renders preserve the change
+      const r = ratings.find(x => x.id === ratingId);
+      if (r) r.likes = newCount;
+
+      // Firestore
+      try {
+        await updateDoc(doc(db, 'pulse_ratings', ratingId), { likes: increment(delta) });
+      } catch (err) {
+        // Roll back on failure
+        if (wasLiked) myLikedComments.add(ratingId);
+        else myLikedComments.delete(ratingId);
+        saveMyLikes();
+        btn.classList.toggle('liked', wasLiked);
+        btn.setAttribute('aria-pressed', String(wasLiked));
+        const rolled = Math.max(0, newCount - delta);
+        countEl.textContent = rolled;
+        if (r) r.likes = rolled;
+        toast('Like failed — try again');
+      }
+    });
 
     // ── form submit ────────────────────────────────────────────
     async function handleSubmit(e) {
@@ -1068,6 +1258,7 @@
 
         renderGauge();
         renderSliders();
+        renderHero(extraPhotos);    // re-render with combined seed + user photos for carousel
         renderPhotos(extraPhotos);
         renderComments();
       } catch (err) {
