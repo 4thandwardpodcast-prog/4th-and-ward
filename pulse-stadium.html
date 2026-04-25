@@ -368,31 +368,61 @@
       font-size: 22px; min-width: 36px; text-align: right;
       color: var(--gold);
     }
-    .slider-track-wrap { position: relative; padding: 6px 0; }
-    .slider-input {
-      width: 100%; -webkit-appearance: none; appearance: none;
-      height: 8px;
-      background: linear-gradient(90deg, #22d97e 0%, #ffd400 50%, #ff8c1a 75%, #ff3b3b 100%);
-      border-radius: 99px; outline: none;
+    /* EA-style mini gauge sliders — bars to drag/click instead of native range */
+    .ea-slider {
+      display: flex; gap: 4px; align-items: flex-end;
+      height: 56px; padding: 8px 6px; margin-top: 6px;
+      background: radial-gradient(ellipse at center top, #0e0e0e 0%, #050505 100%);
+      border: 1px solid #1f1f1f; border-radius: 4px;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.85), inset 0 -1px 0 rgba(245,197,24,0.04);
       cursor: pointer;
+      user-select: none; -webkit-user-select: none;
+      touch-action: none;
+      position: relative;
     }
-    .slider-input::-webkit-slider-thumb {
-      -webkit-appearance: none; appearance: none;
-      width: 24px; height: 24px; border-radius: 50%;
-      background: linear-gradient(180deg, #fff 0%, #c8c4b8 100%);
-      border: 2px solid var(--gold);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.6), 0 0 16px rgba(245,197,24,0.5);
-      cursor: pointer;
-      transition: transform 0.15s;
+    .ea-slider:focus { outline: 2px solid var(--gold); outline-offset: 2px; }
+    .ea-bar {
+      flex: 1; border-radius: 1.5px;
+      background-color: rgba(0,0,0,0.5);
+      background-image: radial-gradient(circle at center, rgba(60,60,60,0.35) 38%, transparent 42%);
+      background-size: 4px 4px;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5);
+      pointer-events: none;
+      transition: background-image 0.18s, background-color 0.18s, box-shadow 0.18s;
     }
-    .slider-input::-webkit-slider-thumb:hover { transform: scale(1.15); }
-    .slider-input::-moz-range-thumb {
-      width: 24px; height: 24px; border-radius: 50%;
-      background: linear-gradient(180deg, #fff 0%, #c8c4b8 100%);
-      border: 2px solid var(--gold);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.6), 0 0 16px rgba(245,197,24,0.5);
-      cursor: pointer;
+    .ea-bar[data-step="1"]  { height: 28%; }
+    .ea-bar[data-step="2"]  { height: 36%; }
+    .ea-bar[data-step="3"]  { height: 44%; }
+    .ea-bar[data-step="4"]  { height: 52%; }
+    .ea-bar[data-step="5"]  { height: 60%; }
+    .ea-bar[data-step="6"]  { height: 70%; }
+    .ea-bar[data-step="7"]  { height: 78%; }
+    .ea-bar[data-step="8"]  { height: 86%; }
+    .ea-bar[data-step="9"]  { height: 94%; }
+    .ea-bar[data-step="10"] { height: 100%; }
+    .ea-bar.lit[data-step="1"], .ea-bar.lit[data-step="2"], .ea-bar.lit[data-step="3"] {
+      background-image: radial-gradient(circle at center, #22d97e 38%, transparent 42%);
+      background-color: rgba(20,80,40,0.18);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5), 0 0 6px rgba(34,217,126,0.5);
     }
+    .ea-bar.lit[data-step="4"], .ea-bar.lit[data-step="5"] {
+      background-image: radial-gradient(circle at center, #ffd400 38%, transparent 42%);
+      background-color: rgba(80,60,0,0.18);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5), 0 0 8px rgba(255,212,0,0.55);
+    }
+    .ea-bar.lit[data-step="6"], .ea-bar.lit[data-step="7"] {
+      background-image: radial-gradient(circle at center, #ff8c1a 38%, transparent 42%);
+      background-color: rgba(80,40,0,0.18);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5), 0 0 8px rgba(255,140,26,0.6);
+    }
+    .ea-bar.lit[data-step="8"], .ea-bar.lit[data-step="9"], .ea-bar.lit[data-step="10"] {
+      background-image: radial-gradient(circle at center, #ff3b3b 38%, transparent 42%);
+      background-color: rgba(80,0,0,0.22);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5), 0 0 9px rgba(255,59,59,0.65);
+    }
+    /* Idle animation while user is actively dragging this slider */
+    .ea-slider.dragging .ea-bar.lit { animation: ea-bar-pulse 0.9s ease-in-out infinite; }
+    @keyframes ea-bar-pulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.2); } }
 
     .comment-input {
       width: 100%; margin-top: 24px;
@@ -966,11 +996,14 @@
       document.getElementById('breakdown').innerHTML = bdHtml;
     }
 
-    // ── render rate form sliders ───────────────────────────────
+    // ── render rate form sliders (EA-style LED bar gauges) ────
     function renderSliders() {
       const initial = myRating?.scores || {};
       const html = CATEGORIES.map(c => {
         const val = initial[c.key] || 7;
+        const bars = Array.from({ length: 10 }, (_, i) =>
+          `<span class="ea-bar ${i < val ? 'lit' : ''}" data-step="${i + 1}"></span>`
+        ).join('');
         return `<div class="slider-row">
                   <div class="slider-head">
                     <div>
@@ -979,23 +1012,64 @@
                     </div>
                     <span class="slider-val" data-for="${c.key}">${val}</span>
                   </div>
-                  <div class="slider-track-wrap">
-                    <input class="slider-input" type="range" min="1" max="10" value="${val}" data-key="${c.key}">
+                  <div class="ea-slider" tabindex="0" role="slider"
+                       aria-label="${escapeHtml(c.label)}"
+                       aria-valuemin="1" aria-valuemax="10" aria-valuenow="${val}"
+                       data-key="${c.key}" data-value="${val}">
+                    ${bars}
                   </div>
                 </div>`;
       }).join('');
       document.getElementById('sliders').innerHTML = html;
 
-      // Live value display
-      document.querySelectorAll('.slider-input').forEach(input => {
-        input.addEventListener('input', () => {
-          const key = input.dataset.key;
-          document.querySelector(`.slider-val[data-for="${key}"]`).textContent = input.value;
-        });
-      });
+      // Wire each EA slider for click + drag + keyboard
+      document.querySelectorAll('.ea-slider').forEach(setupEaSlider);
 
       if (myRating?.comment) document.getElementById('rate-comment').value = myRating.comment;
       if (myRating) document.getElementById('submit-btn').textContent = 'Update Rating';
+    }
+
+    function setupEaSlider(el) {
+      const bars = [...el.querySelectorAll('.ea-bar')];
+      const valDisplay = document.querySelector(`.slider-val[data-for="${el.dataset.key}"]`);
+
+      function setValue(v) {
+        v = Math.max(1, Math.min(10, Math.round(v)));
+        el.dataset.value = v;
+        el.setAttribute('aria-valuenow', v);
+        bars.forEach((b, i) => b.classList.toggle('lit', i < v));
+        if (valDisplay) valDisplay.textContent = v;
+      }
+      function valueFromX(clientX) {
+        const rect = el.getBoundingClientRect();
+        const fraction = (clientX - rect.left) / rect.width;
+        return Math.min(10, Math.max(1, Math.floor(fraction * 10) + 1));
+      }
+
+      let dragging = false;
+      el.addEventListener('pointerdown', e => {
+        dragging = true;
+        el.classList.add('dragging');
+        try { el.setPointerCapture(e.pointerId); } catch (_) {}
+        setValue(valueFromX(e.clientX));
+      });
+      el.addEventListener('pointermove', e => {
+        if (!dragging) return;
+        setValue(valueFromX(e.clientX));
+      });
+      const endDrag = () => { dragging = false; el.classList.remove('dragging'); };
+      el.addEventListener('pointerup', endDrag);
+      el.addEventListener('pointercancel', endDrag);
+      el.addEventListener('lostpointercapture', endDrag);
+
+      // Keyboard arrows for accessibility
+      el.addEventListener('keydown', e => {
+        const cur = parseInt(el.dataset.value);
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowDown')  { e.preventDefault(); setValue(cur - 1); }
+        if (e.key === 'ArrowRight'|| e.key === 'ArrowUp')    { e.preventDefault(); setValue(cur + 1); }
+        if (e.key === 'Home')                                 { e.preventDefault(); setValue(1); }
+        if (e.key === 'End')                                  { e.preventDefault(); setValue(10); }
+      });
     }
 
     // ── render photos ──────────────────────────────────────────
@@ -1108,8 +1182,8 @@
       errEl.style.display = 'none';
 
       const scores = {};
-      document.querySelectorAll('.slider-input').forEach(input => {
-        scores[input.dataset.key] = parseInt(input.value);
+      document.querySelectorAll('.ea-slider').forEach(el => {
+        scores[el.dataset.key] = parseInt(el.dataset.value);
       });
       const comment = document.getElementById('rate-comment').value.trim();
 
