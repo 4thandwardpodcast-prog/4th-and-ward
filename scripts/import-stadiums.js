@@ -68,6 +68,50 @@ function makeSlug(record, takenSlugs) {
   return withId;
 }
 
+// ── HS-venue heuristic ────────────────────────────────────────────────────────
+// Sources label any stadium booked for HS games (incl. state championships at
+// college/pro venues) as "High School". Filter to PRIMARY HS use:
+//   - capacity > 25,000 → almost certainly multi-use (Rose Bowl, Legion Field, etc.)
+//   - owner contains University/Bowl/City of/Park & Rec → not primary HS
+//   - carve-outs for "College Station ISD", "College Prep" HS, etc.
+
+const COLLEGE_OK_PATTERNS = [
+  /college station/i,         // city in TX
+  /college prep/i,            // some HS names contain "College Prep"
+  /college park/i,            // city/region name
+  /college area school/i,     // State College Area School District (PA)
+];
+
+function isLikelyHsVenue(r) {
+  const owner = String(r.owner || '');
+
+  // School-district / private-HS override — primary HS use even if capacity is
+  // unusually large or "College" appears in the name.
+  const isHsOwned =
+    /\b(ISD|school district|city schools?|county schools?|catholic schools?|board of education|public schools?|parish schools?|diocese|archdiocese)\b/i.test(owner)
+    || /\b(SD|CSD|USD|CISD|SISD|MISD|GISD|HISD|BISD|EISD|JISD|LISD|NISD|PISD|RISD|TISD|WISD|YISD)\b/.test(owner)
+    || /\b(high school|academy|preparatory|\bprep\b)\b/i.test(owner);
+  if (isHsOwned) {
+    // Still flag if a UNIVERSITY is the dominant party (e.g. LSU Cub Complex)
+    if (/\b(state university|\buniv\b)\b/i.test(owner) && !/\bisd\b|\bschool district\b/i.test(owner)) return false;
+    return true;
+  }
+
+  // Cap > 25K and NOT a school district = almost certainly multi-use
+  if (r.capacity && r.capacity > 25000) return false;
+
+  // Universities + colleges (with carve-outs for false positives)
+  if (/\b(university|\bcollege\b)/i.test(owner)) {
+    if (!COLLEGE_OK_PATTERNS.some((re) => re.test(owner))) return false;
+  }
+  // Event-promoter / entertainment-group ownership
+  if (/\b(anschutz|entertainment group|sports group|bowl[,.]?\s*(inc|llc|foundation))\b/i.test(owner)) return false;
+  // State-owned, rarely primary HS
+  if (/^state of\b/i.test(owner)) return false;
+
+  return true;
+}
+
 // ── shape conversion: snake_case seed → camelCase Firestore ───────────────────
 
 function toFirestoreDoc(record, slug) {
@@ -123,6 +167,9 @@ function toFirestoreDoc(record, slug) {
     // Moderation
     isPublished: true, // seeded stadiums are public; user submissions start false
     isFeatured: false,
+    // Primary-HS-use heuristic. Frontend filters where this is true.
+    // Admin can manually flip via the moderation UI.
+    isHsVenue: isLikelyHsVenue(record),
 
     // Provenance
     seededAt: Date.now(),
@@ -176,6 +223,15 @@ async function main() {
     .forEach(([s, n]) => console.log(`  ${s}: ${n}`));
   const withPhoto = docs.filter(({ doc: d }) => d.photos.length > 0).length;
   console.log(`Photo coverage: ${withPhoto}/${docs.length} (${Math.round(withPhoto / docs.length * 100)}%)`);
+
+  // HS-venue heuristic stats
+  const flagged = docs.filter(({ doc: d }) => d.isHsVenue === false);
+  console.log(`\nHS-venue filter: ${docs.length - flagged.length} primary HS, ${flagged.length} flagged out (admin can re-include manually)`);
+  if (flagged.length) {
+    console.log('Flagged out (top 30 by capacity):');
+    flagged.slice().sort((a, b) => (b.doc.capacity || 0) - (a.doc.capacity || 0)).slice(0, 30)
+      .forEach(({ doc: d }) => console.log(`  cap=${(d.capacity || '—').toString().padStart(6)}  owner=${(d.owner || '?').slice(0, 50).padEnd(52)} ${d.stadiumName} (${d.city}, ${d.state})`));
+  }
 
   if (dryRun) {
     console.log('\n[--dry-run] not writing to Firestore. Sample doc:');

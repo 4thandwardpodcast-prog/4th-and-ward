@@ -724,7 +724,13 @@
     // ── data loading ───────────────────────────────────────────
     async function loadTop25() {
       // Day 1: orderBy capacity. Once ratings flow, switch to bayesianScore.
-      const q = query(collection(db, 'stadiums'), orderBy('capacity', 'desc'), limit(25));
+      // isHsVenue filter excludes multi-use venues (Rose Bowl, Legion Field, etc.)
+      const q = query(
+        collection(db, 'stadiums'),
+        where('isHsVenue', '==', true),
+        orderBy('capacity', 'desc'),
+        limit(25),
+      );
       const snap = await getDocs(q);
       const out = [];
       snap.forEach(d => out.push(d.data()));
@@ -739,6 +745,7 @@
       stateGrid.innerHTML = `<div class="skeleton-grid">${'<div class="skeleton-card"></div>'.repeat(4)}</div>`;
       const q = query(
         collection(db, 'stadiums'),
+        where('isHsVenue', '==', true),
         where('state', '==', stateCode),
         orderBy('capacity', 'desc'),
         limit(25),
@@ -761,7 +768,12 @@
     async function loadAllStadiums() {
       if (allFetched) return;
       // Fetch a generous chunk for client-side filter/sort. 500 is plenty for MVP.
-      const q = query(collection(db, 'stadiums'), orderBy('capacity', 'desc'), limit(500));
+      const q = query(
+        collection(db, 'stadiums'),
+        where('isHsVenue', '==', true),
+        orderBy('capacity', 'desc'),
+        limit(500),
+      );
       const snap = await getDocs(q);
       const out = [];
       snap.forEach(d => out.push(d.data()));

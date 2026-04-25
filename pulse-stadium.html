@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stadium — Friday Night Pulse</title>
+  <meta name="description" content="Rate the atmosphere, energy, and home-field advantage of this high school football stadium.">
+  <link rel="icon" href="logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    /* ── HERO ──────────────────────────────────────────────────── */
+    .stadium-hero {
+      position: relative;
+      min-height: 480px;
+      isolation: isolate;
+      overflow: hidden;
+    }
+    .stadium-hero-photo {
+      position: absolute; inset: 0; z-index: -2;
+      background: #0a0a0a;
+    }
+    .stadium-hero-photo img {
+      width: 100%; height: 100%; object-fit: cover;
+      filter: brightness(0.55) contrast(1.05);
+    }
+    .stadium-hero-photo::after {
+      content: ''; position: absolute; inset: 0;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 30%, transparent 50%, rgba(0,0,0,0.95) 100%),
+        linear-gradient(90deg, rgba(0,0,0,0.6) 0%, transparent 50%);
+    }
+    .stadium-hero-inner {
+      position: relative; z-index: 1;
+      max-width: 1280px; margin: 0 auto;
+      padding: 100px 48px 48px;
+      display: grid; grid-template-columns: 1fr; gap: 24px;
+    }
+    .back-link {
+      font-family: var(--condensed); font-weight: 800; font-size: 13px;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--gold); text-decoration: none;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: color 0.2s, gap 0.2s;
+    }
+    .back-link:hover { color: var(--gold-hover); gap: 10px; }
+
+    .stadium-eyebrow {
+      font-family: var(--condensed); font-weight: 800; font-size: 12px;
+      letter-spacing: 0.32em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 12px;
+      text-shadow: 0 0 24px rgba(245,197,24,0.35);
+    }
+    .stadium-name {
+      font-family: var(--condensed); font-weight: 900;
+      font-size: clamp(40px, 6vw, 72px);
+      line-height: 0.95; letter-spacing: -0.01em;
+      text-transform: uppercase; margin-bottom: 12px;
+      text-shadow: 0 4px 24px rgba(0,0,0,0.7);
+    }
+    .stadium-secondary {
+      font-family: var(--condensed); font-weight: 700;
+      font-size: 18px; color: var(--muted);
+      margin-bottom: 18px; letter-spacing: 0.04em;
+    }
+    .stadium-location {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--condensed); font-weight: 800;
+      font-size: 16px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--white); margin-bottom: 24px;
+    }
+    .stadium-location .state-pill {
+      display: inline-block;
+      background: rgba(245,197,24,0.18);
+      color: var(--gold);
+      padding: 3px 10px; border-radius: 4px;
+      font-size: 13px; font-weight: 800;
+      border: 1px solid rgba(245,197,24,0.35);
+    }
+    .stadium-stats {
+      display: flex; flex-wrap: wrap; gap: 32px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .stat-cell {
+      display: flex; flex-direction: column;
+    }
+    .stat-cell-label {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 4px;
+    }
+    .stat-cell-value {
+      font-family: var(--condensed); font-weight: 900;
+      font-size: 24px; color: var(--white);
+      letter-spacing: -0.01em;
+    }
+    .stat-cell-value.no-track {
+      color: var(--gold); text-shadow: 0 0 16px rgba(245,197,24,0.4);
+    }
+    .stadium-teams {
+      font-size: 13px; color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+    .stadium-teams strong { color: var(--white); font-weight: 700; }
+
+    /* ── PULSE GAUGE (copied from pulse.html) ─────────────────── */
+    .pulse-gauge { position: relative; max-width: 520px; margin: 0 auto; transform-origin: center; }
+    .pulse-gauge-frame {
+      position: relative; padding: 18px 18px 14px;
+      background: linear-gradient(180deg, #1d1d1d 0%, #0a0a0a 100%);
+      border: 1px solid #3a3a3a; border-radius: 8px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.6),
+                  0 14px 40px rgba(0,0,0,0.7), 0 0 70px rgba(245,197,24,0.06);
+    }
+    .pulse-gauge-frame::before, .pulse-gauge-frame::after {
+      content: ''; position: absolute; left: 14%; right: 14%; height: 1px;
+      background: linear-gradient(90deg, transparent 0%, var(--gold) 50%, transparent 100%);
+      opacity: 0.55; pointer-events: none;
+    }
+    .pulse-gauge-frame::before { top: 4px; }
+    .pulse-gauge-frame::after  { bottom: 4px; }
+    .pulse-gauge-bars {
+      display: flex; gap: 5px; align-items: flex-end;
+      height: 150px; padding: 12px 10px;
+      background: radial-gradient(ellipse at center top, #0e0e0e 0%, #050505 100%);
+      border: 1px solid #1f1f1f; border-radius: 4px;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.85), inset 0 -1px 0 rgba(245,197,24,0.04);
+    }
+    .pulse-bar {
+      flex: 1; border-radius: 1.5px; background-color: rgba(0,0,0,0.5);
+      background-image: radial-gradient(circle at center, rgba(60,60,60,0.35) 38%, transparent 42%);
+      background-size: 5px 5px;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5);
+      transition: background-image 0.35s, box-shadow 0.35s, background-color 0.35s;
+    }
+    .pulse-bar[data-step="1"]  { height: 28%; }
+    .pulse-bar[data-step="2"]  { height: 36%; }
+    .pulse-bar[data-step="3"]  { height: 44%; }
+    .pulse-bar[data-step="4"]  { height: 52%; }
+    .pulse-bar[data-step="5"]  { height: 60%; }
+    .pulse-bar[data-step="6"]  { height: 70%; }
+    .pulse-bar[data-step="7"]  { height: 78%; }
+    .pulse-bar[data-step="8"]  { height: 86%; }
+    .pulse-bar[data-step="9"]  { height: 94%; }
+    .pulse-bar[data-step="10"] { height: 100%; }
+    .pulse-bar.lit[data-step="1"], .pulse-bar.lit[data-step="2"], .pulse-bar.lit[data-step="3"] {
+      background-image: radial-gradient(circle at center, #22d97e 38%, transparent 42%);
+      background-color: rgba(20,80,40,0.18);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5), 0 0 14px rgba(34,217,126,0.55);
+    }
+    .pulse-bar.lit[data-step="4"], .pulse-bar.lit[data-step="5"] {
+      background-image: radial-gradient(circle at center, #ffd400 38%, transparent 42%);
+      background-color: rgba(80,60,0,0.18);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5), 0 0 16px rgba(255,212,0,0.6);
+    }
+    .pulse-bar.lit[data-step="6"], .pulse-bar.lit[data-step="7"] {
+      background-image: radial-gradient(circle at center, #ff8c1a 38%, transparent 42%);
+      background-color: rgba(80,40,0,0.18);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5), 0 0 16px rgba(255,140,26,0.65);
+    }
+    .pulse-bar.lit[data-step="8"], .pulse-bar.lit[data-step="9"], .pulse-bar.lit[data-step="10"] {
+      background-image: radial-gradient(circle at center, #ff3b3b 38%, transparent 42%);
+      background-color: rgba(80,0,0,0.22);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.5), 0 0 18px rgba(255,59,59,0.7);
+    }
+    @keyframes bar-pulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.18); } }
+    .pulse-bar.lit { animation: bar-pulse 1.6s ease-in-out infinite; }
+    .pulse-bar.lit:nth-child(2n) { animation-delay: 0.1s; }
+    .pulse-bar.lit:nth-child(3n) { animation-delay: 0.25s; }
+    .pulse-gauge-labels { text-align: center; margin-top: 16px; }
+    .pulse-gauge-title {
+      font-family: var(--condensed); font-weight: 900;
+      font-size: 30px; letter-spacing: 0.14em; line-height: 1;
+      text-transform: uppercase; color: var(--white);
+      text-shadow: 0 0 26px rgba(245,197,24,0.4), 0 2px 8px rgba(0,0,0,0.5);
+      margin-bottom: 10px;
+    }
+    .pulse-gauge-rank {
+      display: inline-flex; align-items: center; gap: 12px;
+      padding: 7px 16px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(20,20,20,0.85) 100%);
+      border: 1px solid rgba(245,197,24,0.3);
+      border-radius: 4px;
+      font-family: var(--condensed); font-weight: 800;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .pulse-gauge-rank-label { color: var(--muted); font-size: 13px; }
+    .pulse-gauge-rank-divider { width: 1px; height: 14px; background: rgba(245,197,24,0.35); }
+    .pulse-gauge-rank-value { color: var(--gold); font-size: 19px; }
+    .pulse-gauge-meta {
+      margin-top: 14px; text-align: center;
+      font-size: 11px; font-weight: 600;
+      color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .pulse-gauge-meta .dot { color: #444; padding: 0 6px; }
+    .pulse-gauge.empty .pulse-gauge-title { color: var(--muted); text-shadow: none; }
+    .pulse-gauge.empty .pulse-gauge-rank { opacity: 0.5; }
+    @keyframes pulse-shake-low { 0%, 100% { transform: translate3d(0,0,0); } 25% { transform: translate3d(-0.5px,0.5px,0); } 75% { transform: translate3d(0.5px,-0.5px,0); } }
+    @keyframes pulse-shake-mid {
+      0%, 100% { transform: translate3d(0,0,0) rotate(0); }
+      10% { transform: translate3d(-1px,0,0); } 30% { transform: translate3d(1px,-1px,0) rotate(-0.1deg); }
+      50% { transform: translate3d(-1px,1px,0); } 70% { transform: translate3d(1px,0,0) rotate(0.1deg); }
+      90% { transform: translate3d(-1px,1px,0); }
+    }
+    @keyframes pulse-shake-high {
+      0%, 100% { transform: translate3d(0,0,0) rotate(0); }
+      10% { transform: translate3d(-2px,1px,0) rotate(-0.3deg); } 20% { transform: translate3d(2px,-1px,0) rotate(0.3deg); }
+      30% { transform: translate3d(-2px,0,0); } 40% { transform: translate3d(2px,1px,0) rotate(-0.2deg); }
+      50% { transform: translate3d(-1px,-1px,0) rotate(0.2deg); } 60% { transform: translate3d(2px,0,0); }
+      70% { transform: translate3d(-1px,1px,0) rotate(-0.2deg); } 80% { transform: translate3d(1px,-1px,0); }
+      90% { transform: translate3d(-2px,0,0) rotate(0.3deg); }
+    }
+    .pulse-gauge.shake-low  { animation: pulse-shake-low 0.6s ease-in-out infinite; }
+    .pulse-gauge.shake-mid  { animation: pulse-shake-mid 0.45s ease-in-out infinite; }
+    .pulse-gauge.shake-high { animation: pulse-shake-high 0.4s ease-in-out infinite; }
+    @media (prefers-reduced-motion: reduce) { .pulse-gauge, .pulse-bar.lit { animation: none !important; } }
+
+    /* ── PULSE SECTION + 8-CATEGORY BREAKDOWN ─────────────────── */
+    .pulse-section {
+      padding: 48px 48px 32px;
+      max-width: 980px; margin: 0 auto;
+    }
+    .pulse-breakdown {
+      max-width: 720px; margin: 36px auto 0;
+      display: grid; gap: 12px;
+    }
+    .breakdown-row {
+      display: grid;
+      grid-template-columns: 220px 1fr 56px;
+      align-items: center; gap: 16px;
+      padding: 10px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .breakdown-row:hover {
+      border-color: rgba(245,197,24,0.25);
+      background: var(--surface2);
+    }
+    .breakdown-label {
+      font-family: var(--condensed); font-weight: 800;
+      font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--white);
+    }
+    .breakdown-bar {
+      position: relative; height: 8px;
+      background: #0d0d0d;
+      border: 1px solid #1f1f1f;
+      border-radius: 99px; overflow: hidden;
+    }
+    .breakdown-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #22d97e 0%, #ffd400 50%, #ff8c1a 75%, #ff3b3b 100%);
+      transition: width 1s cubic-bezier(0.65, 0, 0.35, 1);
+      box-shadow: 0 0 12px rgba(245,197,24,0.25);
+    }
+    .breakdown-score {
+      font-family: var(--condensed); font-weight: 900;
+      font-size: 18px; text-align: right;
+      letter-spacing: -0.01em;
+    }
+    .breakdown-score.empty { color: #444; }
+
+    .rate-cta-wrap {
+      text-align: center; padding: 36px 0;
+    }
+    .rate-cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: linear-gradient(180deg, #FFE066 0%, var(--gold) 50%, #D9AC10 100%);
+      color: #0a0a0a; padding: 18px 40px;
+      border: 1px solid rgba(255,215,64,0.5); border-radius: 4px;
+      font-family: var(--condensed); font-weight: 900;
+      font-size: 16px; letter-spacing: 0.14em; text-transform: uppercase;
+      cursor: pointer; text-decoration: none;
+      box-shadow: 0 6px 24px rgba(245,197,24,0.32), inset 0 1px 0 rgba(255,255,255,0.4);
+      transition: transform 0.15s, box-shadow 0.2s;
+    }
+    .rate-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(245,197,24,0.5); }
+
+    /* ── RATE FORM ────────────────────────────────────────────── */
+    .rate-section {
+      padding: 60px 48px;
+      background: linear-gradient(180deg, #0a0a0a 0%, var(--black) 100%);
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    }
+    .rate-card {
+      max-width: 720px; margin: 0 auto;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 40px;
+    }
+    .rate-card h2 {
+      font-family: var(--condensed); font-weight: 900;
+      font-size: 36px; text-transform: uppercase; line-height: 1;
+      margin-bottom: 8px;
+    }
+    .rate-card h2 .accent { color: var(--gold); }
+    .rate-intro { color: var(--muted); margin-bottom: 28px; line-height: 1.6; }
+
+    .slider-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px; padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .slider-row:last-of-type { border-bottom: none; }
+    .slider-head {
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    }
+    .slider-label {
+      font-family: var(--condensed); font-weight: 800;
+      font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .slider-hint {
+      font-size: 11px; color: var(--muted);
+      font-style: italic;
+    }
+    .slider-val {
+      font-family: var(--condensed); font-weight: 900;
+      font-size: 22px; min-width: 36px; text-align: right;
+      color: var(--gold);
+    }
+    .slider-track-wrap { position: relative; padding: 6px 0; }
+    .slider-input {
+      width: 100%; -webkit-appearance: none; appearance: none;
+      height: 8px;
+      background: linear-gradient(90deg, #22d97e 0%, #ffd400 50%, #ff8c1a 75%, #ff3b3b 100%);
+      border-radius: 99px; outline: none;
+      cursor: pointer;
+    }
+    .slider-input::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: linear-gradient(180deg, #fff 0%, #c8c4b8 100%);
+      border: 2px solid var(--gold);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6), 0 0 16px rgba(245,197,24,0.5);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .slider-input::-webkit-slider-thumb:hover { transform: scale(1.15); }
+    .slider-input::-moz-range-thumb {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: linear-gradient(180deg, #fff 0%, #c8c4b8 100%);
+      border: 2px solid var(--gold);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6), 0 0 16px rgba(245,197,24,0.5);
+      cursor: pointer;
+    }
+
+    .comment-input {
+      width: 100%; margin-top: 24px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--white); padding: 14px 16px;
+      border-radius: 8px; font-family: var(--body); font-size: 14px;
+      resize: vertical; min-height: 80px;
+      transition: border-color 0.2s;
+    }
+    .comment-input:focus { outline: none; border-color: var(--gold); }
+    .comment-input::placeholder { color: #555; }
+    .comment-meta {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 6px; font-size: 11px; color: var(--muted);
+    }
+
+    .submit-rating-btn {
+      width: 100%; margin-top: 24px;
+      background: linear-gradient(180deg, #FFE066 0%, var(--gold) 50%, #D9AC10 100%);
+      color: #0a0a0a; padding: 16px;
+      border: 1px solid rgba(255,215,64,0.5); border-radius: 6px;
+      font-family: var(--condensed); font-weight: 900;
+      font-size: 16px; letter-spacing: 0.14em; text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 6px 18px rgba(245,197,24,0.3);
+    }
+    .submit-rating-btn:hover:not(:disabled) { transform: translateY(-2px); }
+    .submit-rating-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .submit-rating-btn.success { background: #22d97e; color: #0a0a0a; }
+    .form-error { display: none; padding: 10px 14px; margin-top: 10px;
+      background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.4);
+      color: #fca5a5; border-radius: 6px; font-size: 13px; }
+
+    /* ── PHOTO GALLERY ───────────────────────────────────────── */
+    .photos-section, .comments-section {
+      padding: 48px 48px;
+      max-width: 1200px; margin: 0 auto;
+    }
+    .section-title-row {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 24px; gap: 16px; flex-wrap: wrap;
+    }
+    .section-title-row h2 {
+      font-family: var(--condensed); font-weight: 900;
+      font-size: 32px; text-transform: uppercase; letter-spacing: -0.01em;
+    }
+    .section-title-row h2 .accent { color: var(--gold); }
+    .section-meta { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .photo-cell {
+      position: relative;
+      aspect-ratio: 16/10;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.25s, border-color 0.2s;
+    }
+    .photo-cell:hover { transform: translateY(-3px); border-color: rgba(245,197,24,0.4); }
+    .photo-cell img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+    .photo-cell:hover img { transform: scale(1.04); }
+    .photo-credit {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      padding: 8px 12px;
+      background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.85) 100%);
+      font-size: 11px; color: var(--white); font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .photo-credit a { color: var(--gold); text-decoration: none; }
+    .photo-credit a:hover { text-decoration: underline; }
+    .add-photo-cell {
+      aspect-ratio: 16/10;
+      background: var(--surface);
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 8px; cursor: pointer; color: var(--muted);
+      font-family: var(--condensed); font-weight: 800;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+    .add-photo-cell:hover { border-color: var(--gold); color: var(--gold); background: rgba(245,197,24,0.04); }
+    .add-photo-cell .plus { font-size: 32px; line-height: 1; }
+    .add-photo-cell input { display: none; }
+
+    /* ── COMMENTS ─────────────────────────────────────────────── */
+    .comment-list { display: grid; gap: 14px; max-width: 720px; margin: 0 auto; }
+    .comment {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 18px 22px;
+    }
+    .comment-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 8px;
+      font-size: 11px; color: var(--muted);
+      letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600;
+    }
+    .comment-score {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 8px;
+      background: rgba(245,197,24,0.12);
+      border: 1px solid rgba(245,197,24,0.3);
+      border-radius: 4px;
+      color: var(--gold); font-family: var(--condensed); font-weight: 800;
+      font-size: 12px;
+    }
+    .comment-body { line-height: 1.6; color: var(--white); }
+    .empty-state {
+      padding: 48px 24px; text-align: center;
+      color: var(--muted); font-size: 14px;
+    }
+    .empty-state strong { color: var(--gold); }
+
+    /* ── TOAST ────────────────────────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120%);
+      padding: 14px 24px;
+      background: var(--gold); color: var(--black);
+      font-family: var(--condensed); font-weight: 800;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      border-radius: 6px; font-size: 14px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 40px rgba(245,197,24,0.3);
+      z-index: 1000;
+      transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── LOADING / NOT FOUND ──────────────────────────────────── */
+    .page-loading, .page-error {
+      padding: 200px 24px; text-align: center;
+    }
+    .page-loading-text {
+      font-family: var(--condensed); font-weight: 800;
+      font-size: 14px; letter-spacing: 0.32em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .page-error h2 {
+      font-family: var(--condensed); font-weight: 900;
+      font-size: 48px; text-transform: uppercase; margin-bottom: 16px;
+    }
+
+    /* ── RESPONSIVE ──────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .stadium-hero { min-height: 360px; }
+      .stadium-hero-inner { padding: 80px 20px 32px; }
+      .stadium-stats { gap: 20px; }
+      .stat-cell-value { font-size: 20px; }
+      .pulse-section, .photos-section, .comments-section { padding: 32px 20px; }
+      .rate-section { padding: 40px 20px; }
+      .rate-card { padding: 28px 22px; }
+      .breakdown-row { grid-template-columns: 140px 1fr 44px; gap: 10px; padding: 9px 12px; }
+      .breakdown-label { font-size: 12px; letter-spacing: 0.06em; }
+    }
+    @media (max-width: 600px) {
+      .stadium-hero-inner { padding: 70px 16px 24px; }
+      .stadium-stats { gap: 16px; }
+      .photo-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+      .breakdown-row { grid-template-columns: 110px 1fr 36px; padding: 8px 10px; }
+      .breakdown-label { font-size: 11px; }
+      .breakdown-score { font-size: 15px; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo"><img src="logo-cover.svg" alt="4th &amp; Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="totw.html">Team of the Week</a></li>
+      <li><a href="wardle.html">4th &amp; Wardle</a></li>
+      <li><a href="hsblitz.html">HS Blitz<span class="nav-beta">Beta</span></a></li>
+      <li><a href="dripordrown.html">Drip or Drown</a></li>
+      <li><a href="pulse.html" class="active">Friday Night Pulse<span class="nav-beta">New</span></a></li>
+      <li><a href="merch.html">Merch</a></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+  </nav>
+
+  <!-- Loading state -->
+  <div class="page-loading" id="page-loading">
+    <div class="page-loading-text">Loading stadium…</div>
+  </div>
+
+  <!-- Not found state -->
+  <div class="page-error" id="page-error" style="display:none;">
+    <h2>Stadium Not Found</h2>
+    <p style="color:var(--muted);margin-bottom:24px;">We couldn't find that stadium. It may have been moved or removed.</p>
+    <a href="pulse.html" class="btn-gold">← Browse all stadiums</a>
+  </div>
+
+  <!-- Main content -->
+  <div id="page-content" style="display:none;">
+    <!-- HERO -->
+    <section class="stadium-hero">
+      <div class="stadium-hero-photo" id="hero-photo"></div>
+      <div class="stadium-hero-inner">
+        <a href="pulse.html" class="back-link">← All stadiums</a>
+        <div>
+          <div class="stadium-eyebrow">Friday Night Pulse</div>
+          <h1 class="stadium-name" id="hero-name">—</h1>
+          <div class="stadium-secondary" id="hero-secondary" style="display:none;"></div>
+          <div class="stadium-location" id="hero-location"></div>
+          <div class="stadium-teams" id="hero-teams"></div>
+        </div>
+        <div class="stadium-stats" id="hero-stats"></div>
+      </div>
+    </section>
+
+    <!-- PULSE GAUGE + BREAKDOWN -->
+    <section class="pulse-section">
+      <div class="pulse-gauge empty" id="big-gauge">
+        <div class="pulse-gauge-frame">
+          <div class="pulse-gauge-bars">
+            <div class="pulse-bar" data-step="1"></div>
+            <div class="pulse-bar" data-step="2"></div>
+            <div class="pulse-bar" data-step="3"></div>
+            <div class="pulse-bar" data-step="4"></div>
+            <div class="pulse-bar" data-step="5"></div>
+            <div class="pulse-bar" data-step="6"></div>
+            <div class="pulse-bar" data-step="7"></div>
+            <div class="pulse-bar" data-step="8"></div>
+            <div class="pulse-bar" data-step="9"></div>
+            <div class="pulse-bar" data-step="10"></div>
+          </div>
+        </div>
+        <div class="pulse-gauge-labels">
+          <div class="pulse-gauge-title">Friday Night Pulse</div>
+          <div class="pulse-gauge-rank">
+            <span class="pulse-gauge-rank-label">Score</span>
+            <span class="pulse-gauge-rank-divider"></span>
+            <span class="pulse-gauge-rank-value" id="big-score">—</span>
+          </div>
+        </div>
+        <div class="pulse-gauge-meta" id="big-meta">
+          No ratings yet <span class="dot">•</span> Be the first to rate
+        </div>
+      </div>
+
+      <!-- 8-category breakdown -->
+      <div class="pulse-breakdown" id="breakdown"></div>
+
+      <div class="rate-cta-wrap">
+        <a class="rate-cta" href="#rate-section" id="rate-cta">Rate this stadium →</a>
+      </div>
+    </section>
+
+    <!-- RATE FORM -->
+    <section class="rate-section" id="rate-section">
+      <div class="rate-card">
+        <h2>Rate <span class="accent" id="rate-name">this stadium</span></h2>
+        <p class="rate-intro">
+          Drag each slider 1–10. Anonymous &mdash; we just track your device so you can't rate the same stadium twice.
+          Comment is optional and reviewed before going public.
+        </p>
+        <form id="rate-form" autocomplete="off">
+          <!-- 8 sliders generated by JS -->
+          <div id="sliders"></div>
+
+          <textarea class="comment-input" id="rate-comment" maxlength="300"
+            placeholder="Optional: share a story, a hot take, or what makes this place special…"></textarea>
+          <div class="comment-meta">
+            <span><span id="comment-count">0</span> / 300</span>
+            <span>Public after admin review</span>
+          </div>
+
+          <button type="submit" class="submit-rating-btn" id="submit-btn">Submit Rating</button>
+          <div class="form-error" id="form-error"></div>
+        </form>
+      </div>
+    </section>
+
+    <!-- PHOTOS -->
+    <section class="photos-section">
+      <div class="section-title-row">
+        <h2>Stadium <span class="accent">Photos</span></h2>
+        <span class="section-meta" id="photos-meta"></span>
+      </div>
+      <div class="photo-grid" id="photo-grid"></div>
+    </section>
+
+    <!-- COMMENTS -->
+    <section class="comments-section">
+      <div class="section-title-row">
+        <h2>What People Are <span class="accent">Saying</span></h2>
+        <span class="section-meta" id="comments-meta"></span>
+      </div>
+      <div id="comments-wrap">
+        <div class="empty-state" id="comments-empty" style="display:none;">
+          No comments yet. <strong>Be the first to weigh in.</strong>
+        </div>
+        <div class="comment-list" id="comment-list"></div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.png" alt="4th &amp; Ward"></div>
+    <ul class="footer-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="merch.html">Merch</a></li>
+    </ul>
+    <p class="footer-copy">&copy; 2026 4th &amp; Ward Podcast. All rights reserved.</p>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc,
+             query, where, orderBy, limit, serverTimestamp }
+      from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getStorage, ref as sref, uploadBytes, getDownloadURL }
+      from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyB5EJMsZT4WsfJjaFQ-srIdNwAINr7Q2yY",
+      authDomain: "th-and-ward-b8f1c.firebaseapp.com",
+      projectId: "th-and-ward-b8f1c",
+      storageBucket: "th-and-ward-b8f1c.firebasestorage.app",
+      messagingSenderId: "499057353962",
+      appId: "1:499057353962:web:18f42748c242a6e0be2393"
+    };
+
+    const app = initializeApp(FIREBASE_CONFIG);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    // ── visitor id ─────────────────────────────────────────────
+    let visitorId = localStorage.getItem('4ward_vid');
+    if (!visitorId) {
+      visitorId = 'v_' + Math.random().toString(36).slice(2) + Date.now();
+      localStorage.setItem('4ward_vid', visitorId);
+    }
+
+    // ── 8 rating categories ────────────────────────────────────
+    const CATEGORIES = [
+      { key: 'overallVibe',         label: 'Overall Vibe',          hint: 'Total Friday Night atmosphere & energy' },
+      { key: 'crowdNoise',          label: 'Crowd Noise',           hint: 'How loud and electric the fans get' },
+      { key: 'intimidation',        label: 'Intimidation Factor',   hint: 'How much it rattles visiting teams' },
+      { key: 'gameNightAtmosphere', label: 'Game Night Atmosphere', hint: 'Lights, jumbotron, video boards, fireworks' },
+      { key: 'bandStudent',         label: 'Band & Student Section', hint: 'Energy of the band, cheers, and halftime' },
+      { key: 'concessions',         label: 'Concessions',           hint: 'Food, drinks, lines, value, and quality' },
+      { key: 'facilities',          label: 'Facilities & Coach Exp.', hint: 'Press boxes, sidelines, field, no-track bonus' },
+      { key: 'homeFieldAdvantage',  label: 'Home Field Advantage',  hint: 'Attendance, crowd density, win history' },
+    ];
+
+    // ── state ──────────────────────────────────────────────────
+    let stadium = null;
+    let ratings = [];          // all rating docs for this stadium
+    let myRating = null;       // current visitor's rating doc if exists
+
+    // ── helpers ────────────────────────────────────────────────
+    function escapeHtml(s) {
+      return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+    function fmtCapacity(n) {
+      if (!n) return '—';
+      if (n >= 10000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+      return n.toLocaleString();
+    }
+    function fmtTime(ts) {
+      const d = new Date(ts);
+      const diffH = (Date.now() - ts) / 3.6e6;
+      if (diffH < 1) return Math.max(1, Math.round(diffH * 60)) + ' min ago';
+      if (diffH < 24) return Math.round(diffH) + ' hr ago';
+      if (diffH < 720) return Math.round(diffH / 24) + ' days ago';
+      return d.toLocaleDateString();
+    }
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg; el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    // ── gauge utility (shared with pulse.html) ─────────────────
+    function setGaugeScore(gauge, score) {
+      const bars = gauge.querySelectorAll('.pulse-bar');
+      const litCount = score == null ? 0 : Math.max(0, Math.min(10, Math.round(score)));
+      bars.forEach((bar, i) => bar.classList.toggle('lit', i < litCount));
+      gauge.classList.remove('shake-low', 'shake-mid', 'shake-high', 'empty');
+      const valueEl = gauge.querySelector('.pulse-gauge-rank-value');
+      if (score == null) {
+        gauge.classList.add('empty');
+        if (valueEl) valueEl.textContent = '—';
+        return;
+      }
+      if (valueEl) valueEl.textContent = score.toFixed(1);
+      if (score >= 9)        gauge.classList.add('shake-high');
+      else if (score >= 7.5) gauge.classList.add('shake-mid');
+      else if (score >= 6)   gauge.classList.add('shake-low');
+    }
+
+    // ── Bayesian average for compositeScore ────────────────────
+    // bayesian = (C * m + sum) / (C + n)
+    const BAYES_C = 5;     // confidence prior — small, since 8-cat composite is denser data than binary
+    const BAYES_M = 7.0;   // global mean prior
+    function bayesianAvg(values) {
+      if (!values.length) return null;
+      const sum = values.reduce((a, b) => a + b, 0);
+      return (BAYES_C * BAYES_M + sum) / (BAYES_C + values.length);
+    }
+
+    // ── render hero ────────────────────────────────────────────
+    function renderHero() {
+      const photo = stadium.photos && stadium.photos[stadium.primaryPhotoIndex || 0];
+      if (photo) {
+        document.getElementById('hero-photo').innerHTML =
+          `<img src="${escapeHtml(photo.url)}" alt="${escapeHtml(stadium.stadiumName)}">`;
+      }
+      document.getElementById('hero-name').textContent = stadium.stadiumName;
+      if (stadium.secondaryName) {
+        const sec = document.getElementById('hero-secondary');
+        sec.textContent = 'at ' + stadium.secondaryName;
+        sec.style.display = '';
+      }
+      document.getElementById('hero-location').innerHTML =
+        `${escapeHtml(stadium.city || '')}<span class="state-pill">${escapeHtml(stadium.state)}</span>`;
+      if (stadium.homeTeams && stadium.homeTeams.length) {
+        document.getElementById('hero-teams').innerHTML =
+          'Home of: <strong>' + stadium.homeTeams.map(escapeHtml).join('</strong>, <strong>') + '</strong>';
+      }
+      const stats = [];
+      if (stadium.capacity)   stats.push({ label: 'Capacity', val: fmtCapacity(stadium.capacity) });
+      if (stadium.yearOpened) stats.push({ label: 'Built', val: stadium.yearOpened });
+      if (stadium.surface)    stats.push({ label: 'Surface', val: stadium.surface });
+      if (stadium.hasTrack === false) stats.push({ label: 'Track', val: 'No', cls: 'no-track' });
+      else if (stadium.hasTrack === true) stats.push({ label: 'Track', val: 'Yes' });
+      if (stadium.county)     stats.push({ label: 'County', val: stadium.county });
+      document.getElementById('hero-stats').innerHTML = stats.map(s =>
+        `<div class="stat-cell">
+           <div class="stat-cell-label">${escapeHtml(s.label)}</div>
+           <div class="stat-cell-value ${s.cls || ''}">${escapeHtml(String(s.val))}</div>
+         </div>`).join('');
+      document.title = `${stadium.stadiumName} — Friday Night Pulse`;
+      document.getElementById('rate-name').textContent = stadium.stadiumName;
+    }
+
+    // ── render gauge + breakdown ───────────────────────────────
+    function renderGauge() {
+      const big = document.getElementById('big-gauge');
+      const meta = document.getElementById('big-meta');
+      const n = ratings.length;
+
+      if (n === 0) {
+        setGaugeScore(big, null);
+        meta.innerHTML = 'No ratings yet <span class="dot">•</span> Be the first to rate';
+      } else {
+        // Composite: average each rating's mean across 8 categories, then bayesian-adjust
+        const ratingMeans = ratings.map(r => {
+          const vals = CATEGORIES.map(c => r.scores[c.key] || 0);
+          return vals.reduce((a, b) => a + b, 0) / vals.length;
+        });
+        const composite = bayesianAvg(ratingMeans);
+        setGaugeScore(big, composite);
+        meta.innerHTML = `Based on <strong>${n}</strong> rating${n === 1 ? '' : 's'} <span class="dot">•</span> ${fmtTime(Math.max(...ratings.map(r => r.submittedAt)))}`;
+      }
+
+      // 8-category breakdown
+      const bdHtml = CATEGORIES.map(c => {
+        const vals = ratings.map(r => r.scores[c.key]).filter(v => typeof v === 'number');
+        const avg = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+        const pct = avg != null ? Math.max(0, Math.min(100, avg * 10)) : 0;
+        return `<div class="breakdown-row">
+                  <span class="breakdown-label">${escapeHtml(c.label)}</span>
+                  <div class="breakdown-bar"><div class="breakdown-fill" style="width:${pct}%"></div></div>
+                  <span class="breakdown-score ${avg == null ? 'empty' : ''}">${avg == null ? '—' : avg.toFixed(1)}</span>
+                </div>`;
+      }).join('');
+      document.getElementById('breakdown').innerHTML = bdHtml;
+    }
+
+    // ── render rate form sliders ───────────────────────────────
+    function renderSliders() {
+      const initial = myRating?.scores || {};
+      const html = CATEGORIES.map(c => {
+        const val = initial[c.key] || 7;
+        return `<div class="slider-row">
+                  <div class="slider-head">
+                    <div>
+                      <div class="slider-label">${escapeHtml(c.label)}</div>
+                      <div class="slider-hint">${escapeHtml(c.hint)}</div>
+                    </div>
+                    <span class="slider-val" data-for="${c.key}">${val}</span>
+                  </div>
+                  <div class="slider-track-wrap">
+                    <input class="slider-input" type="range" min="1" max="10" value="${val}" data-key="${c.key}">
+                  </div>
+                </div>`;
+      }).join('');
+      document.getElementById('sliders').innerHTML = html;
+
+      // Live value display
+      document.querySelectorAll('.slider-input').forEach(input => {
+        input.addEventListener('input', () => {
+          const key = input.dataset.key;
+          document.querySelector(`.slider-val[data-for="${key}"]`).textContent = input.value;
+        });
+      });
+
+      if (myRating?.comment) document.getElementById('rate-comment').value = myRating.comment;
+      if (myRating) document.getElementById('submit-btn').textContent = 'Update Rating';
+    }
+
+    // ── render photos ──────────────────────────────────────────
+    function renderPhotos(extraPhotos = []) {
+      const seedPhotos = (stadium.photos || []).filter(p => p.approved !== false);
+      const all = [...seedPhotos, ...extraPhotos];
+      const grid = document.getElementById('photo-grid');
+      const cells = all.map(p => `
+        <div class="photo-cell">
+          <img src="${escapeHtml(p.url)}" alt="" loading="lazy">
+          ${p.credit || p.sourcePage ? `<div class="photo-credit">
+            ${p.credit ? `Photo: ${escapeHtml(p.credit)}` : 'Photo'}
+            ${p.sourcePage ? ` · <a href="${escapeHtml(p.sourcePage)}" target="_blank" rel="noopener">${escapeHtml(new URL(p.sourcePage).hostname)}</a>` : ''}
+            ${p.uploaderName ? ` · uploaded by ${escapeHtml(p.uploaderName)}` : ''}
+          </div>` : ''}
+        </div>`).join('');
+      grid.innerHTML = cells + `
+        <label class="add-photo-cell">
+          <span class="plus">+</span>
+          <span>Add Photo</span>
+          <input type="file" id="photo-input" accept="image/*">
+        </label>`;
+      document.getElementById('photos-meta').textContent = `${all.length} photo${all.length === 1 ? '' : 's'}`;
+      document.getElementById('photo-input').addEventListener('change', handlePhotoUpload);
+    }
+
+    // ── render comments ────────────────────────────────────────
+    function renderComments() {
+      const approved = ratings.filter(r => r.comment && r.commentApproved === true);
+      const list = document.getElementById('comment-list');
+      const empty = document.getElementById('comments-empty');
+      const meta = document.getElementById('comments-meta');
+      meta.textContent = approved.length ? `${approved.length} comment${approved.length === 1 ? '' : 's'}` : '';
+      if (!approved.length) { list.innerHTML = ''; empty.style.display = ''; return; }
+      empty.style.display = 'none';
+      list.innerHTML = approved
+        .sort((a, b) => b.submittedAt - a.submittedAt)
+        .map(r => {
+          const meanScore = CATEGORIES.reduce((s, c) => s + (r.scores[c.key] || 0), 0) / CATEGORIES.length;
+          return `<div class="comment">
+                    <div class="comment-head">
+                      <span>${fmtTime(r.submittedAt)}</span>
+                      <span class="comment-score">⚡ ${meanScore.toFixed(1)} / 10</span>
+                    </div>
+                    <div class="comment-body">${escapeHtml(r.comment)}</div>
+                  </div>`;
+        }).join('');
+    }
+
+    // ── form submit ────────────────────────────────────────────
+    async function handleSubmit(e) {
+      e.preventDefault();
+      const errEl = document.getElementById('form-error');
+      const btn = document.getElementById('submit-btn');
+      errEl.style.display = 'none';
+
+      const scores = {};
+      document.querySelectorAll('.slider-input').forEach(input => {
+        scores[input.dataset.key] = parseInt(input.value);
+      });
+      const comment = document.getElementById('rate-comment').value.trim();
+
+      btn.disabled = true; btn.textContent = 'Submitting…';
+
+      try {
+        const ratingId = `${stadium.slug}__${visitorId}`;
+        const wasNew = !myRating;
+        const data = {
+          stadiumSlug: stadium.slug,
+          visitorId,
+          scores,
+          comment: comment || null,
+          commentApproved: false,
+          submittedAt: Date.now(),
+        };
+        await setDoc(doc(db, 'pulse_ratings', ratingId), data, { merge: true });
+
+        // Optimistically update local state
+        myRating = { id: ratingId, ...data };
+        const existingIdx = ratings.findIndex(r => r.id === ratingId);
+        if (existingIdx >= 0) ratings[existingIdx] = myRating;
+        else ratings.push(myRating);
+
+        renderGauge();
+        renderComments();
+
+        btn.classList.add('success');
+        btn.textContent = wasNew ? '✓ Rated!' : '✓ Updated!';
+        toast(wasNew ? 'Rating submitted ⚡' : 'Rating updated');
+        if (comment) toast('Comment will appear after admin review');
+        setTimeout(() => { btn.classList.remove('success'); btn.textContent = 'Update Rating'; btn.disabled = false; }, 1800);
+      } catch (err) {
+        console.error('rate submit failed', err);
+        errEl.textContent = 'Submission failed — ' + (err.message || 'try again in a moment.');
+        errEl.style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Submit Rating';
+      }
+    }
+
+    // ── photo upload ───────────────────────────────────────────
+    async function handlePhotoUpload(e) {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (file.size > 8 * 1024 * 1024) { toast('Photo must be under 8 MB'); return; }
+      try {
+        toast('Uploading photo…');
+        const tempId = 'p_' + Math.random().toString(36).slice(2) + Date.now();
+        const path = `pulse/${stadium.slug}/${tempId}.jpg`;
+        const r = sref(storage, path);
+        await uploadBytes(r, file, { contentType: file.type || 'image/jpeg' });
+        const url = await getDownloadURL(r);
+        await addDoc(collection(db, 'pulse_photo_submissions'), {
+          stadiumSlug: stadium.slug,
+          imageUrl: url,
+          uploaderId: visitorId,
+          uploaderName: null,
+          caption: null,
+          approved: false,
+          submittedAt: Date.now(),
+        });
+        toast('Photo submitted! Pending admin review.');
+        e.target.value = '';
+      } catch (err) {
+        console.error('photo upload failed', err);
+        toast('Upload failed — try again');
+      }
+    }
+
+    // ── data load ──────────────────────────────────────────────
+    async function loadStadium(slug) {
+      const stadiumDoc = await getDoc(doc(db, 'stadiums', slug));
+      if (!stadiumDoc.exists()) return null;
+      return { slug, ...stadiumDoc.data() };
+    }
+
+    async function loadRatings(slug) {
+      const q = query(collection(db, 'pulse_ratings'), where('stadiumSlug', '==', slug));
+      const snap = await getDocs(q);
+      const out = [];
+      snap.forEach(d => out.push({ id: d.id, ...d.data() }));
+      return out;
+    }
+
+    async function loadApprovedPhotoSubmissions(slug) {
+      const q = query(collection(db, 'pulse_photo_submissions'),
+        where('stadiumSlug', '==', slug), where('approved', '==', true));
+      const snap = await getDocs(q);
+      const out = [];
+      snap.forEach(d => {
+        const data = d.data();
+        out.push({
+          url: data.imageUrl,
+          source: 'user',
+          credit: null,
+          sourcePage: null,
+          uploaderName: data.uploaderName,
+          approved: true,
+        });
+      });
+      return out;
+    }
+
+    // ── comment counter ───────────────────────────────────────
+    document.getElementById('rate-comment').addEventListener('input', e => {
+      document.getElementById('comment-count').textContent = e.target.value.length;
+    });
+
+    document.getElementById('rate-form').addEventListener('submit', handleSubmit);
+
+    // ── init ──────────────────────────────────────────────────
+    (async function init() {
+      const params = new URLSearchParams(window.location.search);
+      const slug = params.get('slug');
+      if (!slug) {
+        document.getElementById('page-loading').style.display = 'none';
+        document.getElementById('page-error').style.display = '';
+        return;
+      }
+      try {
+        // Load stadium first (need it for everything)
+        stadium = await loadStadium(slug);
+        if (!stadium) {
+          document.getElementById('page-loading').style.display = 'none';
+          document.getElementById('page-error').style.display = '';
+          return;
+        }
+        renderHero();
+        document.getElementById('page-loading').style.display = 'none';
+        document.getElementById('page-content').style.display = '';
+
+        // Show empty gauge + photos immediately
+        renderGauge();
+        renderPhotos([]);
+
+        // Load ratings + photo submissions in parallel
+        const [r, extraPhotos] = await Promise.all([
+          loadRatings(slug).catch(() => []),
+          loadApprovedPhotoSubmissions(slug).catch(() => []),
+        ]);
+        ratings = r;
+        myRating = ratings.find(rec => rec.visitorId === visitorId) || null;
+
+        renderGauge();
+        renderSliders();
+        renderPhotos(extraPhotos);
+        renderComments();
+      } catch (err) {
+        console.error('init failed', err);
+        document.getElementById('page-loading').style.display = 'none';
+        document.getElementById('page-error').style.display = '';
+        document.querySelector('#page-error h2').textContent = 'Something Went Wrong';
+        document.querySelector('#page-error p').textContent = err.message || 'Please try again.';
+      }
+    })();
+  </script>
+</body>
+</html>
