@@ -1,0 +1,106 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── HELPERS ────────────────────────────────────────────────
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email in [
+        '4thandwardpodcast@gmail.com',
+        'jmackwardlaw@gmail.com',
+        'coachwardlawsocial@gmail.com'
+      ];
+    }
+
+    // Pulse rating score validator: integer 1–10
+    function validPulseScore(s) {
+      return s is int && s >= 1 && s <= 10;
+    }
+    function validPulseRating(d) {
+      return d.stadiumSlug is string
+          && d.visitorId is string
+          && d.submittedAt is number
+          && d.scores is map
+          && validPulseScore(d.scores.overallVibe)
+          && validPulseScore(d.scores.crowdNoise)
+          && validPulseScore(d.scores.intimidation)
+          && validPulseScore(d.scores.gameNightAtmosphere)
+          && validPulseScore(d.scores.bandStudent)
+          && validPulseScore(d.scores.concessions)
+          && validPulseScore(d.scores.facilities)
+          && validPulseScore(d.scores.homeFieldAdvantage);
+    }
+
+    // ── EXISTING COLLECTIONS (kept verbatim) ──────────────────
+    match /puzzles/{id} {
+      allow read: if true;
+      allow write: if isAdmin() || request.auth == null;
+    }
+    match /scores/{id} {
+      allow read, write: if true;
+    }
+    match /daily/{id} {
+      allow read, write: if true;
+    }
+    match /meta/{id} {
+      allow read, write: if true;
+    }
+    match /pageviews/{id} {
+      allow read, write: if true;
+    }
+    match /totw_nominees/{id} {
+      allow read, write: if true;
+    }
+    match /totw_winners/{id} {
+      allow read: if true;
+      allow write: if isAdmin() || request.auth == null;
+    }
+    match /puzzle_queue/{id} {
+      allow read, write: if isAdmin() || request.auth == null;
+    }
+    match /drip_submissions/{id} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isAdmin();
+    }
+    match /drip_votes/{id} {
+      allow read, create: if true;
+      allow update, delete: if false;
+    }
+
+    // ── FRIDAY NIGHT PULSE ────────────────────────────────────
+    // Stadium catalog: public read; bulk writes via Admin SDK only,
+    // single-doc edits via admin moderation UI.
+    match /stadiums/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // User ratings: anonymous, deterministic doc id (slug__visitorId).
+    // Schema validated above. Admin can delete.
+    match /pulse_ratings/{id} {
+      allow read: if true;
+      allow create, update: if validPulseRating(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // Photo submissions: public reads only for approved; anyone can submit
+    // a pending photo; admin moderates.
+    match /pulse_photo_submissions/{id} {
+      allow read: if resource.data.approved == true || isAdmin();
+      allow create: if request.resource.data.approved == false
+                    && request.resource.data.stadiumSlug is string
+                    && request.resource.data.imageUrl is string;
+      allow update, delete: if isAdmin();
+    }
+
+    // New stadium submissions: same pattern as photos.
+    match /pulse_stadium_submissions/{id} {
+      allow read: if resource.data.approved == true || isAdmin();
+      allow create: if request.resource.data.approved == false
+                    && request.resource.data.stadiumName is string
+                    && request.resource.data.city is string
+                    && request.resource.data.state is string;
+      allow update, delete: if isAdmin();
+    }
+  }
+}

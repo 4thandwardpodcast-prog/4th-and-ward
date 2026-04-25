@@ -933,9 +933,12 @@
           visitorId,
           scores,
           comment: comment || null,
-          commentApproved: false,
           submittedAt: Date.now(),
         };
+        // Only set commentApproved when a comment is actually present.
+        // Lets admin query `where commentApproved == false` for the pending queue
+        // without flooding with score-only ratings.
+        if (comment) data.commentApproved = false;
         await setDoc(doc(db, 'pulse_ratings', ratingId), data, { merge: true });
 
         // Optimistically update local state

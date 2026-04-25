@@ -1,0 +1,54 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "stadiums",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isHsVenue", "order": "ASCENDING" },
+        { "fieldPath": "capacity", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "stadiums",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isHsVenue", "order": "ASCENDING" },
+        { "fieldPath": "state", "order": "ASCENDING" },
+        { "fieldPath": "capacity", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pulse_photo_submissions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "stadiumSlug", "order": "ASCENDING" },
+        { "fieldPath": "approved", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pulse_photo_submissions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "approved", "order": "ASCENDING" },
+        { "fieldPath": "submittedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pulse_stadium_submissions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "approved", "order": "ASCENDING" },
+        { "fieldPath": "submittedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pulse_ratings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "commentApproved", "order": "ASCENDING" },
+        { "fieldPath": "submittedAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

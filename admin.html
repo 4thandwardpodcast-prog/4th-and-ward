@@ -218,6 +218,20 @@
         <span class="sidebar-icon">&#128171;</span> All Submissions
       </button>
 
+      <div class="sidebar-section">Friday Night Pulse</div>
+      <button class="sidebar-item" onclick="showPage('pulse-photos-pending')">
+        <span class="sidebar-icon">&#128247;</span> Pending Photos
+        <span id="pulse-photos-badge" style="margin-left:auto;display:none;background:#e05555;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;"></span>
+      </button>
+      <button class="sidebar-item" onclick="showPage('pulse-stadiums-pending')">
+        <span class="sidebar-icon">&#127943;</span> Stadium Submissions
+        <span id="pulse-stadiums-badge" style="margin-left:auto;display:none;background:#e05555;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;"></span>
+      </button>
+      <button class="sidebar-item" onclick="showPage('pulse-comments-pending')">
+        <span class="sidebar-icon">&#128172;</span> Pending Comments
+        <span id="pulse-comments-badge" style="margin-left:auto;display:none;background:#e05555;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;"></span>
+      </button>
+
       <div class="sidebar-section">HS Blitz</div>
       <button class="sidebar-item" onclick="showPage('blitz-feedback')">
         <span class="sidebar-icon">&#128172;</span> Beta Feedback
@@ -597,6 +611,75 @@
         </div>
       </div>
 
+      <!-- ══ FRIDAY NIGHT PULSE — PHOTOS PENDING ══ -->
+      <div class="page" id="page-pulse-photos-pending">
+        <div class="page-header">
+          <div class="page-title">Pulse — Pending Photos</div>
+          <div class="page-sub">Approve or reject user-submitted stadium photos before they go live.</div>
+        </div>
+        <div class="stat-row" style="margin-bottom:28px;">
+          <div class="stat-card blue"><div class="stat-card-num" id="pulse-photos-pending-count">—</div><div class="stat-card-label">Pending</div></div>
+          <div class="stat-card green"><div class="stat-card-num" id="pulse-photos-approved-count">—</div><div class="stat-card-label">Approved</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Pending Photos</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadPulsePhotosPending()">&#8635; Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div id="pulse-photos-grid" style="padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;">
+              <div class="loading-row" style="grid-column:1/-1">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ FRIDAY NIGHT PULSE — STADIUM SUBMISSIONS ══ -->
+      <div class="page" id="page-pulse-stadiums-pending">
+        <div class="page-header">
+          <div class="page-title">Pulse — Stadium Submissions</div>
+          <div class="page-sub">Approve user-submitted new stadiums to add them to the catalog.</div>
+        </div>
+        <div class="stat-row" style="margin-bottom:28px;">
+          <div class="stat-card blue"><div class="stat-card-num" id="pulse-stadiums-pending-count">—</div><div class="stat-card-label">Pending</div></div>
+          <div class="stat-card green"><div class="stat-card-num" id="pulse-stadiums-approved-count">—</div><div class="stat-card-label">Approved</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Pending Stadium Submissions</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadPulseStadiumsPending()">&#8635; Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div id="pulse-stadiums-list" style="padding:20px;display:grid;gap:14px;">
+              <div class="loading-row">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ FRIDAY NIGHT PULSE — COMMENT MODERATION ══ -->
+      <div class="page" id="page-pulse-comments-pending">
+        <div class="page-header">
+          <div class="page-title">Pulse — Pending Comments</div>
+          <div class="page-sub">Rating scores go live immediately; comment text needs your approval before it's public.</div>
+        </div>
+        <div class="stat-row" style="margin-bottom:28px;">
+          <div class="stat-card blue"><div class="stat-card-num" id="pulse-comments-pending-count">—</div><div class="stat-card-label">Pending</div></div>
+          <div class="stat-card green"><div class="stat-card-num" id="pulse-comments-approved-count">—</div><div class="stat-card-label">Approved</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Pending Comments</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadPulseCommentsPending()">&#8635; Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div id="pulse-comments-list" style="padding:20px;display:grid;gap:14px;">
+              <div class="loading-row">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ══ HS BLITZ FEEDBACK ══ -->
       <div class="page" id="page-blitz-feedback">
         <div class="page-header">
@@ -938,6 +1021,9 @@
     if (id === 'totw-winners')         { loadWinnersAdmin(); }
     if (id === 'drip-pending')        { loadDripPending(); }
     if (id === 'drip-all')            { loadDripAll(); }
+    if (id === 'pulse-photos-pending')   { loadPulsePhotosPending(); }
+    if (id === 'pulse-stadiums-pending') { loadPulseStadiumsPending(); }
+    if (id === 'pulse-comments-pending') { loadPulseCommentsPending(); }
     if (id === 'blitz-feedback')      { loadBlitzFeedback(); }
     if (id === 'visitors')            { loadVisitors(); }
   };
@@ -2045,6 +2131,239 @@
       toast('Save failed: ' + err.message, 'error');
     }
   };
+
+  // ── FRIDAY NIGHT PULSE — MODERATION ──────────────────────────
+  window._pulsePhotos    = {};
+  window._pulseStadiums  = {};
+  window._pulseComments  = {};
+
+  function pulseUpdateBadge(badgeId, n) {
+    const el = document.getElementById(badgeId);
+    if (!el) return;
+    if (n > 0) { el.style.display = 'inline-block'; el.textContent = n; }
+    else el.style.display = 'none';
+  }
+
+  // ── Pending photos ──
+  async function loadPulsePhotosPending() {
+    const grid = document.getElementById('pulse-photos-grid');
+    grid.innerHTML = '<div class="loading-row" style="grid-column:1/-1">Loading...</div>';
+    try {
+      const snap = await getDocs(collection(db, 'pulse_photo_submissions'));
+      const all = [];
+      snap.forEach(d => all.push({ id: d.id, ...d.data() }));
+      window._pulsePhotos = Object.fromEntries(all.map(s => [s.id, s]));
+
+      const pending  = all.filter(s => !s.approved).sort((a,b) => (b.submittedAt||0) - (a.submittedAt||0));
+      const approved = all.filter(s =>  s.approved);
+
+      document.getElementById('pulse-photos-pending-count').textContent  = pending.length;
+      document.getElementById('pulse-photos-approved-count').textContent = approved.length;
+      pulseUpdateBadge('pulse-photos-badge', pending.length);
+
+      if (!pending.length) {
+        grid.innerHTML = '<div class="loading-row" style="grid-column:1/-1">No pending photos. Inbox zero!</div>';
+        return;
+      }
+
+      grid.innerHTML = pending.map(s => `
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="aspect-ratio:16/10;background:#111;overflow:hidden">
+            <img src="${escapeHtml(s.imageUrl||'')}" alt="" style="width:100%;height:100%;object-fit:cover" loading="lazy">
+          </div>
+          <div style="padding:16px">
+            <div style="font-family:var(--condensed);font-weight:900;font-size:16px;text-transform:uppercase;margin-bottom:4px">${escapeHtml(s.stadiumSlug||'')}</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Submitted ${s.submittedAt ? new Date(s.submittedAt).toLocaleDateString() : '—'}</div>
+            ${s.caption ? `<div style="font-size:13px;color:var(--white);margin-bottom:12px;font-style:italic">"${escapeHtml(s.caption)}"</div>` : ''}
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-sm" style="flex:1;background:#1DB954;color:#000;border:none" data-pulse-action="approve-photo" data-id="${s.id}">✓ Approve</button>
+              <button class="btn btn-danger btn-sm" style="flex:1" data-pulse-action="reject-photo" data-id="${s.id}">✗ Reject</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    } catch(e) { grid.innerHTML = '<div class="loading-row" style="grid-column:1/-1">Error: ' + escapeHtml(e.message) + '</div>'; }
+  }
+  window.loadPulsePhotosPending = loadPulsePhotosPending;
+
+  // ── Pending stadium submissions ──
+  async function loadPulseStadiumsPending() {
+    const list = document.getElementById('pulse-stadiums-list');
+    list.innerHTML = '<div class="loading-row">Loading...</div>';
+    try {
+      const snap = await getDocs(collection(db, 'pulse_stadium_submissions'));
+      const all = [];
+      snap.forEach(d => all.push({ id: d.id, ...d.data() }));
+      window._pulseStadiums = Object.fromEntries(all.map(s => [s.id, s]));
+
+      const pending  = all.filter(s => !s.approved).sort((a,b) => (b.submittedAt||0) - (a.submittedAt||0));
+      const approved = all.filter(s =>  s.approved);
+
+      document.getElementById('pulse-stadiums-pending-count').textContent  = pending.length;
+      document.getElementById('pulse-stadiums-approved-count').textContent = approved.length;
+      pulseUpdateBadge('pulse-stadiums-badge', pending.length);
+
+      if (!pending.length) {
+        list.innerHTML = '<div class="loading-row">No pending stadium submissions.</div>';
+        return;
+      }
+
+      list.innerHTML = pending.map(s => `
+        <div class="card" style="padding:18px;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center">
+          <div>
+            <div style="font-family:var(--condensed);font-weight:900;font-size:18px;text-transform:uppercase;margin-bottom:4px">${escapeHtml(s.stadiumName||'')}</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${escapeHtml(s.city||'')}, ${escapeHtml(s.state||'')} · cap ${s.capacity || '—'} · built ${s.yearOpened || '—'}</div>
+            ${s.homeTeams && s.homeTeams.length ? `<div style="font-size:12px;color:var(--white);margin-bottom:6px">Home of: <strong>${s.homeTeams.map(escapeHtml).join(', ')}</strong></div>` : ''}
+            ${s.notes ? `<div style="font-size:13px;color:var(--white);font-style:italic;margin-bottom:6px">"${escapeHtml(s.notes)}"</div>` : ''}
+            <div style="font-size:11px;color:var(--muted)">Submitted ${s.submittedAt ? new Date(s.submittedAt).toLocaleDateString() : '—'}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <button class="btn btn-sm" style="background:#1DB954;color:#000;border:none" data-pulse-action="approve-stadium" data-id="${s.id}">✓ Approve</button>
+            <button class="btn btn-danger btn-sm" data-pulse-action="reject-stadium" data-id="${s.id}">✗ Reject</button>
+          </div>
+        </div>
+      `).join('');
+    } catch(e) { list.innerHTML = '<div class="loading-row">Error: ' + escapeHtml(e.message) + '</div>'; }
+  }
+  window.loadPulseStadiumsPending = loadPulseStadiumsPending;
+
+  // ── Pending comments (rating docs with commentApproved == false) ──
+  async function loadPulseCommentsPending() {
+    const list = document.getElementById('pulse-comments-list');
+    list.innerHTML = '<div class="loading-row">Loading...</div>';
+    try {
+      const pendingSnap  = await getDocs(query(collection(db, 'pulse_ratings'), where('commentApproved', '==', false)));
+      const approvedSnap = await getDocs(query(collection(db, 'pulse_ratings'), where('commentApproved', '==', true)));
+      const pending = [];
+      pendingSnap.forEach(d => pending.push({ id: d.id, ...d.data() }));
+      window._pulseComments = Object.fromEntries(pending.map(s => [s.id, s]));
+
+      pending.sort((a,b) => (b.submittedAt||0) - (a.submittedAt||0));
+
+      document.getElementById('pulse-comments-pending-count').textContent  = pending.length;
+      document.getElementById('pulse-comments-approved-count').textContent = approvedSnap.size;
+      pulseUpdateBadge('pulse-comments-badge', pending.length);
+
+      if (!pending.length) {
+        list.innerHTML = '<div class="loading-row">No pending comments.</div>';
+        return;
+      }
+
+      list.innerHTML = pending.map(s => {
+        const cats = ['overallVibe','crowdNoise','intimidation','gameNightAtmosphere','bandStudent','concessions','facilities','homeFieldAdvantage'];
+        const vals = cats.map(c => s.scores?.[c]).filter(v => typeof v === 'number');
+        const mean = vals.length ? (vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(1) : '—';
+        return `<div class="card" style="padding:18px;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center">
+          <div>
+            <div style="font-family:var(--condensed);font-weight:900;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;color:var(--gold)">⚡ ${mean} / 10 — ${escapeHtml(s.stadiumSlug||'')}</div>
+            <div style="font-size:14px;color:var(--white);line-height:1.5;margin-bottom:8px">"${escapeHtml(s.comment || '')}"</div>
+            <div style="font-size:11px;color:var(--muted)">Submitted ${s.submittedAt ? new Date(s.submittedAt).toLocaleString() : '—'} · device ${escapeHtml((s.visitorId||'').slice(0,18))}…</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <button class="btn btn-sm" style="background:#1DB954;color:#000;border:none" data-pulse-action="approve-comment" data-id="${s.id}">✓ Approve</button>
+            <button class="btn btn-danger btn-sm" data-pulse-action="reject-comment" data-id="${s.id}">✗ Reject</button>
+          </div>
+        </div>`;
+      }).join('');
+    } catch(e) { list.innerHTML = '<div class="loading-row">Error: ' + escapeHtml(e.message) + '</div>'; }
+  }
+  window.loadPulseCommentsPending = loadPulseCommentsPending;
+
+  // ── Pulse action handler ─────────────────────────────────────
+  document.addEventListener('click', async function(e) {
+    const btn = e.target.closest('[data-pulse-action]');
+    if (!btn) return;
+    const action = btn.dataset.pulseAction;
+    const id = btn.dataset.id;
+
+    try {
+      // Photo moderation
+      if (action === 'approve-photo') {
+        await updateDoc(doc(db, 'pulse_photo_submissions', id), { approved: true, approvedAt: Date.now() });
+        toast('Photo approved! It will appear on the stadium page within seconds.');
+        loadPulsePhotosPending();
+      } else if (action === 'reject-photo') {
+        const s = window._pulsePhotos[id];
+        if (!confirm('Reject this photo? The file will also be deleted from Storage.')) return;
+        if (s?.imageUrl && s.imageUrl.includes('/o/pulse%2F')) {
+          try {
+            const m = s.imageUrl.match(/\/o\/(pulse%2F[^?]+)/);
+            if (m) await deleteObject(storageRef(storage, decodeURIComponent(m[1])));
+          } catch(se) { console.warn('Storage delete failed:', se); }
+        }
+        await deleteDoc(doc(db, 'pulse_photo_submissions', id));
+        toast('Photo rejected.', 'error');
+        loadPulsePhotosPending();
+      }
+
+      // Stadium-submission moderation
+      else if (action === 'approve-stadium') {
+        const s = window._pulseStadiums[id];
+        if (!s) return;
+        // Generate slug from name + city + state
+        const slug = [s.stadiumName, s.city, s.state].map(x => String(x||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')).filter(Boolean).join('-');
+        const stadiumDoc = {
+          slug,
+          stadiumName: s.stadiumName, city: s.city, state: s.state,
+          capacity: s.capacity || null, yearOpened: s.yearOpened || null,
+          homeTeams: s.homeTeams || [], county: s.county || null,
+          surface: s.surface || null, hasTrack: s.hasTrack ?? null,
+          owner: s.owner || null, notes: s.notes || null,
+          photos: s.imageUrl ? [{
+            url: s.imageUrl, source: 'user',
+            credit: s.uploaderName || null, sourcePage: null,
+            uploaderName: s.uploaderName || null, caption: null,
+            approved: true, addedAt: Date.now(),
+          }] : [],
+          primaryPhotoIndex: s.imageUrl ? 0 : null,
+          ratingsCount: 0, ratingsAvg: null, bayesianScore: null, pulseScore: null, lastRatedAt: null,
+          isPublished: true, isFeatured: false, isHsVenue: true,
+          sourceProvider: 'user-submission', sourceId: id,
+          seededAt: Date.now(),
+        };
+        await setDoc(doc(db, 'stadiums', slug), stadiumDoc, { merge: true });
+        await updateDoc(doc(db, 'pulse_stadium_submissions', id), { approved: true, approvedAt: Date.now(), createdSlug: slug });
+        toast(`${s.stadiumName} added to catalog!`);
+        loadPulseStadiumsPending();
+      } else if (action === 'reject-stadium') {
+        if (!confirm('Reject this stadium submission?')) return;
+        await deleteDoc(doc(db, 'pulse_stadium_submissions', id));
+        toast('Stadium submission rejected.', 'error');
+        loadPulseStadiumsPending();
+      }
+
+      // Comment moderation (rating doc — only the comment changes)
+      else if (action === 'approve-comment') {
+        await updateDoc(doc(db, 'pulse_ratings', id), { commentApproved: true, commentReviewedAt: Date.now() });
+        toast('Comment approved.');
+        loadPulseCommentsPending();
+      } else if (action === 'reject-comment') {
+        if (!confirm('Reject the comment? The rating itself stays — only the comment text is cleared.')) return;
+        await updateDoc(doc(db, 'pulse_ratings', id), { comment: null, commentApproved: null, commentRejectedAt: Date.now() });
+        toast('Comment removed.', 'error');
+        loadPulseCommentsPending();
+      }
+    } catch(err) {
+      console.error(err);
+      toast('Error: ' + err.message, 'error');
+    }
+  });
+
+  // ── Pulse pending-counts poll on load (sidebar badges) ───────
+  async function pollPulseBadges() {
+    try {
+      const [photos, stadiums, comments] = await Promise.all([
+        getDocs(query(collection(db, 'pulse_photo_submissions'), where('approved', '==', false))),
+        getDocs(query(collection(db, 'pulse_stadium_submissions'), where('approved', '==', false))),
+        getDocs(query(collection(db, 'pulse_ratings'), where('commentApproved', '==', false))),
+      ]);
+      pulseUpdateBadge('pulse-photos-badge', photos.size);
+      pulseUpdateBadge('pulse-stadiums-badge', stadiums.size);
+      pulseUpdateBadge('pulse-comments-badge', comments.size);
+    } catch(e) { /* ignore */ }
+  }
+  // fire once after auth is ready
+  setTimeout(pollPulseBadges, 1500);
 
 </script>
 </body>

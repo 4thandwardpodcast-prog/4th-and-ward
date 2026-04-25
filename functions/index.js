@@ -4,7 +4,7 @@
  * Only generates and verifies 5 clues via Claude web search.
  */
 
-const { onDocumentCreated } = require('firebase-functions/v2/firestore');
+const { onDocumentCreated, onDocumentWritten } = require('firebase-functions/v2/firestore');
 const { initializeApp }     = require('firebase-admin/app');
 const { getFirestore }      = require('firebase-admin/firestore');
 const Anthropic             = require('@anthropic-ai/sdk');
@@ -283,3 +283,111 @@ exports.generatePuzzleOnNomination = onDocumentCreated(
     }
   }
 );
+
+
+// ── FRIDAY NIGHT PULSE: aggregate recompute on rating write ───────────────────
+// Triggered on any create/update/delete of a pulse_ratings doc.
+// Reads all ratings for the affected stadiumSlug, computes per-category
+// averages + Bayesian composite, writes to the stadiums/{slug} doc.
+
+const PULSE_CATEGORIES = [
+  'overallVibe', 'crowdNoise', 'intimidation', 'gameNightAtmosphere',
+  'bandStudent', 'concessions', 'facilities', 'homeFieldAdvantage'
+];
+const PULSE_BAYES_C = 5;     // confidence prior — small; 8-cat composite is denser data than binary
+const PULSE_BAYES_M = 7.0;   // global mean prior
+
+exports.recomputeStadiumPulse = onDocumentWritten(
+  { document: 'pulse_ratings/{ratingId}', timeoutSeconds: 30, memory: '256MiB' },
+  async (event) => {
+    const after  = event.data?.after?.data();
+    const before = event.data?.before?.data();
+    const slug = after?.stadiumSlug || before?.stadiumSlug;
+    if (!slug) return;
+
+    const stadiumRef = db.collection('stadiums').doc(slug);
+
+    const snap = await db.collection('pulse_ratings').where('stadiumSlug', '==', slug).get();
+    if (snap.empty) {
+      await stadiumRef.update({
+        ratingsCount:  0,
+        ratingsAvg:    null,
+        bayesianScore: null,
+        pulseScore:    null,
+        lastRatedAt:   null,
+      }).catch(err => console.warn('reset stadium failed:', slug, err.message));
+      return;
+    }
+
+    const ratings = [];
+    snap.forEach(d => ratings.push(d.data()));
+
+    // Per-category average
+    const ratingsAvg = {};
+    PULSE_CATEGORIES.forEach(cat => {
+      const vals = ratings.map(r => r.scores?.[cat]).filter(v => typeof v === 'number');
+      ratingsAvg[cat] = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+    });
+
+    // Composite Bayesian: average each rating's mean across 8 cats, then bayesian-adjust
+    const ratingMeans = ratings.map(r => {
+      const vals = PULSE_CATEGORIES.map(c => r.scores?.[c]).filter(v => typeof v === 'number');
+      return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+    });
+    const sumMeans = ratingMeans.reduce((a, b) => a + b, 0);
+    const bayesianScore = (PULSE_BAYES_C * PULSE_BAYES_M + sumMeans) / (PULSE_BAYES_C + ratingMeans.length);
+
+    const lastRatedAt = Math.max(...ratings.map(r => r.submittedAt || 0));
+
+    await stadiumRef.update({
+      ratingsCount:  ratings.length,
+      ratingsAvg,
+      bayesianScore,
+      pulseScore:    bayesianScore,    // mirrored field for ordering convenience
+      lastRatedAt,
+    }).catch(err => console.warn('update stadium failed:', slug, err.message));
+
+    console.log(`[pulse] recomputed ${slug}: ${ratings.length} rating${ratings.length === 1 ? '' : 's'}, score=${bayesianScore.toFixed(2)}`);
+  }
+);
+
+
+// ── FRIDAY NIGHT PULSE: copy approved photo into stadium doc ─────────────────
+// When a pulse_photo_submissions doc transitions approved: false → true, append
+// the photo into the stadium's photos[] array so it appears immediately.
+
+exports.copyApprovedPulsePhoto = onDocumentWritten(
+  { document: 'pulse_photo_submissions/{subId}', timeoutSeconds: 30, memory: '256MiB' },
+  async (event) => {
+    const before = event.data?.before?.data();
+    const after  = event.data?.after?.data();
+    if (!after) return;
+    const wasApproved = before?.approved === true;
+    const isApproved  = after.approved === true;
+    if (wasApproved || !isApproved) return; // only act on the false→true transition
+
+    const slug = after.stadiumSlug;
+    if (!slug) return;
+
+    const stadiumRef = db.collection('stadiums').doc(slug);
+    const snap = await stadiumRef.get();
+    if (!snap.exists) return;
+    const stadium = snap.data();
+    const photos = Array.isArray(stadium.photos) ? stadium.photos.slice() : [];
+
+    photos.push({
+      url:          after.imageUrl,
+      source:       'user',
+      credit:       after.uploaderName || null,
+      sourcePage:   null,
+      uploaderName: after.uploaderName || null,
+      caption:      after.caption || null,
+      approved:     true,
+      addedAt:      Date.now(),
+    });
+
+    await stadiumRef.update({ photos });
+    console.log(`[pulse] approved photo copied to ${slug}`);
+  }
+);
+
