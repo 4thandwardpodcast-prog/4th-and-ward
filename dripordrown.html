@@ -1775,7 +1775,19 @@
     // ── EVENT DELEGATION ─────────────────────────────────
     document.addEventListener('click', e => {
       const tabBtn = e.target.closest('.tab-btn');
-      if (tabBtn && tabBtn.dataset.tab) { switchTab(tabBtn.dataset.tab); return; }
+      if (tabBtn && tabBtn.dataset.tab) {
+        // Manual tab navigation = start with a clean, unfiltered view.
+        // Filters from a school card or state picker carry over silently
+        // otherwise, which leaks into the gallery and confuses users.
+        if (schoolFilter || stateFilter) {
+          schoolFilter = null;
+          stateFilter = null;
+          setUrl({});
+          renderAll();
+        }
+        switchTab(tabBtn.dataset.tab);
+        return;
+      }
 
       // Photo click → open gallery at that card
       const photoWrap = e.target.closest('.sub-photo-wrap');
