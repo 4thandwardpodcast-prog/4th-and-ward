@@ -616,6 +616,39 @@
       color: var(--muted); font-size: 14px;
     }
     .empty-state strong { color: var(--gold); }
+    .empty-state-link {
+      background: none; border: none; color: var(--gold);
+      font-weight: 700; cursor: pointer;
+      text-decoration: underline; padding: 0;
+      font: inherit;
+    }
+    .empty-state-link:hover { color: var(--gold-hover); }
+    .leave-comment-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(245,197,24,0.1);
+      border: 1px solid rgba(245,197,24,0.4);
+      color: var(--gold);
+      padding: 8px 14px;
+      border-radius: 99px;
+      font-family: var(--condensed); font-weight: 800;
+      font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .leave-comment-btn:hover { background: rgba(245,197,24,0.18); border-color: var(--gold); transform: translateY(-1px); }
+    .comments-help {
+      margin: 14px auto 0; max-width: 720px; text-align: center;
+      font-size: 12px; color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+    /* Pulse animation when the comment textarea is focused via "Leave a comment" */
+    @keyframes comment-pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(245,197,24,0.5); }
+      40%  { box-shadow: 0 0 0 10px rgba(245,197,24,0.3); }
+      100% { box-shadow: 0 0 0 18px rgba(245,197,24,0); }
+    }
+    .comment-input.emphasized { animation: comment-pulse 1.6s ease-out; border-color: var(--gold); }
 
     /* ── SUGGEST CORRECTION ─────────────────────────────────── */
     .suggest-correction-row {
@@ -927,14 +960,18 @@
     <section class="comments-section">
       <div class="section-title-row">
         <h2>What People Are <span class="accent">Saying</span></h2>
-        <span class="section-meta" id="comments-meta"></span>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <span class="section-meta" id="comments-meta"></span>
+          <button type="button" class="leave-comment-btn" id="leave-comment-btn">✍ Leave a comment</button>
+        </div>
       </div>
       <div id="comments-wrap">
         <div class="empty-state" id="comments-empty" style="display:none;">
-          No comments yet. <strong>Be the first to weigh in.</strong>
+          No comments yet. <button type="button" class="empty-state-link" id="empty-leave-comment">Be the first to weigh in →</button>
         </div>
         <div class="comment-list" id="comment-list"></div>
       </div>
+      <p class="comments-help">Comments come from the rating form above — drop the sliders + add a comment, all in one go.</p>
     </section>
   </div>
 
@@ -1551,6 +1588,25 @@
     });
 
     document.getElementById('rate-form').addEventListener('submit', handleSubmit);
+
+    // ── "Leave a comment" — scroll to rate form, focus comment, pulse it ──
+    function jumpToCommentField() {
+      const rateSection = document.getElementById('rate-section');
+      rateSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => {
+        const c = document.getElementById('rate-comment');
+        if (c) {
+          c.focus({ preventScroll: true });
+          c.classList.remove('emphasized');
+          // Force reflow so animation restarts even on repeat clicks
+          void c.offsetWidth;
+          c.classList.add('emphasized');
+          setTimeout(() => c.classList.remove('emphasized'), 1700);
+        }
+      }, 550);
+    }
+    document.getElementById('leave-comment-btn').addEventListener('click', jumpToCommentField);
+    document.getElementById('empty-leave-comment').addEventListener('click', jumpToCommentField);
 
     // ── suggest a correction: modal form → pulse_corrections ──
     const correctionFields = {
