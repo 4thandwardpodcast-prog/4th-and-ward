@@ -11,11 +11,12 @@
     { "src": "/wardle",            "dest": "/wardle.html" },
     { "src": "/wardlev2",          "dest": "/wardlev2.html" },
     { "src": "/totwv2",            "dest": "/totwv2.html" },
-    { "src": "/dripordrown",       "dest": "/dripordrown.html" },
+    { "src": "/dripordrown",        "dest": "/dripordrown.html" },
+    { "src": "/dripordrown/([^/]+)", "dest": "/dripordrown.html?school=$1" },
     { "src": "/pulse",             "dest": "/pulse.html" },
     { "src": "/hsblitz",           "dest": "/hsblitz.html" },
     { "src": "/admin",             "dest": "/admin.html" },
-    { "src": "/stadium/([^/]+)",   "dest": "/pulse-stadium.html?slug=$1" },
+    { "src": "/stadium/([^/.]+)",  "dest": "/stadium/$1.html" },
     { "src": "/(.*)",              "dest": "/$1" }
   ]
 }

@@ -625,6 +625,36 @@
     }
     readUrlParams();
 
+    // ── Per-school SEO: when ?school=<slug> is set, swap title/meta/og ──
+    function deslugifySchool(slug) {
+      return String(slug || '')
+        .split('-')
+        .filter(Boolean)
+        .map(w => w === 'hs' ? 'HS' : (w.charAt(0).toUpperCase() + w.slice(1)))
+        .join(' ');
+    }
+    function updateSchoolSEO(displayName) {
+      if (!displayName || !schoolFilter) return;
+      const url   = `https://4thandward.com/dripordrown/${schoolFilter}`;
+      const title = `${displayName} Football Uniforms — Drip or Drown | 4th & Ward`;
+      const desc  = `Rate ${displayName} football uniforms — drip or drown? See every fit, vote on the community catalog, and submit your school's drip.`;
+      document.title = title;
+      const setMeta = (sel, val) => {
+        const el = document.querySelector(sel);
+        if (el) el.setAttribute('content', val);
+      };
+      setMeta('meta[name="description"]',         desc);
+      setMeta('meta[property="og:title"]',        title);
+      setMeta('meta[property="og:description"]',  desc);
+      setMeta('meta[property="og:url"]',          url);
+      setMeta('meta[name="twitter:title"]',       title);
+      setMeta('meta[name="twitter:description"]', desc);
+      const canonical = document.querySelector('link[rel="canonical"]');
+      if (canonical) canonical.setAttribute('href', url);
+    }
+    // Initial best-effort name from the slug; refined later when submissions load.
+    if (schoolFilter) updateSchoolSEO(deslugifySchool(schoolFilter));
+
     function setUrl(params) {
       const usp = new URLSearchParams();
       if (params.school) usp.set('school', params.school);
@@ -1091,6 +1121,8 @@
       const stats = computeSchoolStats(null).find(g => g.schoolKey === schoolKey);
       // Fall back to the URL-provided name if no submissions yet exist for this school
       const displayName = stats ? stats.teamName : schoolFilter;
+      // Refine SEO with the real team name once we know it
+      if (displayName) updateSchoolSEO(displayName);
       const loc = stats ? [stats.city, stats.state].filter(Boolean).join(', ') : '';
       const cachedLogo = _schoolLogos[schoolKey];
       const logoInner = cachedLogo

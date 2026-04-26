@@ -10,3 +10,4 @@ Disallow: /scripts/
 # Sitemaps
 Sitemap: https://4thandward.com/sitemap.xml
 Sitemap: https://4thandward.com/sitemap-stadiums.xml
+Sitemap: https://4thandward.com/sitemap-schools.xml
