@@ -2398,21 +2398,46 @@
   }
   window.loadPulseStadiumsPending = loadPulseStadiumsPending;
 
-  // ── Pending comments (rating docs with commentApproved == false) ──
+  // ── Pending comments — merges rating-attached + standalone (pulse_comments) ──
   async function loadPulseCommentsPending() {
     const list = document.getElementById('pulse-comments-list');
     list.innerHTML = '<div class="loading-row">Loading...</div>';
     try {
-      const pendingSnap  = await getDocs(query(collection(db, 'pulse_ratings'), where('commentApproved', '==', false)));
-      const approvedSnap = await getDocs(query(collection(db, 'pulse_ratings'), where('commentApproved', '==', true)));
-      const pending = [];
-      pendingSnap.forEach(d => pending.push({ id: d.id, ...d.data() }));
-      window._pulseComments = Object.fromEntries(pending.map(s => [s.id, s]));
+      const [ratingPendSnap, ratingApprSnap, standPendSnap, standApprSnap] = await Promise.all([
+        getDocs(query(collection(db, 'pulse_ratings'),  where('commentApproved', '==', false))),
+        getDocs(query(collection(db, 'pulse_ratings'),  where('commentApproved', '==', true))),
+        getDocs(query(collection(db, 'pulse_comments'), where('approved', '==', false))),
+        getDocs(query(collection(db, 'pulse_comments'), where('approved', '==', true))),
+      ]);
 
+      const pending = [];
+      ratingPendSnap.forEach(d => {
+        const data = d.data();
+        const cats = ['overallVibe','crowdNoise','intimidation','gameNightAtmosphere','bandStudent','concessions','facilities','homeFieldAdvantage'];
+        const vals = cats.map(c => data.scores?.[c]).filter(v => typeof v === 'number');
+        const mean = vals.length ? (vals.reduce((a,b) => a+b, 0) / vals.length) : null;
+        pending.push({
+          id: d.id, source: 'rating',
+          stadiumSlug: data.stadiumSlug, text: data.comment || '',
+          authorName: null, visitorId: data.visitorId, submittedAt: data.submittedAt || 0,
+          score: mean,
+        });
+      });
+      standPendSnap.forEach(d => {
+        const data = d.data();
+        pending.push({
+          id: d.id, source: 'comment',
+          stadiumSlug: data.stadiumSlug, text: data.text || '',
+          authorName: data.authorName || null, visitorId: data.visitorId,
+          submittedAt: data.submittedAt || 0, score: null,
+        });
+      });
+
+      window._pulseComments = Object.fromEntries(pending.map(s => [s.id, s]));
       pending.sort((a,b) => (b.submittedAt||0) - (a.submittedAt||0));
 
       document.getElementById('pulse-comments-pending-count').textContent  = pending.length;
-      document.getElementById('pulse-comments-approved-count').textContent = approvedSnap.size;
+      document.getElementById('pulse-comments-approved-count').textContent = ratingApprSnap.size + standApprSnap.size;
       pulseUpdateBadge('pulse-comments-badge', pending.length);
 
       if (!pending.length) {
@@ -2421,18 +2446,19 @@
       }
 
       list.innerHTML = pending.map(s => {
-        const cats = ['overallVibe','crowdNoise','intimidation','gameNightAtmosphere','bandStudent','concessions','facilities','homeFieldAdvantage'];
-        const vals = cats.map(c => s.scores?.[c]).filter(v => typeof v === 'number');
-        const mean = vals.length ? (vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(1) : '—';
+        const badge = s.score != null
+          ? `<span style="color:var(--gold);">⚡ ${s.score.toFixed(1)} / 10</span>`
+          : `<span style="color:var(--muted);">💬 Comment-only</span>`;
+        const author = s.authorName ? `<strong style="color:var(--white);">${escapeHtml(s.authorName)}</strong> · ` : '';
         return `<div class="card" style="padding:18px;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center">
           <div>
-            <div style="font-family:var(--condensed);font-weight:900;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;color:var(--gold)">⚡ ${mean} / 10 — ${escapeHtml(s.stadiumSlug||'')}</div>
-            <div style="font-size:14px;color:var(--white);line-height:1.5;margin-bottom:8px">"${escapeHtml(s.comment || '')}"</div>
+            <div style="font-family:var(--condensed);font-weight:900;font-size:14px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;">${badge} <span style="color:var(--muted);font-weight:600;font-size:11px;letter-spacing:0.04em;text-transform:none;margin-left:6px;">on</span> <a href="/pulse-stadium.html?slug=${encodeURIComponent(s.stadiumSlug||'')}" target="_blank" style="color:var(--white);text-decoration:underline;">${escapeHtml(s.stadiumSlug||'')}</a></div>
+            <div style="font-size:14px;color:var(--white);line-height:1.5;margin-bottom:8px">${author}"${escapeHtml(s.text)}"</div>
             <div style="font-size:11px;color:var(--muted)">Submitted ${s.submittedAt ? new Date(s.submittedAt).toLocaleString() : '—'} · device ${escapeHtml((s.visitorId||'').slice(0,18))}…</div>
           </div>
           <div style="display:flex;flex-direction:column;gap:6px">
-            <button class="btn btn-sm" style="background:#1DB954;color:#000;border:none" data-pulse-action="approve-comment" data-id="${s.id}">✓ Approve</button>
-            <button class="btn btn-danger btn-sm" data-pulse-action="reject-comment" data-id="${s.id}">✗ Reject</button>
+            <button class="btn btn-sm" style="background:#1DB954;color:#000;border:none" data-pulse-action="approve-comment" data-id="${escapeHtml(s.id)}" data-source="${s.source}">✓ Approve</button>
+            <button class="btn btn-danger btn-sm" data-pulse-action="reject-comment" data-id="${escapeHtml(s.id)}" data-source="${s.source}">✗ Reject</button>
           </div>
         </div>`;
       }).join('');
@@ -2503,14 +2529,25 @@
         loadPulseStadiumsPending();
       }
 
-      // Comment moderation (rating doc — only the comment changes)
+      // Comment moderation — handles both rating-attached AND standalone comments
       else if (action === 'approve-comment') {
-        await updateDoc(doc(db, 'pulse_ratings', id), { commentApproved: true, commentReviewedAt: Date.now() });
+        const source = btn.dataset.source;
+        if (source === 'comment') {
+          await updateDoc(doc(db, 'pulse_comments', id), { approved: true, approvedAt: Date.now() });
+        } else {
+          await updateDoc(doc(db, 'pulse_ratings', id), { commentApproved: true, commentReviewedAt: Date.now() });
+        }
         toast('Comment approved.');
         loadPulseCommentsPending();
       } else if (action === 'reject-comment') {
-        if (!confirm('Reject the comment? The rating itself stays — only the comment text is cleared.')) return;
-        await updateDoc(doc(db, 'pulse_ratings', id), { comment: null, commentApproved: null, commentRejectedAt: Date.now() });
+        const source = btn.dataset.source;
+        if (source === 'comment') {
+          if (!confirm('Reject and delete this standalone comment?')) return;
+          await deleteDoc(doc(db, 'pulse_comments', id));
+        } else {
+          if (!confirm('Reject the comment? The rating itself stays — only the comment text is cleared.')) return;
+          await updateDoc(doc(db, 'pulse_ratings', id), { comment: null, commentApproved: null, commentRejectedAt: Date.now() });
+        }
         toast('Comment removed.', 'error');
         loadPulseCommentsPending();
       }
@@ -2523,15 +2560,16 @@
   // ── Pulse pending-counts poll on load (sidebar badges) ───────
   async function pollPulseBadges() {
     try {
-      const [photos, stadiums, comments, corrections] = await Promise.all([
-        getDocs(query(collection(db, 'pulse_photo_submissions'), where('approved', '==', false))),
-        getDocs(query(collection(db, 'pulse_stadium_submissions'), where('approved', '==', false))),
-        getDocs(query(collection(db, 'pulse_ratings'), where('commentApproved', '==', false))),
-        getDocs(query(collection(db, 'pulse_corrections'), where('approved', '==', false))),
+      const [photos, stadiums, ratingComments, standaloneComments, corrections] = await Promise.all([
+        getDocs(query(collection(db, 'pulse_photo_submissions'),    where('approved', '==', false))),
+        getDocs(query(collection(db, 'pulse_stadium_submissions'),  where('approved', '==', false))),
+        getDocs(query(collection(db, 'pulse_ratings'),              where('commentApproved', '==', false))),
+        getDocs(query(collection(db, 'pulse_comments'),             where('approved', '==', false))),
+        getDocs(query(collection(db, 'pulse_corrections'),          where('approved', '==', false))),
       ]);
       pulseUpdateBadge('pulse-photos-badge', photos.size);
       pulseUpdateBadge('pulse-stadiums-badge', stadiums.size);
-      pulseUpdateBadge('pulse-comments-badge', comments.size);
+      pulseUpdateBadge('pulse-comments-badge', ratingComments.size + standaloneComments.size);
       pulseUpdateBadge('pulse-corrections-badge', corrections.size);
     } catch(e) { /* ignore */ }
   }

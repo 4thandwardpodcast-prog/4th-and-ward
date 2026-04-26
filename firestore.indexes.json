@@ -56,6 +56,22 @@
         { "fieldPath": "approved", "order": "ASCENDING" },
         { "fieldPath": "submittedAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "pulse_comments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "stadiumSlug", "order": "ASCENDING" },
+        { "fieldPath": "approved", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "pulse_comments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "approved", "order": "ASCENDING" },
+        { "fieldPath": "submittedAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

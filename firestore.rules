@@ -103,6 +103,22 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // Standalone comments — comment-only posts (no rating attached).
+    // Different from comments on pulse_ratings; allows users to leave a
+    // comment without committing to an 8-category rating.
+    match /pulse_comments/{id} {
+      allow read: if resource.data.approved == true || isAdmin();
+      allow create: if request.resource.data.approved == false
+                    && request.resource.data.stadiumSlug is string
+                    && request.resource.data.text is string
+                    && request.resource.data.text.size() > 0
+                    && request.resource.data.text.size() <= 500;
+      // Allow likes increment by anyone, otherwise admin-only
+      allow update: if isAdmin()
+                    || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']));
+      allow delete: if isAdmin();
+    }
+
     // Fan-submitted corrections to existing stadium info.
     // Anyone can submit a pending correction; only admin reads pending or
     // updates/deletes. Approved corrections (kept for audit) stay public-readable.
