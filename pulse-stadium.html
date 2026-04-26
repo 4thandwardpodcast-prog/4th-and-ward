@@ -3,8 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stadium — Friday Night Pulse</title>
-  <meta name="description" content="Rate the atmosphere, energy, and home-field advantage of this high school football stadium.">
+  <title>Stadium — Friday Night Pulse | 4th &amp; Ward</title>
+  <meta name="description" content="Rate the atmosphere, crowd noise, and home-field advantage of this high school football stadium on Friday Night Pulse.">
+  <link rel="canonical" href="https://4thandward.com/pulse">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="4th &amp; Ward">
+  <meta property="og:url" content="https://4thandward.com/pulse">
+  <meta property="og:title" content="Stadium — Friday Night Pulse">
+  <meta property="og:description" content="Rate the vibe, crowd noise, and home-field advantage of this HS football stadium.">
+  <meta property="og:image" content="https://4thandward.com/logo.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Stadium — Friday Night Pulse">
+  <meta name="twitter:description" content="Rate the vibe of this HS football stadium.">
+  <meta name="twitter:image" content="https://4thandward.com/logo.png">
+  <script type="application/ld+json" id="ld-stadium">
+  { "@context": "https://schema.org", "@type": "SportsActivityLocation" }
+  </script>
   <link rel="icon" href="logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1270,7 +1284,60 @@
            <div class="stat-cell-label">${escapeHtml(s.label)}</div>
            <div class="stat-cell-value ${s.cls || ''}">${escapeHtml(String(s.val))}</div>
          </div>`).join('');
-      document.title = `${stadium.stadiumName} — Friday Night Pulse`;
+      // ── SEO: per-stadium title, description, OG, canonical, JSON-LD ──
+      const cleanUrl = `https://4thandward.com/stadium/${stadium.slug}`;
+      const teamsJoined = (stadium.homeTeams || []).slice(0, 2).join(', ');
+      const cityLabel = `${stadium.city || ''}${stadium.state ? ', ' + stadium.state : ''}`;
+      const seoTitle = `${stadium.stadiumName} (${cityLabel}) — Friday Night Pulse`;
+      const seoDesc  = teamsJoined
+        ? `Rate ${stadium.stadiumName} in ${cityLabel}, home of the ${teamsJoined}. Friday Night Pulse — atmosphere, crowd noise, and home-field advantage.`
+        : `Rate ${stadium.stadiumName} in ${cityLabel} on Friday Night Pulse — atmosphere, crowd noise, and home-field advantage.`;
+      const heroPhoto = stadium.photos?.[stadium.primaryPhotoIndex || 0]?.url;
+      const ogImg = heroPhoto || 'https://4thandward.com/logo.png';
+
+      document.title = seoTitle;
+      const setMeta = (selector, value) => {
+        const el = document.querySelector(selector);
+        if (el) el.setAttribute('content', value);
+      };
+      setMeta('meta[name="description"]', seoDesc);
+      setMeta('meta[property="og:title"]', seoTitle);
+      setMeta('meta[property="og:description"]', seoDesc);
+      setMeta('meta[property="og:url"]', cleanUrl);
+      setMeta('meta[property="og:image"]', ogImg);
+      setMeta('meta[name="twitter:title"]', seoTitle);
+      setMeta('meta[name="twitter:description"]', seoDesc);
+      setMeta('meta[name="twitter:image"]', ogImg);
+      const canonical = document.querySelector('link[rel="canonical"]');
+      if (canonical) canonical.setAttribute('href', cleanUrl);
+
+      // JSON-LD: SportsActivityLocation with aggregate rating when present
+      const ld = {
+        '@context': 'https://schema.org',
+        '@type': 'SportsActivityLocation',
+        name: stadium.stadiumName,
+        url: cleanUrl,
+        ...(heroPhoto && { image: heroPhoto }),
+        ...(stadium.city && { address: {
+          '@type': 'PostalAddress',
+          addressLocality: stadium.city,
+          addressRegion: stadium.state,
+          ...(stadium.postalCode && { postalCode: stadium.postalCode }),
+          addressCountry: 'US',
+        } }),
+        ...(typeof stadium.bayesianScore === 'number' && stadium.ratingsCount > 0 && {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: stadium.bayesianScore.toFixed(1),
+            ratingCount: stadium.ratingsCount,
+            bestRating: '10',
+            worstRating: '1',
+          },
+        }),
+      };
+      const ldEl = document.getElementById('ld-stadium');
+      if (ldEl) ldEl.textContent = JSON.stringify(ld);
+
       document.getElementById('rate-name').textContent = stadium.stadiumName;
     }
 

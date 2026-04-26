@@ -4,14 +4,18 @@
     { "src": "/api/school-logo",   "dest": "/api/school-logo.js" },
     { "src": "/api/maxpreps-logo", "dest": "/api/school-logo.js" },
     { "src": "/api/proxy-image",   "dest": "/api/proxy-image.js" },
-    { "src": "/episodes", "dest": "/episodes.html" },
-    { "src": "/about", "dest": "/about.html" },
-    { "src": "/totw", "dest": "/totw.html" },
-    { "src": "/merch", "dest": "/merch.html" },
-    { "src": "/wardlev2", "dest": "/wardlev2.html" },
-    { "src": "/totwv2", "dest": "/totwv2.html" },
-    { "src": "/dripordrown", "dest": "/dripordrown.html" },
-    { "src": "/admin", "dest": "/admin.html" },
-    { "src": "/(.*)", "dest": "/$1" }
+    { "src": "/episodes",          "dest": "/episodes.html" },
+    { "src": "/about",             "dest": "/about.html" },
+    { "src": "/totw",              "dest": "/totw.html" },
+    { "src": "/merch",             "dest": "/merch.html" },
+    { "src": "/wardle",            "dest": "/wardle.html" },
+    { "src": "/wardlev2",          "dest": "/wardlev2.html" },
+    { "src": "/totwv2",            "dest": "/totwv2.html" },
+    { "src": "/dripordrown",       "dest": "/dripordrown.html" },
+    { "src": "/pulse",             "dest": "/pulse.html" },
+    { "src": "/hsblitz",           "dest": "/hsblitz.html" },
+    { "src": "/admin",             "dest": "/admin.html" },
+    { "src": "/stadium/([^/]+)",   "dest": "/pulse-stadium.html?slug=$1" },
+    { "src": "/(.*)",              "dest": "/$1" }
   ]
 }

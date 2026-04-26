@@ -1,0 +1,12 @@
+# 4th & Ward — robots.txt
+User-agent: *
+Allow: /
+
+# Block admin / scripts data
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /scripts/
+
+# Sitemaps
+Sitemap: https://4thandward.com/sitemap.xml
+Sitemap: https://4thandward.com/sitemap-stadiums.xml
