@@ -1,0 +1,33 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ── Drip or Drown — uniform photo submissions ────────────
+    match /drip/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.resource.size < 8 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // ── Friday Night Pulse — per-stadium photo uploads ──────
+    // (from the photo grid on a stadium page)
+    match /pulse/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.resource.size < 8 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // ── Friday Night Pulse — new-stadium submission photos ──
+    // (from the Submit tab on pulse.html)
+    match /pulse-submissions/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.resource.size < 8 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // Everything else — deny by default
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
