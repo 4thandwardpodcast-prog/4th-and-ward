@@ -160,6 +160,7 @@ function toFirestoreDoc(record, slug) {
     // Pulse aggregates — empty until first rating
     pulseScore: null,
     bayesianScore: null,
+    simpleAvg: null,
     ratingsCount: 0,
     ratingsAvg: null,
     lastRatedAt: null,

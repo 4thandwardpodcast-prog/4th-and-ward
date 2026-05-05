@@ -1235,6 +1235,17 @@
     return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
+  // Display score = simple mean of fan ratings (matches public stadium pages).
+  // bayesianScore is still stored on stadium docs for future ranking sort.
+  function getStadiumSimpleAvg(s) {
+    if (typeof s?.simpleAvg === 'number') return s.simpleAvg;
+    if (s?.ratingsAvg && typeof s.ratingsAvg === 'object') {
+      const vals = Object.values(s.ratingsAvg).filter(v => typeof v === 'number');
+      if (vals.length) return vals.reduce((a, b) => a + b, 0) / vals.length;
+    }
+    return null;
+  }
+
   // ── OVERVIEW ──────────────────────────────────────────────
   async function loadOverviewStats() {
     try {
@@ -2513,7 +2524,7 @@
             approved: true, addedAt: Date.now(),
           }] : [],
           primaryPhotoIndex: s.imageUrl ? 0 : null,
-          ratingsCount: 0, ratingsAvg: null, bayesianScore: null, pulseScore: null, lastRatedAt: null,
+          ratingsCount: 0, ratingsAvg: null, simpleAvg: null, bayesianScore: null, pulseScore: null, lastRatedAt: null,
           isPublished: true, isFeatured: false, isHsVenue: true,
           sourceProvider: 'user-submission', sourceId: id,
           seededAt: Date.now(),
@@ -2773,8 +2784,9 @@
       if (s.isPublished === false) flags.push('<span style="color:#888;">hidden</span>');
       if (s.isHsVenue === false)   flags.push('<span style="color:#ff8c1a;">non-HS</span>');
       if (s.isFeatured)            flags.push('<span style="color:var(--gold);">★ featured</span>');
-      const score = (typeof s.bayesianScore === 'number')
-        ? ` · <span style="color:var(--gold);">${s.bayesianScore.toFixed(1)}</span>` : '';
+      const simpleScore = getStadiumSimpleAvg(s);
+      const score = (typeof simpleScore === 'number')
+        ? ` · <span style="color:var(--gold);">${simpleScore.toFixed(1)}</span>` : '';
       return `<tr>
         <td><img src="${escapeHtml(photo)}" alt="" style="width:64px;height:42px;object-fit:cover;border-radius:4px;background:#0a0a0a;" loading="lazy"></td>
         <td>
@@ -2813,7 +2825,8 @@
     document.getElementById('stadium-edit-slug-display').textContent = s.id;
     document.getElementById('stadium-edit-source').textContent = s.sourceProvider || '—';
     document.getElementById('stadium-edit-ratings').textContent = s.ratingsCount || 0;
-    document.getElementById('stadium-edit-pulse').textContent  = (typeof s.bayesianScore === 'number') ? s.bayesianScore.toFixed(2) : '—';
+    const editSimple = getStadiumSimpleAvg(s);
+    document.getElementById('stadium-edit-pulse').textContent  = (typeof editSimple === 'number') ? editSimple.toFixed(2) : '—';
     document.getElementById('stadium-edit-photo').src = (s.photos && s.photos[s.primaryPhotoIndex || 0])?.url || '';
     document.getElementById('stadium-edit-view-link').href = `/pulse-stadium.html?slug=${encodeURIComponent(s.id)}`;
 

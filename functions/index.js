@@ -294,7 +294,7 @@ const PULSE_CATEGORIES = [
   'overallVibe', 'crowdNoise', 'intimidation', 'gameNightAtmosphere',
   'bandStudent', 'concessions', 'facilities', 'homeFieldAdvantage'
 ];
-const PULSE_BAYES_C = 5;     // confidence prior — small; 8-cat composite is denser data than binary
+const PULSE_BAYES_C = 2;     // confidence prior — small; 8-cat composite is denser data than binary
 const PULSE_BAYES_M = 7.0;   // global mean prior
 
 exports.recomputeStadiumPulse = onDocumentWritten(
@@ -312,6 +312,7 @@ exports.recomputeStadiumPulse = onDocumentWritten(
       await stadiumRef.update({
         ratingsCount:  0,
         ratingsAvg:    null,
+        simpleAvg:     null,
         bayesianScore: null,
         pulseScore:    null,
         lastRatedAt:   null,
@@ -335,6 +336,10 @@ exports.recomputeStadiumPulse = onDocumentWritten(
       return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
     });
     const sumMeans = ratingMeans.reduce((a, b) => a + b, 0);
+    // simpleAvg = the honest fan-rated number shown on stadium pages and Top 25.
+    // bayesianScore = sample-size-protected number reserved for ranking sort
+    // (Top 25 still orders by capacity today; flip to bayesianScore once volume justifies it).
+    const simpleAvg     = sumMeans / ratingMeans.length;
     const bayesianScore = (PULSE_BAYES_C * PULSE_BAYES_M + sumMeans) / (PULSE_BAYES_C + ratingMeans.length);
 
     const lastRatedAt = Math.max(...ratings.map(r => r.submittedAt || 0));
@@ -342,12 +347,13 @@ exports.recomputeStadiumPulse = onDocumentWritten(
     await stadiumRef.update({
       ratingsCount:  ratings.length,
       ratingsAvg,
+      simpleAvg,
       bayesianScore,
       pulseScore:    bayesianScore,    // mirrored field for ordering convenience
       lastRatedAt,
     }).catch(err => console.warn('update stadium failed:', slug, err.message));
 
-    console.log(`[pulse] recomputed ${slug}: ${ratings.length} rating${ratings.length === 1 ? '' : 's'}, score=${bayesianScore.toFixed(2)}`);
+    console.log(`[pulse] recomputed ${slug}: ${ratings.length} rating${ratings.length === 1 ? '' : 's'}, simple=${simpleAvg.toFixed(2)} bayes=${bayesianScore.toFixed(2)}`);
   }
 );
 

@@ -1182,14 +1182,26 @@
       else if (score >= 6)   gauge.classList.add('shake-low');
     }
 
-    // ── Bayesian average for compositeScore ────────────────────
-    // bayesian = (C * m + sum) / (C + n)
-    const BAYES_C = 5;     // confidence prior — small, since 8-cat composite is denser data than binary
+    // ── Score helpers ──────────────────────────────────────────
+    // Display uses the raw simple mean — what fans actually rated.
+    // Bayesian shrinkage (kept here for ranking sort and structured data)
+    // is reserved for cases where sample-size protection matters.
+    const BAYES_C = 2;     // confidence prior — small, since 8-cat composite is denser data than binary
     const BAYES_M = 7.0;   // global mean prior
     function bayesianAvg(values) {
       if (!values.length) return null;
       const sum = values.reduce((a, b) => a + b, 0);
       return (BAYES_C * BAYES_M + sum) / (BAYES_C + values.length);
+    }
+    // Backward-compat: derive simpleAvg from stored fields when the cloud
+    // function hasn't yet written it (older stadium docs).
+    function getStadiumSimpleAvg(s) {
+      if (typeof s?.simpleAvg === 'number') return s.simpleAvg;
+      if (s?.ratingsAvg && typeof s.ratingsAvg === 'object') {
+        const vals = Object.values(s.ratingsAvg).filter(v => typeof v === 'number');
+        if (vals.length) return vals.reduce((a, b) => a + b, 0) / vals.length;
+      }
+      return null;
     }
 
     // ── render hero ────────────────────────────────────────────
@@ -1325,15 +1337,18 @@
           ...(stadium.postalCode && { postalCode: stadium.postalCode }),
           addressCountry: 'US',
         } }),
-        ...(typeof stadium.bayesianScore === 'number' && stadium.ratingsCount > 0 && {
-          aggregateRating: {
-            '@type': 'AggregateRating',
-            ratingValue: stadium.bayesianScore.toFixed(1),
-            ratingCount: stadium.ratingsCount,
-            bestRating: '10',
-            worstRating: '1',
-          },
-        }),
+        ...(stadium.ratingsCount > 0 && (() => {
+          const score = getStadiumSimpleAvg(stadium);
+          return typeof score === 'number' ? {
+            aggregateRating: {
+              '@type': 'AggregateRating',
+              ratingValue: score.toFixed(1),
+              ratingCount: stadium.ratingsCount,
+              bestRating: '10',
+              worstRating: '1',
+            },
+          } : {};
+        })()),
       };
       const ldEl = document.getElementById('ld-stadium');
       if (ldEl) ldEl.textContent = JSON.stringify(ld);
@@ -1351,12 +1366,13 @@
         setGaugeScore(big, null);
         meta.innerHTML = 'No ratings yet <span class="dot">•</span> Be the first to rate';
       } else {
-        // Composite: average each rating's mean across 8 categories, then bayesian-adjust
+        // Display: simple mean across all ratings × all 8 categories — what fans
+        // actually said. Bayesian shrinkage is reserved for ranking sort, not display.
         const ratingMeans = ratings.map(r => {
           const vals = CATEGORIES.map(c => r.scores[c.key] || 0);
           return vals.reduce((a, b) => a + b, 0) / vals.length;
         });
-        const composite = bayesianAvg(ratingMeans);
+        const composite = ratingMeans.reduce((a, b) => a + b, 0) / ratingMeans.length;
         setGaugeScore(big, composite);
         meta.innerHTML = `Based on <strong>${n}</strong> rating${n === 1 ? '' : 's'} <span class="dot">•</span> ${fmtTime(Math.max(...ratings.map(r => r.submittedAt)))}`;
       }

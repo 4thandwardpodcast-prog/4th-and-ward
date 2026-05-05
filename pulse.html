@@ -930,10 +930,22 @@
       return n.toLocaleString();
     }
 
+    // Display score = simple average of all fan ratings. Falls back to mean of
+    // per-category averages for stadium docs the cloud function hasn't yet
+    // updated with simpleAvg.
+    function getStadiumSimpleAvg(s) {
+      if (typeof s?.simpleAvg === 'number') return s.simpleAvg;
+      if (s?.ratingsAvg && typeof s.ratingsAvg === 'object') {
+        const vals = Object.values(s.ratingsAvg).filter(v => typeof v === 'number');
+        if (vals.length) return vals.reduce((a, b) => a + b, 0) / vals.length;
+      }
+      return null;
+    }
+
     // ── stadium card rendering ─────────────────────────────────
     function renderCard(s, rank) {
       const photo = (s.photos && s.photos[0]) || null;
-      const pulse = (s.ratingsCount && s.ratingsCount > 0) ? s.bayesianScore : null;
+      const pulse = (s.ratingsCount && s.ratingsCount > 0) ? getStadiumSimpleAvg(s) : null;
       const pulsePct = pulse != null ? Math.max(0, Math.min(100, pulse * 10)) : 0;
 
       const photoHtml = photo

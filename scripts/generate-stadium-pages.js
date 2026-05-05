@@ -42,6 +42,18 @@ function fmtCapacity(n) {
   return n.toLocaleString();
 }
 
+// Display score = simple mean of fan ratings. Falls back to mean of
+// per-category averages for stadium docs the cloud function hasn't yet
+// updated with simpleAvg.
+function getStadiumSimpleAvg(s) {
+  if (typeof s?.simpleAvg === 'number') return s.simpleAvg;
+  if (s?.ratingsAvg && typeof s.ratingsAvg === 'object') {
+    const vals = Object.values(s.ratingsAvg).filter(v => typeof v === 'number');
+    if (vals.length) return vals.reduce((a, b) => a + b, 0) / vals.length;
+  }
+  return null;
+}
+
 function buildStubHtml(s) {
   const slug    = s.slug || s.id;
   const url     = `${SITE}/stadium/${slug}`;
@@ -80,19 +92,23 @@ function buildStubHtml(s) {
         addressCountry: 'US',
       },
     }),
-    ...(typeof s.bayesianScore === 'number' && (s.ratingsCount || 0) > 0 && {
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: s.bayesianScore.toFixed(1),
-        ratingCount: s.ratingsCount,
-        bestRating: '10',
-        worstRating: '1',
-      },
-    }),
+    ...((s.ratingsCount || 0) > 0 && (() => {
+      const score = getStadiumSimpleAvg(s);
+      return typeof score === 'number' ? {
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: score.toFixed(1),
+          ratingCount: s.ratingsCount,
+          bestRating: '10',
+          worstRating: '1',
+        },
+      } : {};
+    })()),
   };
 
-  const ratingBlurb = (s.ratingsCount || 0) > 0 && typeof s.bayesianScore === 'number'
-    ? `<p class="score"><strong>Friday Night Pulse:</strong> ${s.bayesianScore.toFixed(1)} / 10 <span class="muted">· ${s.ratingsCount} rating${s.ratingsCount === 1 ? '' : 's'}</span></p>`
+  const displayScore = (s.ratingsCount || 0) > 0 ? getStadiumSimpleAvg(s) : null;
+  const ratingBlurb = typeof displayScore === 'number'
+    ? `<p class="score"><strong>Friday Night Pulse:</strong> ${displayScore.toFixed(1)} / 10 <span class="muted">· ${s.ratingsCount} rating${s.ratingsCount === 1 ? '' : 's'}</span></p>`
     : `<p class="score muted">No ratings yet — be the first to rate this stadium's pulse.</p>`;
 
   return `<!DOCTYPE html>
