@@ -994,7 +994,7 @@
       topStadiums = out;
       renderGrid(document.getElementById('top-grid'), topStadiums, true);
       document.getElementById('top-meta').textContent =
-        `${topStadiums.length} stadiums • Sorted by capacity until ratings begin`;
+        `${topStadiums.length} stadiums • Ranked by capacity`;
     }
 
     async function loadStateTop25(stateCode) {
@@ -1106,24 +1106,6 @@
       if (score >= 9)        gauge.classList.add('shake-high');
       else if (score >= 7.5) gauge.classList.add('shake-mid');
       else if (score >= 6)   gauge.classList.add('shake-low');
-    }
-
-    // ── hero gauge demo animation ──────────────────────────────
-    function animateHeroMeter() {
-      // Cycle a range of sample scores so the shake/color escalation is visible
-      const samples = [9.4, 7.8, 6.1, 4.3, 8.7];
-      let i = 0;
-      const gauge = document.getElementById('hero-gauge');
-      const meta  = document.getElementById('hero-gauge-meta');
-
-      meta.innerHTML = 'Sample preview <span class="dot">•</span> Real ratings begin at launch';
-
-      function tick() {
-        setGaugeScore(gauge, samples[i % samples.length]);
-        i++;
-      }
-      tick();
-      setInterval(tick, 2800);
     }
 
     // ── submit form: photo preview + char counter ──────────────
@@ -1242,7 +1224,6 @@
       const initialTab = params.get('tab') || 'top';
       if (initialTab !== 'top') switchTab(initialTab);
 
-      animateHeroMeter();
       await loadTop25();
     })();
   </script>

@@ -72,6 +72,9 @@
     .nominee-loc { font-size: 12px; color: var(--muted); margin-top: 2px; }
     .nominee-mascot { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); background: rgba(245,197,24,0.08); border: 1px solid rgba(245,197,24,0.2); border-radius: 3px; padding: 4px 8px; white-space: nowrap; flex-shrink: 0; }
     .nominees-loading { color: var(--muted); font-size: 14px; text-align: center; padding: 24px 0; }
+    .boost-badge { display: inline-block; margin-left: 6px; font-size: 10px; font-weight: 800; letter-spacing: 0.06em;
+                   color: #ff9b3d; background: rgba(255,155,61,0.12); border: 1px solid rgba(255,155,61,0.35);
+                   border-radius: 3px; padding: 2px 6px; vertical-align: 1px; white-space: nowrap; }
     /* Past Winners breaks out of the .totw-body 1100px constraint to fill the page width */
     #tab-winners { width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; padding: 0 48px; box-sizing: border-box; }
     #tab-winners .section-label, #tab-winners .winners-grid { max-width: 1600px; margin-left: auto; margin-right: auto; }
@@ -432,7 +435,7 @@
     <div id="tab-nominate" style="display:none;">
       <div class="nom-form-card" style="margin-bottom:24px;">
         <h2>Submit Your Team</h2>
-        <p>Know a great high school program with an awesome tradition, wild mascot, or untold story? Your school goes straight onto the wheel.</p>
+        <p>Know a great high school program with an awesome tradition, wild mascot, or untold story? Your school goes straight onto the wheel. Already on it? Re-submitting boosts the slice &mdash; one boost per fan, capped at 3&times;.</p>
         <div class="nom-inline-form">
           <div class="form-group" style="flex:2;min-width:160px;">
             <label class="form-label">School Name *</label>
@@ -636,8 +639,8 @@
   <script type="module">
     import { initializeApp }                              from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
     import { getFirestore, collection, addDoc, getDocs,
-             doc, deleteDoc, query, orderBy, where,
-             getDoc, setDoc, increment }                  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+             doc, deleteDoc, updateDoc, query, orderBy, where,
+             getDoc, setDoc, increment, arrayUnion }       from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
     import { getAuth, signInWithPopup, GoogleAuthProvider,
              onAuthStateChanged }                         from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
@@ -647,6 +650,15 @@
       messagingSenderId:"499057353962",appId:"1:499057353962:web:18f42748c242a6e0be2393"
     };
     const ADMIN_EMAIL = ['4thandwardpodcast@gmail.com', 'jmackwardlaw@gmail.com', 'coachwardlawsocial@gmail.com'];
+    // Boost cap: a team's slice can be at most BOOST_CAP× a fresh nominee's slice.
+    // Keeps the wheel a real lottery — small fanbases still have a real shot.
+    const BOOST_CAP = 3;
+    const VID = (() => {
+      let v = localStorage.getItem('4ward_vid');
+      if (!v) { v = 'v_' + Math.random().toString(36).slice(2) + Date.now(); localStorage.setItem('4ward_vid', v); }
+      return v;
+    })();
+    const getWeight = n => Math.min(Math.max(n.boostCount || 1, 1), BOOST_CAP);
     let nextEpNumber = 52; // auto-calculated from winners on load
 
     const app  = initializeApp(FIREBASE_CONFIG);
@@ -738,14 +750,18 @@
       if (!body) return;
       if (count) count.textContent = nominees.length + ' team' + (nominees.length !== 1 ? 's' : '');
       const sorted = [...nominees].sort((a,b) => a.teamName.localeCompare(b.teamName));
-      body.innerHTML = sorted.map((n,i) => `
+      body.innerHTML = sorted.map((n,i) => {
+        const w = getWeight(n);
+        const badge = w > 1 ? `<span class="boost-badge">&#128293; ${w}&times;</span>` : '';
+        return `
         <div class="preview-list-item">
           <div class="preview-list-num">${i+1}</div>
           <div class="preview-list-info">
-            <div class="preview-list-name">${escHtml(n.teamName)}</div>
+            <div class="preview-list-name">${escHtml(n.teamName)} ${badge}</div>
             <div class="preview-list-loc">${escHtml(n.location||'')}</div>
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
     }
 
     // ── LOAD DATA ──────────────────────────────────────────
@@ -791,14 +807,18 @@
       if (ct) ct.textContent = nominees.length + ' team' + (nominees.length!==1?'s':'') + ' on the wheel';
       if (!nominees.length) { el.innerHTML = '<div class="nominees-loading">No nominees yet — be the first!</div>'; return; }
       const sorted = [...nominees].sort((a,b) => a.teamName.localeCompare(b.teamName));
-      el.innerHTML = sorted.map(n => `
+      el.innerHTML = sorted.map(n => {
+        const w = getWeight(n);
+        const badge = w > 1 ? `<span class="boost-badge">&#128293; ${w}&times;</span>` : '';
+        return `
         <div class="nominee-row">
           <div>
-            <div class="nominee-name">${escHtml(n.teamName)}</div>
+            <div class="nominee-name">${escHtml(n.teamName)} ${badge}</div>
             <div class="nominee-loc">${escHtml(n.location||'')}</div>
           </div>
           <span class="nominee-mascot">${escHtml(n.mascot||'—')}</span>
-        </div>`).join('');
+        </div>`;
+      }).join('');
     }
 
     // ── WINNERS ────────────────────────────────────────────
@@ -873,10 +893,35 @@
       try {
         // Duplicate check — nominees AND past winners
         const nameNorm  = school.toLowerCase().trim();
-        const onWheel   = nominees.some(n => n.teamName.toLowerCase().trim() === nameNorm);
+        const existing  = nominees.find(n => n.teamName.toLowerCase().trim() === nameNorm);
         const isPastWin = winners.some(w => w.teamName.toLowerCase().trim() === nameNorm);
-        if (onWheel) {
-          showNomError('&#9888;&#65039; This school is already on the wheel!');
+        if (existing) {
+          // School already on the wheel — boost instead of error.
+          const alreadyBoosted = (existing.boostedBy || []).includes(VID);
+          const currentCount   = existing.boostCount || 1;
+          if (alreadyBoosted) {
+            showNomError('&#9888;&#65039; You already boosted ' + existing.teamName + '. One boost per fan.');
+            btn.textContent = 'Submit to the Wheel'; btn.disabled = false;
+            return;
+          }
+          if (currentCount >= BOOST_CAP) {
+            showNomError('&#128293; ' + existing.teamName + ' is already maxed out at the ' + BOOST_CAP + '× cap!');
+            btn.textContent = 'Submit to the Wheel'; btn.disabled = false;
+            return;
+          }
+          await updateDoc(doc(db,'totw_nominees', existing.id), {
+            boostCount: currentCount + 1,
+            boostedBy: arrayUnion(VID)
+          });
+          document.getElementById('nom-school').value = '';
+          document.getElementById('nom-mascot').value = '';
+          document.getElementById('nom-city').value   = '';
+          document.getElementById('nom-state').value  = '';
+          const successEl = document.getElementById('nom-success');
+          successEl.innerHTML = '&#128293; Boosted! ' + existing.teamName + ' now has ' + (currentCount + 1) + '× pull on the wheel.';
+          successEl.style.display = 'block';
+          setTimeout(() => { successEl.style.display='none'; successEl.innerHTML = '&#127944; Submitted! Your team is on the wheel.'; }, 4000);
+          await loadData();
           btn.textContent = 'Submit to the Wheel'; btn.disabled = false;
           return;
         }
@@ -889,7 +934,8 @@
         // Auto-fetch MaxPreps logo for the school
         const logoUrl = await fetchMaxPrepsLogo(school, city, state);
         await addDoc(collection(db,'totw_nominees'), {
-          teamName: school, mascot, city, state, location, logoUrl, submittedAt: Date.now()
+          teamName: school, mascot, city, state, location, logoUrl, submittedAt: Date.now(),
+          boostCount: 1, boostedBy: [VID]
         });
         // Phase 3: also queue this school for Wardle puzzle generation. Admin
         // runs the regen script to turn queued schools into auto-generated
@@ -966,12 +1012,19 @@
       const n=nominees.length;
       ctx.clearRect(0,0,size,size);
       if(!n) return;
-      const arc=(Math.PI*2)/n;
+      // Weighted slices: each nominee's arc is proportional to its boostCount
+      // (capped at BOOST_CAP). Cumulative angles are tracked so fan-favorites
+      // claim more wheel real estate without drowning out fresh nominees.
+      const weights = nominees.map(getWeight);
+      const totalWeight = weights.reduce((s,w) => s + w, 0);
       ctx.save(); ctx.translate(cx,cy); ctx.rotate(currentRotation-Math.PI/2);
 
       // ── SLICES ──
+      let cum = 0;
       for(let i=0;i<n;i++){
-        const start=i*arc,end=start+arc,mid=start+arc/2,isEven=i%2===0;
+        const arc = (weights[i] / totalWeight) * Math.PI * 2;
+        const start=cum, end=cum+arc, mid=start+arc/2, isEven=i%2===0;
+        cum = end;
 
         // Slice fill with subtle radial gradient for depth
         const grad = ctx.createRadialGradient(0,0,innerR,0,0,outerR);
@@ -1107,9 +1160,15 @@
     //   localAngle = -π/2 - (currentRotation - π/2) = -currentRotation
     // Normalise to [0, 2π) and divide by arc size to get slice index.
     function getPointerIndex() {
-      const arc = (Math.PI * 2) / nominees.length;
       const localAngle = ((-currentRotation) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
-      return Math.floor(localAngle / arc) % nominees.length;
+      const weights = nominees.map(getWeight);
+      const total = weights.reduce((s,w) => s + w, 0);
+      let cum = 0;
+      for (let i = 0; i < nominees.length; i++) {
+        cum += (weights[i] / total) * Math.PI * 2;
+        if (localAngle < cum) return i;
+      }
+      return nominees.length - 1;
     }
 
     window.spinWheel = function(fromFS) {
