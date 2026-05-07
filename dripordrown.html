@@ -1552,6 +1552,22 @@
       renderGallerySlide(opts);
     }
 
+    // After voting, jump to the next uniform the user hasn't rated yet
+    // (skipping over already-voted ones still in galleryList). Closes the
+    // gallery if every fit in the current view has a vote.
+    function gotoNextUnvoted(opts) {
+      if (!galleryList.length) return;
+      for (let i = 1; i <= galleryList.length; i++) {
+        const candIdx = (galleryIdx + i) % galleryList.length;
+        if (!myVotes.has(galleryList[candIdx].id)) {
+          gotoGallery(candIdx, opts);
+          return;
+        }
+      }
+      closeGallery();
+      toast("🔥 You're all caught up — no more unrated fits in this view.");
+    }
+
     // opts.skipEntry — suppresses the cardIn entrance on the active card AND
     // instantly snaps the under-card back to its scaled-down state. Use this
     // when the transition came from a swipe/vote: the under-card has already
@@ -1825,7 +1841,7 @@
           if (under) under.classList.add('promoted');
           // Record the vote in the background without letting it re-render the gallery mid-animation
           vote(id, v, { skipGalleryRender: true });
-          setTimeout(() => gotoGallery(galleryIdx + 1, { skipEntry: true }), 520);
+          setTimeout(() => gotoNextUnvoted({ skipEntry: true }), 520);
           return;
         }
         vote(id, v);
