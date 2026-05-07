@@ -645,9 +645,6 @@
           <span class="pulse-gauge-rank-value" id="hero-gauge-score">—</span>
         </div>
       </div>
-      <div class="pulse-gauge-meta" id="hero-gauge-meta">
-        Awaiting first ratings <span class="dot">•</span> Be the first to rate
-      </div>
     </div>
   </section>
 
@@ -1230,12 +1227,21 @@
       }
     });
 
+    // ── hero gauge demo animation ──────────────────────────────
+    function animateHeroMeter() {
+      const gauge = document.getElementById('hero-gauge');
+      const tick = () => setGaugeScore(gauge, 4 + Math.random() * 6);
+      tick();
+      setInterval(tick, 2800);
+    }
+
     // ── init ───────────────────────────────────────────────────
     (async function init() {
       const params = new URLSearchParams(window.location.search);
       const initialTab = params.get('tab') || 'top';
       if (initialTab !== 'top') switchTab(initialTab);
 
+      animateHeroMeter();
       await loadTop25();
     })();
   </script>
