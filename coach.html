@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>For Coaches — Jimmys &amp; Joes — 4th &amp; Ward</title>
+  <meta name="description" content="Get your roster on Jimmys & Joes in minutes. Bulk-upload your players, manage their profiles, and let the community evaluate the film.">
+  <link rel="canonical" href="https://4thandward.com/coach">
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/jj.css">
+  <script type="module" src="js/user-menu.js"></script>
+  <style>
+    .coach-feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 36px; }
+    @media (max-width: 800px) { .coach-feature-grid { grid-template-columns: 1fr; } }
+    .coach-feature { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 22px; }
+    .coach-feature-icon { font-size: 28px; margin-bottom: 12px; display: block; }
+    .coach-feature h3 { font-family: var(--condensed); font-weight: 900; font-size: 16px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--white); margin-bottom: 6px; }
+    .coach-feature p { font-size: 13px; color: #cfcec9; line-height: 1.5; }
+    .coach-callout { background: rgba(245,197,24,0.06); border: 1px solid rgba(245,197,24,0.25); border-radius: 6px; padding: 18px 20px; margin-bottom: 22px; font-size: 14px; }
+    .coach-callout strong { color: var(--gold); }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo"><img src="logo-cover.svg" alt="4th & Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="totw.html">Team of the Week</a></li>
+      <li><a href="wardle.html">4th &amp; Wardle</a></li>
+      <li><a href="hsblitz.html">HS Blitz<span class="nav-beta">Beta</span></a></li>
+      <li><a href="dripordrown.html">Drip or Drown</a></li>
+      <li><a href="pulse.html">Friday Night Pulse<span class="nav-beta">New</span></a></li>
+      <li><a href="jimmysandjoes.html" class="active">Jimmys &amp; Joes<span class="nav-beta">New</span></a></li>
+      <li><a href="merch.html">Merch</a></li>
+      <li id="nav-user-slot"></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+  </nav>
+
+  <main class="page-wrap">
+    <nav class="jj-subnav" aria-label="Jimmys & Joes sections">
+      <div class="jj-subnav-inner">
+        <a href="/jimmysandjoes">Discover</a>
+        <a href="/jimmysandjoes/leaderboards">Leaderboards</a>
+        <a href="/jimmysandjoes/rankings">Sub-Rankings</a>
+        <a href="/jimmysandjoes/scouts">Hall of Scouts</a>
+        <a href="/jimmysandjoes/submit">+ Add a Jimmy</a>
+        <a href="/coach" class="active">For Coaches</a>
+      </div>
+    </nav>
+
+    <section class="jj-section">
+      <div class="section-inner" style="max-width: 880px;">
+        <div class="section-label">For Coaches</div>
+        <h1 class="section-title">Get your whole roster on J&amp;J in one afternoon.</h1>
+
+        <div class="coach-feature-grid">
+          <div class="coach-feature">
+            <span class="coach-feature-icon">📋</span>
+            <h3>Bulk Upload</h3>
+            <p>Download a CSV template, fill it in, paste it back. We'll preview every row, flag missing fields, and let you fix them inline before submitting.</p>
+          </div>
+          <div class="coach-feature">
+            <span class="coach-feature-icon">🛡️</span>
+            <h3>Verified Account</h3>
+            <p>Submit your school email and title — once we verify, you get a green checkmark on every prospect tied to your school and a coach dashboard.</p>
+          </div>
+          <div class="coach-feature">
+            <span class="coach-feature-icon">🎯</span>
+            <h3>Honest Exposure</h3>
+            <p>Real people watch the film. Real ratings, no scout politics. The cream rises faster, and the diamonds in the rough actually get found.</p>
+          </div>
+        </div>
+
+        <div class="coach-callout">
+          <strong>How verification works:</strong> Submit the form below with your school email (must end in your school's domain). Approval is manual and typically takes 24–48 hours. We may email or call the school to confirm.
+        </div>
+
+        <div id="coach-app-host"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.png" alt="4th & Ward Podcast"></div>
+    <ul class="footer-links">
+      <li><a href="about.html">About</a></li>
+      <li><a href="jimmysandjoes.html">Jimmys &amp; Joes</a></li>
+      <li><a href="privacy.html">Privacy</a></li>
+      <li><a href="merch.html">Merch</a></li>
+    </ul>
+    <p class="footer-copy">&#169; 2026 4th &amp; Ward Podcast. All rights reserved.</p>
+  </footer>
+
+  <script type="module">
+    import { db } from './js/firebase-init.js';
+    import { onAuthChange, getUserDoc } from './js/auth.js';
+    import {
+      doc, getDoc, setDoc, serverTimestamp
+    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { escapeHtml } from './js/jj-utils.js';
+
+    const host = document.getElementById('coach-app-host');
+    let currentUser = null;
+    let myProfile = null;
+    let myCoachProfile = null;
+
+    onAuthChange(async u => {
+      currentUser = u || null;
+      if (!u) { renderLoggedOut(); return; }
+      myProfile = await getUserDoc(u.uid);
+      try {
+        const snap = await getDoc(doc(db, 'coach_profiles', u.uid));
+        myCoachProfile = snap.exists() ? snap.data() : null;
+      } catch (_) { myCoachProfile = null; }
+      renderForUser();
+    });
+
+    function renderLoggedOut() {
+      host.innerHTML = `
+        <div class="jj-card-section" style="text-align:center;">
+          <p style="color:var(--muted); margin-bottom:16px;">You need an account before you can apply.</p>
+          <button class="btn-gold" type="button" id="coach-login-btn">Log In or Sign Up</button>
+        </div>
+      `;
+      document.getElementById('coach-login-btn').addEventListener('click', () => {
+        if (window.openAuthModal) window.openAuthModal('login');
+      });
+    }
+
+    function renderForUser() {
+      if (myProfile?.role === 'coach' || myCoachProfile?.status === 'verified') {
+        host.innerHTML = `
+          <div class="jj-card-section">
+            <h2 style="color:var(--gold);">You're verified ✓</h2>
+            <p style="color:#d0cfca; margin: 8px 0 18px;">Welcome, coach. Head to your dashboard to upload a roster.</p>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+              <a href="/coach/dashboard" class="btn-gold">Coach Dashboard</a>
+              <a href="/coach/bulk-upload" class="btn-ghost">Bulk Upload Roster</a>
+            </div>
+          </div>
+        `;
+        return;
+      }
+      if (myCoachProfile?.status === 'pending') {
+        host.innerHTML = `
+          <div class="jj-card-section">
+            <h2>Application received</h2>
+            <p style="color:#d0cfca; margin-top: 8px;">We have your application for <strong>${escapeHtml(myCoachProfile.schoolName)}</strong>. Expect a decision within 24–48 hours; we'll email you at <strong>${escapeHtml(myCoachProfile.schoolEmail)}</strong>.</p>
+          </div>
+        `;
+        return;
+      }
+      if (myCoachProfile?.status === 'rejected') {
+        host.innerHTML = `
+          <div class="jj-card-section">
+            <h2>Application not approved</h2>
+            <p style="color:#d0cfca; margin-top: 8px;">${escapeHtml(myCoachProfile.notes || 'We were unable to verify this application. Email 4thandwardpodcast@gmail.com to discuss.')}</p>
+          </div>
+        `;
+        return;
+      }
+      renderApplicationForm();
+    }
+
+    function renderApplicationForm() {
+      host.innerHTML = `
+        <div class="jj-card-section">
+          <h2>Apply for Coach Verification</h2>
+          <p class="jj-section-hint">All fields required.</p>
+
+          <div id="coach-msg" class="jj-submit-msg" hidden></div>
+
+          <form id="coach-form" novalidate>
+            <div class="jj-grid-2">
+              <div class="jj-field">
+                <label class="jj-field-label" for="cf-school">School Name</label>
+                <input id="cf-school" class="jj-input" type="text" maxlength="120" required>
+              </div>
+              <div class="jj-field">
+                <label class="jj-field-label" for="cf-title">Your Title / Role</label>
+                <input id="cf-title" class="jj-input" type="text" maxlength="60" placeholder="Head Coach, OC, DC, Recruiting Coordinator…" required>
+              </div>
+              <div class="jj-field">
+                <label class="jj-field-label" for="cf-city">City</label>
+                <input id="cf-city" class="jj-input" type="text" maxlength="60" required>
+              </div>
+              <div class="jj-field">
+                <label class="jj-field-label" for="cf-state">State (2 letters)</label>
+                <input id="cf-state" class="jj-input" type="text" maxlength="2" required style="text-transform:uppercase;">
+              </div>
+              <div class="jj-field">
+                <label class="jj-field-label" for="cf-email">School Email</label>
+                <input id="cf-email" class="jj-input" type="email" maxlength="120" required placeholder="you@yourschool.org">
+                <div class="jj-field-hint">Must match your school's email domain.</div>
+              </div>
+              <div class="jj-field">
+                <label class="jj-field-label" for="cf-phone">Phone (optional)</label>
+                <input id="cf-phone" class="jj-input" type="tel" maxlength="20">
+              </div>
+            </div>
+
+            <div class="jj-form-actions">
+              <button type="submit" class="btn-gold" id="cf-submit">Submit Application</button>
+            </div>
+          </form>
+        </div>
+      `;
+      const stateInput = document.getElementById('cf-state');
+      stateInput.addEventListener('input', () => stateInput.value = stateInput.value.toUpperCase());
+
+      document.getElementById('coach-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msg = document.getElementById('coach-msg');
+        msg.hidden = true;
+        const data = {
+          uid: currentUser.uid,
+          status: 'pending',
+          schoolName:  document.getElementById('cf-school').value.trim(),
+          schoolEmail: document.getElementById('cf-email').value.trim(),
+          title:       document.getElementById('cf-title').value.trim(),
+          schoolCity:  document.getElementById('cf-city').value.trim(),
+          schoolState: stateInput.value.trim(),
+          phone:       document.getElementById('cf-phone').value.trim(),
+          submittedAt: Date.now(),
+          verifiedAt: null,
+          verifiedBy: null,
+          rejectedAt: null,
+          notes: null,
+        };
+        if (!data.schoolName || !data.title || !data.schoolEmail || !data.schoolCity || !data.schoolState) {
+          msg.textContent = 'All required fields must be filled.'; msg.className = 'jj-submit-msg err'; msg.hidden = false; return;
+        }
+        const btn = document.getElementById('cf-submit'); btn.disabled = true;
+        try {
+          await setDoc(doc(db, 'coach_profiles', currentUser.uid), data);
+          myCoachProfile = data;
+          renderForUser();
+        } catch (err) {
+          console.error('[coach-apply]', err);
+          msg.textContent = err.message || 'Application failed.'; msg.className = 'jj-submit-msg err'; msg.hidden = false;
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    }
+  </script>
+</body>
+</html>

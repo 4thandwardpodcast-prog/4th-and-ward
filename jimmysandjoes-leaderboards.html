@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Leaderboards — Jimmys &amp; Joes — 4th &amp; Ward</title>
+  <meta name="description" content="Top 25 recruits by class and position, community-rated on 4th & Ward.">
+  <link rel="canonical" href="https://4thandward.com/jimmysandjoes/leaderboards">
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/jj.css">
+  <script type="module" src="js/user-menu.js"></script>
+  <script type="module" src="js/jj-random.js"></script>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo"><img src="logo-cover.svg" alt="4th & Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="totw.html">Team of the Week</a></li>
+      <li><a href="wardle.html">4th &amp; Wardle</a></li>
+      <li><a href="hsblitz.html">HS Blitz<span class="nav-beta">Beta</span></a></li>
+      <li><a href="dripordrown.html">Drip or Drown</a></li>
+      <li><a href="pulse.html">Friday Night Pulse<span class="nav-beta">New</span></a></li>
+      <li><a href="jimmysandjoes.html" class="active">Jimmys &amp; Joes<span class="nav-beta">New</span></a></li>
+      <li><a href="merch.html">Merch</a></li>
+      <li id="nav-user-slot"></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+  </nav>
+
+  <main class="page-wrap">
+    <nav class="jj-subnav" aria-label="Jimmys & Joes sections">
+      <div class="jj-subnav-inner">
+        <a href="/jimmysandjoes">Discover</a>
+        <a href="/jimmysandjoes/leaderboards" class="active">Leaderboards</a>
+        <a href="/jimmysandjoes/rankings">Sub-Rankings</a>
+        <a href="/jimmysandjoes/scouts">Hall of Scouts</a>
+        <a href="/jimmysandjoes/submit">+ Add a Jimmy</a>
+        <button type="button" class="jj-subnav-random" data-jj-random>🎲 Random Jimmy</button>
+      </div>
+    </nav>
+
+    <section class="jj-section">
+      <div class="section-inner">
+        <div class="section-label">Leaderboards</div>
+        <h1 class="section-title">Top 25 by Class &amp; Position</h1>
+        <p style="color:var(--muted); max-width:680px; margin-bottom:28px;">Filter by class year and position to see the highest-rated prospects in that bucket. A prospect needs at least 15 ratings before they appear with stars; everything below that is hidden from these leaderboards.</p>
+
+        <div class="jj-filters" style="margin-bottom: 22px;">
+          <div class="jj-filter-group">
+            <label class="jj-filter-label">Class</label>
+            <select id="filter-class" class="jj-filter-select">
+              <option value="">All classes</option>
+            </select>
+          </div>
+          <div class="jj-filter-group">
+            <label class="jj-filter-label">Position</label>
+            <select id="filter-position" class="jj-filter-select">
+              <option value="">All positions</option>
+            </select>
+          </div>
+          <div class="jj-filter-group">
+            <label class="jj-filter-label">State</label>
+            <input id="filter-state" class="jj-filter-input" type="text" placeholder="e.g. TX" maxlength="2">
+          </div>
+        </div>
+
+        <div id="leaderboard-table-wrap"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.png" alt="4th & Ward Podcast"></div>
+    <ul class="footer-links">
+      <li><a href="about.html">About</a></li>
+      <li><a href="jimmysandjoes.html">Jimmys &amp; Joes</a></li>
+      <li><a href="privacy.html">Privacy</a></li>
+      <li><a href="merch.html">Merch</a></li>
+    </ul>
+    <p class="footer-copy">&#169; 2026 4th &amp; Ward Podcast. All rights reserved.</p>
+  </footer>
+
+  <script type="module">
+    import { db } from './js/firebase-init.js';
+    import {
+      collection, query, where, orderBy, limit, getDocs
+    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { POSITIONS, classYearOptions, MIN_RATINGS_FOR_STARS } from './js/jj-config.js';
+    import { escapeHtml, renderStars, inchesToFeetInches } from './js/jj-utils.js';
+
+    const TOP_N = 25;
+
+    const fClass = document.getElementById('filter-class');
+    classYearOptions().forEach(y => fClass.appendChild(new Option(y, y)));
+    const fPos = document.getElementById('filter-position');
+    POSITIONS.forEach(p => fPos.appendChild(new Option(`${p.code} — ${p.label}`, p.code)));
+    const fState = document.getElementById('filter-state');
+
+    let allRated = [];
+
+    async function load() {
+      // Pull all approved prospects with at least the minimum number of ratings,
+      // sorted by jjRating. We over-fetch and filter client-side so the user
+      // can flip filters without re-querying.
+      const wrap = document.getElementById('leaderboard-table-wrap');
+      wrap.innerHTML = `<div class="jj-loading" style="padding: 40px 20px;">Loading leaderboard…</div>`;
+      try {
+        const snap = await getDocs(query(
+          collection(db, 'prospects'),
+          where('status', '==', 'approved'),
+          orderBy('jjRating', 'desc'),
+          limit(500)
+        ));
+        allRated = [];
+        snap.forEach(d => {
+          const data = d.data();
+          if ((data.ratingCount || 0) >= MIN_RATINGS_FOR_STARS) {
+            allRated.push({ id: d.id, ...data });
+          }
+        });
+        render();
+      } catch (err) {
+        console.warn('[jj-leaderboards]', err);
+        wrap.innerHTML = `<div class="jj-empty"><p>Couldn't load the leaderboard.</p><p style="font-size:11px;">${escapeHtml(err.message)}</p></div>`;
+      }
+    }
+
+    function render() {
+      const cls = fClass.value;
+      const pos = fPos.value;
+      const st  = (fState.value || '').trim().toUpperCase();
+
+      let list = allRated.slice();
+      if (cls) list = list.filter(p => p.classYear === cls);
+      if (pos) list = list.filter(p =>
+        p.primaryPosition === pos ||
+        (Array.isArray(p.secondaryPositions) && p.secondaryPositions.includes(pos))
+      );
+      if (st)  list = list.filter(p => (p.state || '').toUpperCase() === st);
+      list = list.slice(0, TOP_N);
+
+      const wrap = document.getElementById('leaderboard-table-wrap');
+      if (!list.length) {
+        wrap.innerHTML = `<div class="jj-empty"><p>No prospects match those filters yet.</p></div>`;
+        return;
+      }
+      wrap.innerHTML = `
+        <div style="overflow-x:auto;">
+          <table class="jj-ranking-table">
+            <thead>
+              <tr>
+                <th style="width:50px;">#</th>
+                <th>Name</th>
+                <th>Pos</th>
+                <th>Class</th>
+                <th>School</th>
+                <th>Ht / Wt</th>
+                <th class="right">J&amp;J</th>
+                <th class="right">Raters</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${list.map((p, i) => `
+                <tr>
+                  <td class="jj-ranking-rank">${i + 1}</td>
+                  <td><a href="/jimmysandjoes/prospect/${encodeURIComponent(p.slug)}"><strong>${escapeHtml(p.fullName)}</strong></a></td>
+                  <td>${escapeHtml(p.primaryPosition || '—')}</td>
+                  <td>${escapeHtml(p.classYear || '—')}</td>
+                  <td>${escapeHtml(p.schoolName || '')}<br><small style="color:var(--muted);">${escapeHtml(p.city || '')}${p.city && p.state ? ', ' : ''}${escapeHtml(p.state || '')}</small></td>
+                  <td>${inchesToFeetInches(p.heightInches)} / ${p.weightLbs ? p.weightLbs + ' lbs' : '—'}</td>
+                  <td class="right">${(p.jjRating || 0).toFixed(1)}</td>
+                  <td class="right">${p.ratingCount || 0}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    [fClass, fPos, fState].forEach(el => el.addEventListener('input', render));
+
+    // Reflect ?class= and ?position= deep links so we can link from the hub.
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('class'))    fClass.value = params.get('class');
+    if (params.get('position')) fPos.value   = params.get('position');
+    if (params.get('state'))    fState.value = params.get('state');
+
+    load();
+  </script>
+</body>
+</html>

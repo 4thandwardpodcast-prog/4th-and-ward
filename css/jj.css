@@ -1,0 +1,683 @@
+/* ── Jimmys & Joes — shared styling for hub, submit, profile, rating modal ── */
+
+/* ── Hero ──────────────────────────────────────────────────────── */
+.jj-hero { padding: 64px 24px 56px; }
+.jj-hero-inner { max-width: 980px; margin: 0 auto; text-align: center; }
+.jj-hero-eyebrow {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.28em;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 18px;
+}
+.jj-hero-title {
+  font-family: var(--condensed); font-weight: 900;
+  font-size: clamp(48px, 9vw, 110px); line-height: 0.88;
+  letter-spacing: -0.02em; text-transform: uppercase;
+  color: var(--white); margin-bottom: 14px;
+}
+.jj-hero-sub {
+  font-family: var(--condensed); font-weight: 700;
+  font-size: clamp(18px, 2.4vw, 24px); letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--white); margin-bottom: 6px;
+}
+.jj-hero-tagline {
+  font-family: var(--condensed); font-weight: 900;
+  font-size: clamp(13px, 1.8vw, 16px); letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 28px;
+}
+.jj-hero-ctas {
+  display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+}
+
+/* ── How it works strip ───────────────────────────────────────── */
+.jj-how {
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  background: var(--surface); padding: 28px 24px;
+}
+.jj-how-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px;
+}
+.jj-how-step { display: flex; gap: 14px; align-items: flex-start; }
+.jj-how-num {
+  font-family: var(--condensed); font-weight: 900; font-size: 30px;
+  color: var(--gold); line-height: 1; flex-shrink: 0; min-width: 38px;
+}
+.jj-how-text { font-size: 14px; color: #cfcec9; line-height: 1.45; }
+.jj-how-text strong { color: var(--white); font-weight: 700; }
+@media (max-width: 800px) {
+  .jj-how-inner { grid-template-columns: 1fr; gap: 16px; }
+}
+
+/* ── Section frame ────────────────────────────────────────────── */
+.jj-section { padding: 40px 24px; }
+.jj-count-pill {
+  display: inline-block; margin-left: 8px;
+  background: var(--surface2); color: var(--muted);
+  padding: 2px 9px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+  border: 1px solid var(--border);
+}
+
+/* ── Filters ──────────────────────────────────────────────────── */
+.jj-filters {
+  display: flex; flex-wrap: wrap; gap: 14px;
+  margin-bottom: 28px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px 20px;
+}
+.jj-filter-group { display: flex; flex-direction: column; gap: 4px; min-width: 140px; }
+.jj-filter-label {
+  font-family: var(--condensed); font-weight: 700; font-size: 10px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+}
+.jj-filter-select, .jj-filter-input {
+  background: var(--black); color: var(--white);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 8px 10px; font-family: var(--body); font-size: 13px;
+}
+.jj-filter-select:focus, .jj-filter-input:focus { outline: none; border-color: var(--gold); }
+
+/* ── Prospect grid + card ─────────────────────────────────────── */
+.jj-grid {
+  display: grid; gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+.jj-card {
+  display: flex; flex-direction: column;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 18px;
+  text-decoration: none; color: var(--white);
+  min-height: 180px;
+}
+.jj-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.jj-card-name {
+  font-family: var(--condensed); font-weight: 900; font-size: 19px;
+  letter-spacing: 0.02em; text-transform: uppercase; color: var(--white);
+  line-height: 1.1;
+}
+.jj-card-meta {
+  font-family: var(--condensed); font-weight: 700; font-size: 12px;
+  letter-spacing: 0.08em; color: var(--gold); text-transform: uppercase;
+  display: flex; gap: 5px; align-items: center; flex-shrink: 0;
+}
+.jj-card-school { font-size: 13px; color: #d0cfca; line-height: 1.4; margin-bottom: auto; }
+.jj-card-locale { color: var(--muted); font-size: 12px; }
+.jj-card-foot {
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+}
+.jj-card-rating { font-size: 15px; }
+.jj-card-offers {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--muted);
+  background: var(--surface2); padding: 4px 8px; border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+/* ── Stars (used in cards + profile) ──────────────────────────── */
+.jj-stars { color: var(--gold); letter-spacing: 0.05em; font-size: 1em; }
+.jj-stars-count { color: var(--muted); font-size: 0.78em; margin-left: 4px; }
+.jj-unrated { color: var(--muted); font-style: italic; font-size: 13px; }
+
+/* ── Loading / empty ──────────────────────────────────────────── */
+.jj-loading {
+  grid-column: 1 / -1;
+  text-align: center; padding: 60px 20px; color: var(--muted);
+}
+.jj-empty {
+  grid-column: 1 / -1;
+  text-align: center; padding: 60px 20px;
+  background: var(--surface); border: 1px dashed var(--border);
+  border-radius: 8px;
+}
+.jj-empty p { color: var(--muted); margin-bottom: 18px; }
+
+/* ── Form (submit + edit) ─────────────────────────────────────── */
+.jj-form-wrap { max-width: 820px; margin: 0 auto; padding: 50px 24px 80px; }
+.jj-form-header { margin-bottom: 30px; text-align: center; }
+.jj-form-eyebrow {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 10px;
+}
+.jj-form-title {
+  font-family: var(--condensed); font-weight: 900;
+  font-size: clamp(34px, 5vw, 52px);
+  letter-spacing: -0.01em; text-transform: uppercase; line-height: 1;
+}
+.jj-form-sub { color: var(--muted); margin-top: 10px; font-size: 14px; }
+.jj-card-section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 26px 28px; margin-bottom: 18px;
+}
+.jj-card-section h2 {
+  font-family: var(--condensed); font-weight: 900; font-size: 17px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 6px;
+}
+.jj-card-section .jj-section-hint {
+  font-size: 12px; color: var(--muted); margin-bottom: 18px;
+}
+.jj-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+.jj-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 18px; }
+.jj-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 18px; }
+@media (max-width: 700px) {
+  .jj-grid-2, .jj-grid-3, .jj-grid-4 { grid-template-columns: 1fr; }
+}
+.jj-field { display: flex; flex-direction: column; gap: 5px; }
+.jj-field-label {
+  font-family: var(--condensed); font-weight: 700; font-size: 11px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+}
+.jj-field-label .jj-req { color: var(--gold); margin-left: 3px; }
+.jj-input, .jj-select, .jj-textarea {
+  background: var(--black); color: var(--white);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 10px 12px; font-family: var(--body); font-size: 14px;
+  width: 100%;
+}
+.jj-textarea { min-height: 80px; resize: vertical; }
+.jj-input:focus, .jj-select:focus, .jj-textarea:focus {
+  outline: none; border-color: var(--gold);
+}
+.jj-input.invalid, .jj-select.invalid { border-color: #e74c3c; }
+.jj-field-hint { font-size: 11px; color: var(--muted); }
+.jj-field-error { font-size: 12px; color: #f39ba2; display: none; }
+.jj-field.has-error .jj-field-error { display: block; }
+.jj-field.has-error .jj-input, .jj-field.has-error .jj-select { border-color: #e74c3c; }
+
+.jj-checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 6px 12px; }
+.jj-checkbox {
+  display: flex; gap: 8px; align-items: center;
+  padding: 7px 10px; border-radius: 4px;
+  background: var(--surface2); border: 1px solid var(--border);
+  font-size: 13px; cursor: pointer;
+}
+.jj-checkbox input { accent-color: var(--gold); }
+.jj-checkbox:hover { border-color: rgba(245,197,24,0.4); }
+
+.jj-pill-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.jj-pill {
+  padding: 6px 12px; border-radius: 999px;
+  background: var(--surface2); border: 1px solid var(--border);
+  font-size: 12px; cursor: pointer; user-select: none;
+  font-family: var(--condensed); font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.jj-pill.selected { background: rgba(245,197,24,0.12); border-color: var(--gold); color: var(--gold); }
+
+.jj-form-actions {
+  display: flex; gap: 12px; justify-content: flex-end;
+  margin-top: 22px; flex-wrap: wrap;
+}
+.jj-submit-msg {
+  padding: 12px 16px; border-radius: 6px; font-size: 13px; margin-bottom: 16px;
+}
+.jj-submit-msg.ok  { background: rgba(40,167,69,0.10);  border: 1px solid rgba(40,167,69,0.4);  color: #a8f0b8; }
+.jj-submit-msg.err { background: rgba(220,53,69,0.10); border: 1px solid rgba(220,53,69,0.4); color: #f6a8b0; }
+.jj-submit-msg[hidden] { display: none; }
+
+/* ── Profile page ─────────────────────────────────────────────── */
+.jj-profile-wrap { max-width: 1100px; margin: 0 auto; padding: 26px 24px 100px; }
+.jj-profile-hero {
+  display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px;
+  margin-bottom: 26px;
+}
+@media (max-width: 900px) {
+  .jj-profile-hero { grid-template-columns: 1fr; }
+}
+.jj-video {
+  position: relative; aspect-ratio: 16 / 9;
+  background: #000; border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden;
+}
+.jj-video iframe { width: 100%; height: 100%; border: 0; display: block; }
+.jj-video-missing {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); font-size: 13px; text-align: center; padding: 24px;
+}
+.jj-hero-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 22px 24px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.jj-hero-name {
+  font-family: var(--condensed); font-weight: 900;
+  font-size: clamp(28px, 4vw, 40px); line-height: 1;
+  text-transform: uppercase; letter-spacing: -0.01em;
+}
+.jj-hero-meta {
+  font-family: var(--condensed); font-weight: 700; font-size: 14px;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold);
+}
+.jj-hero-school { font-size: 14px; color: #d0cfca; }
+.jj-hero-rating {
+  margin-top: 4px; padding: 12px 14px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.jj-hero-rating-num {
+  font-family: var(--condensed); font-weight: 900;
+  font-size: 38px; line-height: 1; color: var(--gold);
+}
+.jj-hero-rating-label {
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted); margin-top: 4px;
+}
+.jj-hero-stars { font-size: 22px; }
+.jj-hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.jj-info-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  margin-bottom: 26px;
+}
+@media (max-width: 900px) { .jj-info-row { grid-template-columns: repeat(2, 1fr); } }
+.jj-info-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px 18px;
+}
+.jj-info-title {
+  font-family: var(--condensed); font-weight: 700; font-size: 11px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+  margin-bottom: 8px;
+}
+.jj-info-body { font-size: 14px; color: var(--white); }
+.jj-info-big {
+  font-family: var(--condensed); font-weight: 900; font-size: 26px;
+  line-height: 1; color: var(--gold);
+}
+.jj-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.jj-tag {
+  font-size: 11px; padding: 3px 8px; border-radius: 999px;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--white);
+}
+.jj-tag.gold { color: var(--gold); border-color: rgba(245,197,24,0.4); background: rgba(245,197,24,0.08); }
+
+/* ── Rating breakdown ─────────────────────────────────────────── */
+.jj-section-block {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 22px 24px; margin-bottom: 18px;
+}
+.jj-section-block h2 {
+  font-family: var(--condensed); font-weight: 900; font-size: 18px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 16px;
+}
+.jj-breakdown-row {
+  display: grid; grid-template-columns: 160px 1fr 60px;
+  gap: 12px; align-items: center; padding: 8px 0;
+}
+.jj-breakdown-label {
+  font-family: var(--condensed); font-weight: 700; font-size: 12px;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--white);
+}
+.jj-breakdown-label small { color: var(--muted); margin-left: 4px; font-weight: 500; }
+.jj-breakdown-bar {
+  height: 10px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 999px; overflow: hidden;
+}
+.jj-breakdown-fill {
+  height: 100%; background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+  border-radius: 999px; transition: width 0.4s;
+}
+.jj-breakdown-val { font-family: var(--condensed); font-weight: 700; color: var(--gold); text-align: right; }
+
+.jj-histo { display: flex; align-items: flex-end; gap: 10px; height: 120px; margin-top: 6px; }
+.jj-histo-bar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; }
+.jj-histo-fill {
+  width: 100%; background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dim) 100%);
+  border-radius: 4px 4px 0 0; min-height: 2px;
+}
+.jj-histo-label { font-family: var(--condensed); font-weight: 700; font-size: 11px; color: var(--muted); }
+.jj-histo-count { font-size: 10px; color: var(--white); }
+
+/* ── Comments ─────────────────────────────────────────────────── */
+.jj-comment-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.jj-comment-form textarea {
+  background: var(--black); color: var(--white);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 10px 12px; font-family: var(--body); font-size: 14px;
+  min-height: 70px; resize: vertical;
+}
+.jj-comment-form textarea:focus { outline: none; border-color: var(--gold); }
+.jj-comment-form-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.jj-comment-list { display: flex; flex-direction: column; gap: 12px; }
+.jj-comment {
+  display: grid; grid-template-columns: 36px 1fr;
+  gap: 12px;
+  padding: 12px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.jj-comment-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--black); display: flex; align-items: center; justify-content: center;
+  color: var(--gold); font-weight: 900; font-family: var(--condensed); font-size: 14px;
+  border: 1px solid var(--border); overflow: hidden;
+}
+.jj-comment-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.jj-comment-head { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.jj-comment-name { font-weight: 700; color: var(--white); font-size: 13px; }
+.jj-comment-time { color: var(--muted); font-size: 11px; }
+.jj-comment-text { color: #d0cfca; font-size: 14px; line-height: 1.5; margin-top: 4px; }
+.jj-comment-actions { margin-top: 6px; display: flex; gap: 12px; }
+.jj-comment-actions button {
+  background: none; border: none; cursor: pointer; color: var(--muted);
+  font-size: 12px; padding: 0;
+}
+.jj-comment-actions button:hover { color: var(--gold); }
+.jj-comment-actions button.voted { color: var(--gold); font-weight: 700; }
+.jj-comment-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 1px 7px; border-radius: 999px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+  background: rgba(245,197,24,0.10); color: var(--gold);
+  border: 1px solid rgba(245,197,24,0.3);
+  text-transform: uppercase;
+}
+
+/* ── Reply threads (one level deep) ───────────────────────────── */
+.jj-comment-replies {
+  margin-top: 10px; margin-left: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+  border-left: 2px solid var(--border);
+  padding-left: 12px;
+}
+.jj-comment.is-reply {
+  background: var(--surface); padding: 10px 12px;
+  grid-template-columns: 28px 1fr;
+}
+.jj-comment.is-reply .jj-comment-avatar { width: 28px; height: 28px; font-size: 12px; }
+.jj-comment.is-reply .jj-comment-text { font-size: 13px; }
+.jj-reply-form-host { margin-top: 10px; }
+.jj-reply-form {
+  display: flex; flex-direction: column; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; padding: 10px 12px;
+}
+.jj-reply-form textarea {
+  background: var(--black); color: var(--white);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 8px 10px; font-family: var(--body); font-size: 13px;
+  min-height: 60px; resize: vertical;
+}
+.jj-reply-form textarea:focus { outline: none; border-color: var(--gold); }
+.jj-reply-form-foot {
+  display: flex; gap: 8px; justify-content: flex-end; align-items: center;
+}
+
+/* ── Account page extras (badges + activity strip) ────────────── */
+.account-badges-list {
+  display: flex; flex-wrap: wrap; gap: 8px;
+}
+.account-badge-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 999px;
+  background: var(--surface2); border: 1px solid var(--border);
+  font-size: 12px;
+}
+.account-badge-chip.earned {
+  background: rgba(245,197,24,0.10);
+  border-color: rgba(245,197,24,0.45);
+  color: var(--white);
+}
+.account-badge-chip.locked { color: var(--muted); opacity: 0.55; }
+.account-badge-chip-icon { font-size: 14px; }
+
+/* ── Sticky bottom action bar (mobile) ────────────────────────── */
+.jj-sticky-actions {
+  position: sticky; bottom: 0; z-index: 50;
+  display: none;
+  background: linear-gradient(180deg, transparent 0%, var(--black) 50%);
+  padding: 16px; margin: 24px -24px 0;
+}
+@media (max-width: 700px) { .jj-sticky-actions { display: flex; gap: 10px; } }
+.jj-sticky-actions .btn-gold, .jj-sticky-actions .btn-ghost { flex: 1; justify-content: center; }
+
+/* ── Rating modal ─────────────────────────────────────────────── */
+.jj-rating-overlay {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(0,0,0,0.78);
+  display: none; align-items: center; justify-content: center;
+  padding: 20px; backdrop-filter: blur(4px);
+}
+.jj-rating-overlay.open { display: flex; }
+.jj-rating-modal {
+  width: 100%; max-width: 520px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 26px;
+  max-height: 92vh; overflow-y: auto; position: relative;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+}
+.jj-rating-modal h2 {
+  font-family: var(--condensed); font-weight: 900; font-size: 22px;
+  letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 4px;
+}
+.jj-rating-modal .jj-modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+
+.jj-star-picker { display: flex; gap: 6px; justify-content: center; margin: 8px 0 18px; }
+.jj-star-picker button {
+  background: none; border: none; cursor: pointer;
+  font-size: 38px; line-height: 1; color: var(--border); padding: 0;
+  transition: transform 0.1s, color 0.1s;
+}
+.jj-star-picker button.active { color: var(--gold); }
+.jj-star-picker button:hover { transform: scale(1.1); color: var(--gold); }
+
+.jj-trait-row {
+  display: grid; grid-template-columns: 1fr 38px;
+  gap: 10px; align-items: center; margin-bottom: 10px;
+}
+.jj-trait-label {
+  font-family: var(--condensed); font-weight: 700; font-size: 12px;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--white);
+  margin-bottom: 4px;
+}
+.jj-trait-slider-wrap { display: flex; flex-direction: column; gap: 4px; }
+.jj-trait-slider { width: 100%; accent-color: var(--gold); }
+.jj-trait-val {
+  font-family: var(--condensed); font-weight: 900; font-size: 18px;
+  color: var(--gold); text-align: right; line-height: 1;
+}
+
+.jj-modal-close {
+  position: absolute; top: 12px; right: 12px;
+  background: transparent; border: none; color: var(--muted);
+  font-size: 22px; line-height: 1; cursor: pointer;
+  width: 32px; height: 32px; border-radius: 4px;
+}
+.jj-modal-close:hover { color: var(--white); background: rgba(255,255,255,0.05); }
+
+/* ── Sub-nav within Jimmys & Joes ─────────────────────────────── */
+.jj-subnav {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  padding: 12px 24px; border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky; top: 72px; z-index: 100;
+}
+.jj-subnav-inner {
+  max-width: 1200px; margin: 0 auto; width: 100%;
+  display: flex; gap: 4px; flex-wrap: wrap;
+}
+.jj-subnav a {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 4px;
+  font-family: var(--condensed); font-weight: 800; font-size: 13px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--muted); text-decoration: none;
+  border: 1px solid transparent;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.jj-subnav a:hover { color: var(--white); }
+.jj-subnav a.active {
+  color: var(--gold); border-color: rgba(245,197,24,0.35);
+  background: rgba(245,197,24,0.07);
+}
+
+/* ── Hub widget sections (Trending, Diamonds, Top) ────────────── */
+.jj-widget-grid {
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+.jj-widget-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px 16px;
+  display: grid; grid-template-columns: 36px 1fr auto;
+  gap: 12px; align-items: center;
+  text-decoration: none; color: var(--white);
+  transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s;
+}
+.jj-widget-card:hover {
+  border-color: rgba(245,197,24,0.35);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+}
+.jj-widget-rank {
+  font-family: var(--condensed); font-weight: 900; font-size: 22px;
+  color: var(--gold); text-align: center; line-height: 1;
+}
+.jj-widget-body { min-width: 0; }
+.jj-widget-name {
+  font-family: var(--condensed); font-weight: 900; font-size: 15px;
+  letter-spacing: 0.02em; text-transform: uppercase;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.jj-widget-meta {
+  font-size: 11px; color: var(--muted); margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.jj-widget-rating {
+  font-family: var(--condensed); font-weight: 900; font-size: 18px;
+  color: var(--gold); text-align: right; line-height: 1;
+}
+.jj-widget-rating small {
+  display: block; font-size: 9px; letter-spacing: 0.12em;
+  color: var(--muted); font-weight: 700; margin-top: 2px;
+}
+.jj-widget-empty {
+  grid-column: 1 / -1;
+  text-align: center; padding: 26px 18px;
+  background: var(--surface); border: 1px dashed var(--border);
+  border-radius: 8px; color: var(--muted); font-size: 13px;
+}
+
+.jj-section-link {
+  font-family: var(--condensed); font-weight: 700; font-size: 12px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--gold); text-decoration: none; margin-left: auto;
+}
+.jj-section-link:hover { text-decoration: underline; }
+
+/* ── Rankings page table ─────────────────────────────────────── */
+.jj-ranking-table {
+  width: 100%; border-collapse: collapse;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden;
+}
+.jj-ranking-table th {
+  font-family: var(--condensed); font-weight: 700; font-size: 11px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+  text-align: left; padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+}
+.jj-ranking-table th.right { text-align: right; }
+.jj-ranking-table td {
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+  font-size: 14px; vertical-align: middle;
+}
+.jj-ranking-table tr:last-child td { border-bottom: none; }
+.jj-ranking-table tr:hover td { background: var(--surface2); }
+.jj-ranking-table td.right { text-align: right; font-family: var(--condensed); font-weight: 700; color: var(--gold); }
+.jj-ranking-table td a { color: var(--white); text-decoration: none; }
+.jj-ranking-table td a:hover { color: var(--gold); }
+.jj-ranking-rank {
+  font-family: var(--condensed); font-weight: 900; font-size: 18px;
+  color: var(--gold); text-align: center; width: 50px;
+}
+
+.jj-tabs {
+  display: flex; gap: 4px; margin-bottom: 18px; flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+}
+.jj-tab {
+  background: none; border: none; cursor: pointer;
+  padding: 12px 18px; color: var(--muted);
+  font-family: var(--condensed); font-weight: 800; font-size: 14px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.jj-tab:hover { color: var(--white); }
+.jj-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* ── "Rate a Random Jimmy" subnav trigger ─────────────────────── */
+/* Styled to read as a subnav entry but feel a little more "go". */
+.jj-subnav-random {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 4px;
+  font-family: var(--condensed); font-weight: 800; font-size: 13px;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--gold); background: transparent;
+  border: 1px solid rgba(245,197,24,0.45);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.jj-subnav-random:hover {
+  background: rgba(245,197,24,0.12);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.jj-subnav-random:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Random-Jimmy filter popover ──────────────────────────────── */
+.jj-random-pop {
+  position: absolute; z-index: 9500;
+  width: 300px; max-width: calc(100vw - 24px);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.6);
+  display: none;
+}
+.jj-random-pop.open { display: block; }
+.jj-random-pop-head {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--condensed); font-weight: 900; font-size: 14px;
+  letter-spacing: 0.10em; text-transform: uppercase; color: var(--white);
+  margin-bottom: 12px;
+}
+.jj-random-pop-close {
+  background: transparent; border: none; color: var(--muted);
+  font-size: 22px; line-height: 1; cursor: pointer;
+  width: 28px; height: 28px; border-radius: 4px;
+}
+.jj-random-pop-close:hover { color: var(--white); background: rgba(255,255,255,0.06); }
+.jj-random-pop-body { display: flex; flex-direction: column; gap: 10px; }
+.jj-random-pop-field { display: flex; flex-direction: column; gap: 4px; }
+.jj-random-pop-field > span {
+  font-family: var(--condensed); font-weight: 700; font-size: 10px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+}
+.jj-random-pop-field select {
+  background: var(--black); color: var(--white);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 8px 10px; font-family: var(--body); font-size: 13px;
+}
+.jj-random-pop-field select:focus { outline: none; border-color: var(--gold); }
+.jj-random-pop-check {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: #d0cfca; cursor: pointer;
+  padding: 6px 0;
+}
+.jj-random-pop-check input { accent-color: var(--gold); }
+.jj-random-pop-check small { color: var(--muted); font-size: 11px; }
+.jj-random-pop-msg {
+  margin-top: 12px; padding: 8px 10px;
+  background: rgba(245,197,24,0.08); border: 1px solid rgba(245,197,24,0.35);
+  border-radius: 4px; font-size: 12px; color: var(--gold);
+}
+.jj-random-pop-foot {
+  display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px;
+}
+.jj-random-pop-foot .btn-gold,
+.jj-random-pop-foot .btn-ghost { flex: 1; justify-content: center; }

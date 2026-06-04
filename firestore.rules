@@ -11,6 +11,30 @@ service cloud.firestore {
       ];
     }
 
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Fields a user is allowed to write to their own profile.
+    // Admin/Cloud-Function-controlled fields (role, points, badges, streak)
+    // are intentionally excluded.
+    function userFieldsAllowed(fields) {
+      return fields.hasOnly([
+        'email','displayName','photoURL','provider',
+        'birthYear','ageVerified','parentalConsent',
+        'acceptedPrivacyAt','createdAt','lastLoginAt'
+      ]);
+    }
+
+    // Fields a coach applicant can write to their own coach_profile doc.
+    function coachFieldsAllowed(fields) {
+      return fields.hasOnly([
+        'uid','status','schoolName','schoolEmail','title',
+        'schoolCity','schoolState','phone','notes',
+        'submittedAt','verifiedAt','verifiedBy','rejectedAt'
+      ]);
+    }
+
     // Pulse rating score validator: integer 1–10
     function validPulseScore(s) {
       return s is int && s >= 1 && s <= 10;
@@ -117,6 +141,171 @@ service cloud.firestore {
       allow update: if isAdmin()
                     || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']));
       allow delete: if isAdmin();
+    }
+
+    // ── USERS (site-wide auth) ────────────────────────────────
+    // Doc id = Firebase Auth uid. A user can read & write only their own
+    // profile, and only the whitelisted fields above. Public reads of other
+    // users' profiles are scoped to non-sensitive display fields via the
+    // /users_public mirror (future) — for now, only the owner + admin can
+    // read the full doc. Admin can do anything.
+    match /users/{uid} {
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+      allow create: if isSignedIn()
+                    && request.auth.uid == uid
+                    && userFieldsAllowed(request.resource.data.keys());
+      allow update: if isAdmin()
+                    || (isSignedIn()
+                        && request.auth.uid == uid
+                        && userFieldsAllowed(request.resource.data.diff(resource.data).affectedKeys()));
+      allow delete: if isAdmin();
+    }
+
+    // ── USERS_PUBLIC (read-safe mirror of users/{uid}) ────────
+    // Cloud Function-written mirror so any visitor can render scoreboards
+    // and commenter badges without exposing email/birthYear/etc.
+    // Writes are admin-only (the mirror function uses the Admin SDK and
+    // bypasses these rules; rules just block direct client writes).
+    match /users_public/{uid} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ── COACH PROFILES ─────────────────────────────────────────
+    // A signed-in user submits a coach verification application by writing
+    // their own coach_profiles/{uid} doc with status: 'pending'. Admin
+    // promotes to 'verified' (and separately bumps users/{uid}.role to
+    // 'coach' from the admin UI). The applicant can edit their own
+    // application while it's still pending, and can re-read it anytime.
+    match /coach_profiles/{uid} {
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+      allow create: if isSignedIn()
+                    && request.auth.uid == uid
+                    && request.resource.data.status == 'pending'
+                    && coachFieldsAllowed(request.resource.data.keys())
+                    && request.resource.data.schoolName is string
+                    && request.resource.data.schoolEmail is string;
+      allow update: if isAdmin()
+                    || (isSignedIn()
+                        && request.auth.uid == uid
+                        && resource.data.status == 'pending'
+                        && coachFieldsAllowed(request.resource.data.diff(resource.data).affectedKeys()));
+      allow delete: if isAdmin();
+    }
+
+    // ── JIMMYS & JOES — RECRUITING DATABASE ───────────────────
+    // Public reads of approved prospects only; anyone can submit (pending);
+    // ratings allow anonymous via visitorId; comments require sign-in.
+    // Aggregate fields (ratingCount, jjRating, etc.) are written only by
+    // Cloud Functions; clients cannot self-modify them.
+
+    function validProspectClientFields(fields) {
+      return fields.hasOnly([
+        'slug','status','submittedAt','submittedBy','submittedByVisitorId',
+        'fullName','primaryPosition','secondaryPositions','classYear',
+        'schoolName','city','state',
+        'highlightUrl','highlightType','highlightEmbedId',
+        'heightInches','weightLbs',
+        'testing','strength','stats','accolades','offers',
+        'shortBio','coachContact'
+      ]);
+    }
+
+    function validRatingScore(s) {
+      return s is number && s >= 1 && s <= 5;
+    }
+
+    match /prospects/{id} {
+      allow read:   if resource.data.status == 'approved' || isAdmin()
+                       || (isSignedIn() && resource.data.submittedBy == request.auth.uid);
+      allow create: if request.resource.data.status == 'pending'
+                       && validProspectClientFields(request.resource.data.keys())
+                       && request.resource.data.fullName is string
+                       && request.resource.data.fullName.size() > 0
+                       && request.resource.data.fullName.size() <= 80
+                       && request.resource.data.primaryPosition is string
+                       && request.resource.data.classYear is string
+                       && request.resource.data.schoolName is string
+                       && request.resource.data.highlightUrl is string
+                       && request.resource.data.slug is string;
+      // Owner can edit their own pending submission; admin can do anything;
+      // public can bump the views counter only (one-field increment).
+      allow update: if isAdmin()
+                       || (isSignedIn()
+                           && resource.data.submittedBy == request.auth.uid
+                           && resource.data.status == 'pending'
+                           && validProspectClientFields(request.resource.data.diff(resource.data).affectedKeys()))
+                       || (resource.data.status == 'approved'
+                           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views']));
+      allow delete: if isAdmin();
+    }
+
+    // Ratings: deterministic doc id `{prospectId}__{visitorId}` so a browser
+    // can only have one rating per prospect (re-rating updates in place).
+    // Anonymous OK; logged-in users get raterUid set too for points later.
+    match /prospect_ratings/{id} {
+      allow read: if true;
+      allow create, update: if request.resource.data.prospectId is string
+                            && request.resource.data.raterVisitorId is string
+                            && request.resource.data.overall is number
+                            && validRatingScore(request.resource.data.overall)
+                            && request.resource.data.traits is map
+                            && request.resource.data.ratedAt is number;
+      allow delete: if isAdmin();
+    }
+
+    // Standalone comments — sign-in required, separate from rating-attached
+    // comments. Admin can hide/delete; authors can edit their own text.
+    match /prospect_comments/{id} {
+      allow read: if resource.data.status != 'deleted' || isAdmin();
+      allow create: if isSignedIn()
+                    && request.resource.data.prospectId is string
+                    && request.resource.data.authorUid == request.auth.uid
+                    && request.resource.data.text is string
+                    && request.resource.data.text.size() > 0
+                    && request.resource.data.text.size() <= 1000
+                    && request.resource.data.status == 'active';
+      allow update: if isAdmin()
+                    || (isSignedIn()
+                        && resource.data.authorUid == request.auth.uid
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text','editedAt']));
+      allow delete: if isAdmin();
+    }
+
+    // Coach claims on existing prospects. Doc id = `{prospectId}__{coachUid}`
+    // so each coach can have at most one open claim per prospect. Claims start
+    // pending; admin (or a Cloud Function it triggers) updates status. The
+    // approval Cloud Function stamps coachUid/coachSchool onto the prospect.
+    match /prospect_claims/{id} {
+      allow read: if isAdmin()
+                  || (isSignedIn() && resource.data.coachUid == request.auth.uid);
+      allow create: if isSignedIn()
+                    && request.resource.data.coachUid == request.auth.uid
+                    && request.resource.data.status == 'pending'
+                    && request.resource.data.prospectId is string
+                    && request.resource.data.coachSchool is string
+                    && request.resource.data.requestedAt is number;
+      allow update: if isAdmin()
+                    || (isSignedIn()
+                        && resource.data.coachUid == request.auth.uid
+                        && resource.data.status == 'pending'
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['note','status'])
+                        && (request.resource.data.status == 'pending'
+                            || request.resource.data.status == 'withdrawn'));
+      allow delete: if isAdmin();
+    }
+
+    // Upvotes on comments — deterministic id `{commentId}__{voterUid}` so
+    // a signed-in user can only upvote once. Admin can moderate.
+    match /comment_votes/{id} {
+      allow read: if true;
+      allow create: if isSignedIn()
+                    && request.resource.data.commentId is string
+                    && request.resource.data.voterUid == request.auth.uid
+                    && request.resource.data.value is int
+                    && (request.resource.data.value == 1 || request.resource.data.value == -1);
+      allow delete: if isAdmin()
+                    || (isSignedIn() && resource.data.voterUid == request.auth.uid);
     }
 
     // Fan-submitted corrections to existing stadium info.

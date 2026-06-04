@@ -72,6 +72,60 @@
         { "fieldPath": "approved", "order": "ASCENDING" },
         { "fieldPath": "submittedAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "prospects",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "submittedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "prospects",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "jjRating", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "prospects",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "trendingScore", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "prospect_ratings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "prospectId", "order": "ASCENDING" },
+        { "fieldPath": "ratedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "prospect_comments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "prospectId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "users_public",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "points", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "users_public",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "streak", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

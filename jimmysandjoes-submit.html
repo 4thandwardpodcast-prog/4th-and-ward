@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Submit a Jimmy — Jimmys &amp; Joes — 4th &amp; Ward</title>
+  <meta name="description" content="Add a high school football prospect to the Jimmys & Joes community recruiting database.">
+  <meta name="robots" content="noindex,follow">
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/jj.css">
+  <script type="module" src="js/user-menu.js"></script>
+  <script type="module" src="js/jj-random.js"></script>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo"><img src="logo-cover.svg" alt="4th & Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="totw.html">Team of the Week</a></li>
+      <li><a href="wardle.html">4th &amp; Wardle</a></li>
+      <li><a href="hsblitz.html">HS Blitz<span class="nav-beta">Beta</span></a></li>
+      <li><a href="dripordrown.html">Drip or Drown</a></li>
+      <li><a href="pulse.html">Friday Night Pulse<span class="nav-beta">New</span></a></li>
+      <li><a href="jimmysandjoes.html" class="active">Jimmys &amp; Joes<span class="nav-beta">New</span></a></li>
+      <li><a href="merch.html">Merch</a></li>
+      <li id="nav-user-slot"></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+  </nav>
+
+  <main class="page-wrap">
+    <nav class="jj-subnav" aria-label="Jimmys & Joes sections">
+      <div class="jj-subnav-inner">
+        <a href="/jimmysandjoes">Discover</a>
+        <a href="/jimmysandjoes/leaderboards">Leaderboards</a>
+        <a href="/jimmysandjoes/rankings">Sub-Rankings</a>
+        <a href="/jimmysandjoes/scouts">Hall of Scouts</a>
+        <a href="/jimmysandjoes/submit" class="active">+ Add a Jimmy</a>
+        <button type="button" class="jj-subnav-random" data-jj-random>🎲 Random Jimmy</button>
+      </div>
+    </nav>
+
+    <div class="jj-form-wrap">
+      <div class="jj-form-header">
+        <div class="jj-form-eyebrow">Jimmys &amp; Joes</div>
+        <h1 class="jj-form-title">Add a Jimmy</h1>
+        <p class="jj-form-sub">Required fields are marked with <span style="color:var(--gold)">*</span>. Submissions go through admin review before they appear on the site.</p>
+      </div>
+
+      <div id="submit-msg" class="jj-submit-msg" hidden></div>
+
+      <form id="jj-submit-form" novalidate>
+
+        <!-- ── REQUIRED CORE ────────────────────────────────────── -->
+        <div class="jj-card-section">
+          <h2>Player Basics</h2>
+          <p class="jj-section-hint">The bare minimum needed to publish a profile.</p>
+
+          <div class="jj-grid-2">
+            <div class="jj-field">
+              <label class="jj-field-label" for="f-name">Full Name<span class="jj-req">*</span></label>
+              <input id="f-name" class="jj-input" type="text" maxlength="80" required>
+              <div class="jj-field-error">Required.</div>
+            </div>
+            <div class="jj-field">
+              <label class="jj-field-label" for="f-class">Graduation Class<span class="jj-req">*</span></label>
+              <select id="f-class" class="jj-select" required>
+                <option value="">Select…</option>
+              </select>
+              <div class="jj-field-error">Required.</div>
+            </div>
+
+            <div class="jj-field">
+              <label class="jj-field-label" for="f-pos-primary">Primary Position<span class="jj-req">*</span></label>
+              <select id="f-pos-primary" class="jj-select" required>
+                <option value="">Select…</option>
+              </select>
+              <div class="jj-field-error">Required.</div>
+            </div>
+            <div class="jj-field">
+              <label class="jj-field-label">Secondary Positions <span class="jj-field-hint">(optional)</span></label>
+              <div id="f-pos-secondary" class="jj-pill-row"></div>
+            </div>
+
+            <div class="jj-field">
+              <label class="jj-field-label" for="f-school">School<span class="jj-req">*</span></label>
+              <input id="f-school" class="jj-input" type="text" maxlength="120" required>
+              <div class="jj-field-error">Required.</div>
+            </div>
+            <div class="jj-grid-2" style="grid-template-columns: 3fr 1fr; gap: 14px 18px; display: grid;">
+              <div class="jj-field">
+                <label class="jj-field-label" for="f-city">City<span class="jj-req">*</span></label>
+                <input id="f-city" class="jj-input" type="text" maxlength="60" required>
+                <div class="jj-field-error">Required.</div>
+              </div>
+              <div class="jj-field">
+                <label class="jj-field-label" for="f-state">State<span class="jj-req">*</span></label>
+                <input id="f-state" class="jj-input" type="text" maxlength="2" placeholder="TX" required style="text-transform:uppercase;">
+                <div class="jj-field-error">Required.</div>
+              </div>
+            </div>
+
+            <div class="jj-field" style="grid-column: 1 / -1;">
+              <label class="jj-field-label" for="f-highlight">Highlight Link (YouTube or Hudl)<span class="jj-req">*</span></label>
+              <input id="f-highlight" class="jj-input" type="url" placeholder="https://www.hudl.com/video/… or https://youtu.be/…" required>
+              <div class="jj-field-hint">Will be embedded as the hero video on the profile.</div>
+              <div class="jj-field-error">Please paste a valid YouTube or Hudl URL.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── MEASURABLES ──────────────────────────────────────── -->
+        <div class="jj-card-section">
+          <h2>Measurables &amp; Testing</h2>
+          <p class="jj-section-hint">All optional. Empty fields just won't show on the profile.</p>
+
+          <div class="jj-grid-3" style="grid-template-columns: 1fr 1fr 1fr 1fr;">
+            <div class="jj-field">
+              <label class="jj-field-label">Height</label>
+              <div style="display:flex; gap:6px;">
+                <select id="f-ht-ft" class="jj-select">
+                  <option value="">ft</option>
+                  <option>4</option><option>5</option><option>6</option><option>7</option>
+                </select>
+                <select id="f-ht-in" class="jj-select">
+                  <option value="">in</option>
+                  <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option>
+                  <option>5</option><option>6</option><option>7</option><option>8</option><option>9</option>
+                  <option>10</option><option>11</option>
+                </select>
+              </div>
+            </div>
+            <div class="jj-field">
+              <label class="jj-field-label" for="f-weight">Weight (lbs)</label>
+              <input id="f-weight" class="jj-input" type="number" min="80" max="450" step="1">
+            </div>
+            <div class="jj-field">
+              <label class="jj-field-label" for="f-40h">40yd — Hand</label>
+              <input id="f-40h" class="jj-input" type="number" step="0.01" min="4" max="7" placeholder="4.62">
+            </div>
+            <div class="jj-field">
+              <label class="jj-field-label" for="f-40e">40yd — Electronic</label>
+              <input id="f-40e" class="jj-input" type="number" step="0.01" min="4" max="7" placeholder="4.58">
+            </div>
+            <div class="jj-field">
+              <label class="jj-field-label" for="f-vert">Vertical (in)</label>
+              <input id="f-vert" class="jj-input" type="number" step="0.5" min="10" max="50">
+            </div>
+            <div class="jj-field">
+              <label class="jj-field-label" for="f-broad">Broad Jump (in)</label>
+              <input id="f-broad" class="jj-input" type="number" step="1" min="50" max="160">
+            </div>
+            <div class="jj-field">
+              <label class="jj-field-label" for="f-cone">3-Cone (sec)</label>
+              <input id="f-cone" class="jj-input" type="number" step="0.01" min="5" max="10" placeholder="7.10">
+            </div>
+            <div class="jj-field">
+              <label class="jj-field-label" for="f-shut">Shuttle (sec)</label>
+              <input id="f-shut" class="jj-input" type="number" step="0.01" min="3" max="8" placeholder="4.35">
+            </div>
+          </div>
+        </div>
+
+        <!-- ── STRENGTH ─────────────────────────────────────────── -->
+        <div class="jj-card-section">
+          <h2>Strength</h2>
+          <div class="jj-grid-4">
+            <div class="jj-field">
+              <label class="jj-field-label" for="f-b225">Bench @ 225 (reps)</label>
+              <input id="f-b225" class="jj-input" type="number" min="0" max="50" step="1">
+            </div>
+            <div class="jj-field">
+              <label class="jj-field-label" for="f-b1rm">Bench 1RM</label>
+              <input id="f-b1rm" class="jj-input" type="number" min="100" max="700" step="5">
+            </div>
+            <div class="jj-field">
+              <label class="jj-field-label" for="f-sq1rm">Squat 1RM</label>
+              <input id="f-sq1rm" class="jj-input" type="number" min="100" max="900" step="5">
+            </div>
+            <div class="jj-field">
+              <label class="jj-field-label" for="f-pc1rm">Power Clean 1RM</label>
+              <input id="f-pc1rm" class="jj-input" type="number" min="100" max="500" step="5">
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SEASON STATS (position-aware) ────────────────────── -->
+        <div class="jj-card-section" id="stats-section">
+          <h2>Season Stats <span style="font-size:12px; color:var(--muted); font-weight:500; text-transform:none; letter-spacing:0;">(most recent season)</span></h2>
+          <p class="jj-section-hint" id="stats-hint">Pick a primary position to see the right stat fields. These feed the 15% production score on the J&amp;J rating.</p>
+          <div id="f-stats" class="jj-grid-4"></div>
+        </div>
+
+        <!-- ── ACCOLADES ────────────────────────────────────────── -->
+        <div class="jj-card-section">
+          <h2>Accolades</h2>
+          <p class="jj-section-hint">Pick what applies. Awards feed the 10% accolades score on the J&amp;J rating.</p>
+          <div id="f-accolades" class="jj-checkbox-grid"></div>
+        </div>
+
+        <!-- ── OFFERS ───────────────────────────────────────────── -->
+        <div class="jj-card-section">
+          <h2>Scholarship Offers</h2>
+          <p class="jj-section-hint">One per line. Leave blank if none.</p>
+          <div class="jj-field">
+            <textarea id="f-offers" class="jj-textarea" rows="4" placeholder="Texas Tech&#10;Houston&#10;Tulsa"></textarea>
+          </div>
+        </div>
+
+        <!-- ── BIO ──────────────────────────────────────────────── -->
+        <div class="jj-card-section">
+          <h2>Short Bio</h2>
+          <div class="jj-field">
+            <textarea id="f-bio" class="jj-textarea" rows="4" maxlength="500" placeholder="Anything else fans should know?"></textarea>
+            <div class="jj-field-hint"><span id="bio-count">0</span> / 500</div>
+          </div>
+        </div>
+
+        <!-- ── COACH CONTACT ────────────────────────────────────── -->
+        <div class="jj-card-section">
+          <h2>Coach Contact <span style="font-size:12px; color:var(--muted); font-weight:500; text-transform:none; letter-spacing:0;">(optional)</span></h2>
+          <p class="jj-section-hint">Used by recruiters who want to follow up. Choose whether to make it public or admin-only.</p>
+          <div class="jj-grid-3">
+            <div class="jj-field">
+              <label class="jj-field-label" for="f-cc-name">Coach Name</label>
+              <input id="f-cc-name" class="jj-input" type="text" maxlength="80">
+            </div>
+            <div class="jj-field">
+              <label class="jj-field-label" for="f-cc-email">Email</label>
+              <input id="f-cc-email" class="jj-input" type="email" maxlength="100">
+            </div>
+            <div class="jj-field">
+              <label class="jj-field-label" for="f-cc-phone">Phone</label>
+              <input id="f-cc-phone" class="jj-input" type="tel" maxlength="20">
+            </div>
+          </div>
+          <label class="jj-checkbox" style="margin-top: 10px; max-width: 280px;">
+            <input type="checkbox" id="f-cc-public"> Show coach contact publicly
+          </label>
+        </div>
+
+        <!-- ── ACKNOWLEDGEMENTS ─────────────────────────────────── -->
+        <div class="jj-card-section">
+          <h2>Before You Submit</h2>
+          <label class="jj-checkbox" style="margin-bottom: 8px;">
+            <input type="checkbox" id="f-confirm-truthful" required>
+            <span>The information above is accurate to the best of my knowledge.</span>
+          </label>
+          <label class="jj-checkbox">
+            <input type="checkbox" id="f-confirm-consent" required>
+            <span>If this player is under 18 and not me, a parent or guardian has consented to this submission.</span>
+          </label>
+        </div>
+
+        <div class="jj-form-actions">
+          <a href="/jimmysandjoes" class="btn-ghost">Cancel</a>
+          <button type="submit" class="btn-gold" id="f-submit">Submit for Review</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.png" alt="4th & Ward Podcast"></div>
+    <ul class="footer-links">
+      <li><a href="about.html">About</a></li>
+      <li><a href="jimmysandjoes.html">Jimmys &amp; Joes</a></li>
+      <li><a href="privacy.html">Privacy</a></li>
+      <li><a href="merch.html">Merch</a></li>
+    </ul>
+    <p class="footer-copy">&#169; 2026 4th &amp; Ward Podcast. All rights reserved.</p>
+  </footer>
+
+  <script type="module">
+    import { db } from './js/firebase-init.js';
+    import { onAuthChange } from './js/auth.js';
+    import {
+      collection, doc, setDoc, getDoc, serverTimestamp
+    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { POSITIONS, ACCOLADES, classYearOptions, statsFor } from './js/jj-config.js';
+    import { buildSlug, getOrCreateVisitorId, parseHighlightUrl, feetInchesToInches } from './js/jj-utils.js';
+
+    let currentUser = null;
+    onAuthChange(u => { currentUser = u || null; });
+
+    // ── Populate dropdowns & multi-select pills ────────────────
+    const fClass = document.getElementById('f-class');
+    classYearOptions().forEach(y => fClass.appendChild(new Option(y, y)));
+
+    const fPosPrimary = document.getElementById('f-pos-primary');
+    POSITIONS.forEach(p => fPosPrimary.appendChild(new Option(`${p.code} — ${p.label}`, p.code)));
+
+    // ── Position-aware Season Stats ────────────────────────────
+    const fStatsHost = document.getElementById('f-stats');
+    const statsHint  = document.getElementById('stats-hint');
+    function renderStatsFor(positionCode) {
+      const schema = statsFor(positionCode);
+      if (!schema.length) {
+        fStatsHost.innerHTML = '';
+        statsHint.textContent = positionCode
+          ? 'No standard stat template for this position — film + measurables carry the rating.'
+          : 'Pick a primary position to see the right stat fields. These feed the 15% production score on the J&J rating.';
+        return;
+      }
+      statsHint.textContent = `Fill what you have. Missing fields are skipped — they don't drag the score.`;
+      fStatsHost.innerHTML = schema.map(f => `
+        <div class="jj-field">
+          <label class="jj-field-label" for="f-stat-${f.key}">${f.label}${f.suffix ? ` (${f.suffix})` : ''}</label>
+          <input id="f-stat-${f.key}" class="jj-input" type="number" min="0" step="${f.key.endsWith('Pct') ? '0.1' : '1'}" data-stat-key="${f.key}">
+        </div>
+      `).join('');
+    }
+    renderStatsFor('');
+    fPosPrimary.addEventListener('change', () => renderStatsFor(fPosPrimary.value));
+
+    // Secondary position multi-select via clickable pills.
+    const fPosSecWrap = document.getElementById('f-pos-secondary');
+    const secondary = new Set();
+    POSITIONS.forEach(p => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'jj-pill';
+      btn.textContent = p.code;
+      btn.dataset.code = p.code;
+      btn.addEventListener('click', () => {
+        if (secondary.has(p.code)) { secondary.delete(p.code); btn.classList.remove('selected'); }
+        else                       { secondary.add(p.code);    btn.classList.add('selected'); }
+      });
+      fPosSecWrap.appendChild(btn);
+    });
+
+    // Accolades checkbox grid.
+    const fAccoladesWrap = document.getElementById('f-accolades');
+    ACCOLADES.forEach(a => {
+      const label = document.createElement('label');
+      label.className = 'jj-checkbox';
+      label.innerHTML = `
+        <input type="checkbox" value="${a.id}" data-points="${a.points}">
+        <span>${a.label}</span>
+      `;
+      fAccoladesWrap.appendChild(label);
+    });
+
+    // Bio character count.
+    const bio = document.getElementById('f-bio');
+    const bioCount = document.getElementById('bio-count');
+    bio.addEventListener('input', () => { bioCount.textContent = bio.value.length; });
+
+    // Uppercase the state input as the user types.
+    const fState = document.getElementById('f-state');
+    fState.addEventListener('input', () => { fState.value = fState.value.toUpperCase(); });
+
+    // ── Submit handler ─────────────────────────────────────────
+    const form = document.getElementById('jj-submit-form');
+    const submitBtn = document.getElementById('f-submit');
+    const msg = document.getElementById('submit-msg');
+    function showMsg(text, ok) {
+      msg.textContent = text;
+      msg.className = 'jj-submit-msg ' + (ok ? 'ok' : 'err');
+      msg.hidden = false;
+      if (ok) setTimeout(() => { msg.hidden = true; }, 6000);
+    }
+
+    function markField(id, hasError) {
+      const field = document.getElementById(id)?.closest('.jj-field');
+      if (!field) return;
+      field.classList.toggle('has-error', !!hasError);
+    }
+
+    function readNum(id) {
+      const v = document.getElementById(id)?.value;
+      if (v === '' || v == null) return null;
+      const n = Number(v);
+      return isNaN(n) ? null : n;
+    }
+
+    async function uniqueSlug(base) {
+      // Try base, base-2, base-3, ... until a slug isn't taken.
+      // Reads are cheap; expect a collision only when two prospects share name+pos+class.
+      let slug = base;
+      let n = 2;
+      while (true) {
+        const snap = await getDoc(doc(db, 'prospects', slug));
+        if (!snap.exists()) return slug;
+        slug = `${base}-${n++}`;
+        if (n > 50) return `${base}-${Date.now()}`;
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.hidden = true;
+
+      // Validate required.
+      const required = ['f-name', 'f-class', 'f-pos-primary', 'f-school', 'f-city', 'f-state', 'f-highlight'];
+      let firstBad = null;
+      required.forEach(id => {
+        const el = document.getElementById(id);
+        const bad = !el.value || !el.value.trim();
+        markField(id, bad);
+        if (bad && !firstBad) firstBad = el;
+      });
+      const truthful = document.getElementById('f-confirm-truthful').checked;
+      const consent  = document.getElementById('f-confirm-consent').checked;
+      if (!truthful || !consent) {
+        showMsg('You must confirm both checkboxes at the bottom.', false);
+        return;
+      }
+      if (firstBad) { firstBad.focus(); showMsg('Please complete the required fields.', false); return; }
+
+      const fullName = document.getElementById('f-name').value.trim();
+      const classYear = fClass.value;
+      const primaryPos = fPosPrimary.value;
+      const schoolName = document.getElementById('f-school').value.trim();
+      const city = document.getElementById('f-city').value.trim();
+      const state = fState.value.trim().toUpperCase();
+      const highlightUrl = document.getElementById('f-highlight').value.trim();
+
+      const parsed = parseHighlightUrl(highlightUrl);
+      if (!parsed) {
+        markField('f-highlight', true);
+        document.getElementById('f-highlight').focus();
+        showMsg('Highlight link must be a YouTube or Hudl URL.', false);
+        return;
+      }
+
+      const ftIn = feetInchesToInches(
+        document.getElementById('f-ht-ft').value,
+        document.getElementById('f-ht-in').value
+      );
+
+      const accoladeIds = Array.from(fAccoladesWrap.querySelectorAll('input:checked'))
+        .map(cb => ({ id: cb.value, year: new Date().getFullYear() }));
+
+      const offers = document.getElementById('f-offers').value
+        .split('\n').map(s => s.trim()).filter(Boolean);
+
+      const data = {
+        slug: '',          // set below
+        status: 'pending',
+        submittedAt: Date.now(),
+        submittedBy: currentUser ? currentUser.uid : null,
+        submittedByVisitorId: getOrCreateVisitorId(),
+
+        fullName,
+        primaryPosition: primaryPos,
+        secondaryPositions: Array.from(secondary),
+        classYear,
+        schoolName,
+        city,
+        state,
+
+        highlightUrl,
+        highlightType: parsed.type,
+        highlightEmbedId: parsed.rawId,
+
+        heightInches: ftIn,
+        weightLbs: readNum('f-weight'),
+
+        testing: {
+          fortyHand: readNum('f-40h'),
+          fortyElectronic: readNum('f-40e'),
+          vertical: readNum('f-vert'),
+          broad: readNum('f-broad'),
+          threeCone: readNum('f-cone'),
+          shuttle: readNum('f-shut'),
+        },
+        strength: {
+          bench225: readNum('f-b225'),
+          bench1rm: readNum('f-b1rm'),
+          squat1rm: readNum('f-sq1rm'),
+          powerClean1rm: readNum('f-pc1rm'),
+        },
+        stats: (() => {
+          const out = {};
+          fStatsHost.querySelectorAll('input[data-stat-key]').forEach(inp => {
+            const v = inp.value;
+            if (v === '' || v == null) return;
+            const n = Number(v);
+            if (!isNaN(n)) out[inp.dataset.statKey] = n;
+          });
+          return out;
+        })(),
+        accolades: accoladeIds,
+        offers,
+        shortBio: bio.value.trim().slice(0, 500),
+        coachContact: {
+          name:   document.getElementById('f-cc-name').value.trim(),
+          email:  document.getElementById('f-cc-email').value.trim(),
+          phone:  document.getElementById('f-cc-phone').value.trim(),
+          public: document.getElementById('f-cc-public').checked,
+        },
+      };
+
+      submitBtn.disabled = true;
+      try {
+        const base = buildSlug(fullName, primaryPos, classYear);
+        const slug = await uniqueSlug(base);
+        data.slug = slug;
+        await setDoc(doc(db, 'prospects', slug), data);
+        showMsg(`Thanks! Submission received. It’ll go live at /jimmysandjoes/prospect/${slug} once an admin approves it.`, true);
+        // Reset most fields but keep school/city/state so a coach submitting a batch isn't slowed.
+        document.getElementById('f-name').value = '';
+        document.getElementById('f-highlight').value = '';
+        document.getElementById('f-bio').value = '';
+        bioCount.textContent = '0';
+        secondary.clear();
+        fPosSecWrap.querySelectorAll('.jj-pill').forEach(b => b.classList.remove('selected'));
+        fAccoladesWrap.querySelectorAll('input:checked').forEach(cb => { cb.checked = false; });
+        document.getElementById('f-confirm-truthful').checked = false;
+        document.getElementById('f-confirm-consent').checked = false;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        console.error('[jj-submit]', err);
+        showMsg(err?.message || 'Submission failed. Try again.', false);
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Jimmys &amp; Joes — Recruiting Database — 4th &amp; Ward</title>
+  <meta name="description" content="The community-rated recruiting database. Film don't lie. The fans do the rating. A 4th & Ward original.">
+  <meta property="og:title" content="Jimmys & Joes — Recruiting Database">
+  <meta property="og:description" content="The community-rated recruiting database. Film don't lie. The fans do the rating.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://4thandward.com/jimmysandjoes">
+  <link rel="canonical" href="https://4thandward.com/jimmysandjoes">
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/jj.css">
+  <script type="module" src="js/user-menu.js"></script>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo"><img src="logo-cover.svg" alt="4th & Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="totw.html">Team of the Week</a></li>
+      <li><a href="wardle.html">4th &amp; Wardle</a></li>
+      <li><a href="hsblitz.html">HS Blitz<span class="nav-beta">Beta</span></a></li>
+      <li><a href="dripordrown.html">Drip or Drown</a></li>
+      <li><a href="pulse.html">Friday Night Pulse<span class="nav-beta">New</span></a></li>
+      <li><a href="jimmysandjoes.html" class="active">Jimmys &amp; Joes<span class="nav-beta">New</span></a></li>
+      <li><a href="merch.html">Merch</a></li>
+      <li id="nav-user-slot"></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+  </nav>
+
+  <main class="page-wrap">
+    <!-- ── HERO ───────────────────────────────────────────────────── -->
+    <section class="jj-hero hero-backdrop">
+      <div class="jj-hero-inner">
+        <div class="jj-hero-eyebrow">A 4th &amp; Ward Original</div>
+        <h1 class="jj-hero-title glow-gold">JIMMYS &amp; JOES</h1>
+        <p class="jj-hero-sub">The community-rated recruiting database.</p>
+        <p class="jj-hero-tagline">FILM DON'T LIE. THE FANS DO THE RATING.</p>
+        <div class="jj-hero-ctas">
+          <a href="/jimmysandjoes/submit" class="btn-gold">+ Add a Jimmy</a>
+          <button class="btn-ghost" type="button" data-jj-random>🎲 Rate a Random Jimmy</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── SUB-NAV ─────────────────────────────────────────────────── -->
+    <nav class="jj-subnav" aria-label="Jimmys & Joes sections">
+      <div class="jj-subnav-inner">
+        <a href="/jimmysandjoes" class="active">Discover</a>
+        <a href="/jimmysandjoes/leaderboards">Leaderboards</a>
+        <a href="/jimmysandjoes/rankings">Sub-Rankings</a>
+        <a href="/jimmysandjoes/scouts">Hall of Scouts</a>
+        <a href="/jimmysandjoes/submit">+ Add a Jimmy</a>
+        <button type="button" class="jj-subnav-random" data-jj-random>🎲 Random Jimmy</button>
+      </div>
+    </nav>
+
+    <!-- ── HOW IT WORKS QUICK STRIP ────────────────────────────────── -->
+    <section class="jj-how">
+      <div class="jj-how-inner">
+        <div class="jj-how-step">
+          <div class="jj-how-num">01</div>
+          <div class="jj-how-text"><strong>Real people watch.</strong> Fans, coaches, parents — not paid scouts.</div>
+        </div>
+        <div class="jj-how-step">
+          <div class="jj-how-num">02</div>
+          <div class="jj-how-text"><strong>Real ratings, no inflation.</strong> Honest 0–5 stars. No 1-star floor.</div>
+        </div>
+        <div class="jj-how-step">
+          <div class="jj-how-num">03</div>
+          <div class="jj-how-text"><strong>Full transparency.</strong> Every rating breakdown is public.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── DISCOVERY WIDGETS ───────────────────────────────────────── -->
+    <section class="jj-section">
+      <div class="section-inner">
+        <div class="section-label">
+          <span>🔥 Trending Jimmies</span>
+          <span style="color:var(--muted); font-weight:500; letter-spacing:0; font-size:11px; text-transform:none;">Most-rated in the last 48h</span>
+          <a href="/jimmysandjoes/rankings" class="jj-section-link">All rankings →</a>
+        </div>
+        <div id="trending-widget" class="jj-widget-grid">
+          <div class="jj-loading">Loading…</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="jj-section" style="padding-top: 0;">
+      <div class="section-inner">
+        <div class="section-label">
+          <span>💎 Diamonds in the Rough</span>
+          <span style="color:var(--muted); font-weight:500; letter-spacing:0; font-size:11px; text-transform:none;">High J&amp;J rating, 0–2 offers</span>
+        </div>
+        <div id="diamonds-widget" class="jj-widget-grid">
+          <div class="jj-loading">Loading…</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="jj-section" style="padding-top: 0;">
+      <div class="section-inner">
+        <div class="section-label">
+          <span>⭐ Top by Class</span>
+          <a href="/jimmysandjoes/leaderboards" class="jj-section-link">Full leaderboards →</a>
+        </div>
+        <div id="topclass-widget" class="jj-widget-grid">
+          <div class="jj-loading">Loading…</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FILTERS ─────────────────────────────────────────────────── -->
+    <section class="jj-section">
+      <div class="section-inner">
+        <div class="jj-filters">
+          <div class="jj-filter-group">
+            <label class="jj-filter-label">Class</label>
+            <select id="filter-class" class="jj-filter-select">
+              <option value="">All classes</option>
+            </select>
+          </div>
+          <div class="jj-filter-group">
+            <label class="jj-filter-label">Position</label>
+            <select id="filter-position" class="jj-filter-select">
+              <option value="">All positions</option>
+            </select>
+          </div>
+          <div class="jj-filter-group">
+            <label class="jj-filter-label">State</label>
+            <input id="filter-state" class="jj-filter-input" type="text" placeholder="e.g. TX" maxlength="2">
+          </div>
+          <div class="jj-filter-group">
+            <label class="jj-filter-label">Sort by</label>
+            <select id="filter-sort" class="jj-filter-select">
+              <option value="recent">Recently added</option>
+              <option value="rating">Highest rated</option>
+              <option value="trending">Trending</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PROSPECT GRID ───────────────────────────────────────────── -->
+    <section class="jj-section">
+      <div class="section-inner">
+        <div class="section-label">Prospects <span id="prospect-count" class="jj-count-pill"></span></div>
+        <div id="prospect-grid" class="jj-grid">
+          <div class="jj-loading">Loading…</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.png" alt="4th & Ward Podcast"></div>
+    <ul class="footer-links">
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="jimmysandjoes.html">Jimmys &amp; Joes</a></li>
+      <li><a href="privacy.html">Privacy</a></li>
+      <li><a href="merch.html">Merch</a></li>
+    </ul>
+    <p class="footer-copy">&#169; 2026 4th &amp; Ward Podcast. All rights reserved.</p>
+  </footer>
+
+  <script type="module">
+    import { db } from './js/firebase-init.js';
+    import {
+      collection, query, where, orderBy, limit, getDocs
+    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { POSITIONS, classYearOptions, MIN_RATINGS_FOR_STARS } from './js/jj-config.js';
+    import { escapeHtml, renderStars } from './js/jj-utils.js';
+    import { seedRandomCache } from './js/jj-random.js';
+
+    // ── Widget renderers (Trending / Diamonds / Top by Class) ─────
+    function widgetCardHtml(p, rank) {
+      const meta = `${escapeHtml(p.primaryPosition || '—')} · ${escapeHtml(p.classYear || '')} · ${escapeHtml(p.schoolName || '')}`;
+      const rating = p.jjRating
+        ? `<div class="jj-widget-rating">${p.jjRating.toFixed(1)}<small>J&amp;J</small></div>`
+        : `<div class="jj-widget-rating" style="color:var(--muted); font-size:11px;">—<small>NEW</small></div>`;
+      return `
+        <a href="/jimmysandjoes/prospect/${encodeURIComponent(p.slug)}" class="jj-widget-card">
+          <div class="jj-widget-rank">${rank}</div>
+          <div class="jj-widget-body">
+            <div class="jj-widget-name">${escapeHtml(p.fullName)}</div>
+            <div class="jj-widget-meta">${meta}</div>
+          </div>
+          ${rating}
+        </a>
+      `;
+    }
+
+    function renderWidget(hostId, list, emptyMsg) {
+      const host = document.getElementById(hostId);
+      if (!list.length) {
+        host.innerHTML = `<div class="jj-widget-empty">${emptyMsg}</div>`;
+        return;
+      }
+      host.innerHTML = list.map((p, i) => widgetCardHtml(p, i + 1)).join('');
+    }
+
+    function renderWidgets(list) {
+      // Trending: highest trendingScore (set by Cloud Function from 48h activity).
+      const trending = list.slice()
+        .filter(p => (p.trendingScore || 0) > 0)
+        .sort((a, b) => (b.trendingScore || 0) - (a.trendingScore || 0))
+        .slice(0, 6);
+      renderWidget('trending-widget', trending, 'Once people start rating, the hottest prospects will surface here.');
+
+      // Diamonds: J&J ≥ 3.5 and 0–2 offers (per the build plan).
+      const diamonds = list.slice()
+        .filter(p => (p.jjRating || 0) >= 3.5
+                  && (p.ratingCount || 0) >= MIN_RATINGS_FOR_STARS
+                  && (Array.isArray(p.offers) ? p.offers.length : 0) <= 2)
+        .sort((a, b) => (b.jjRating || 0) - (a.jjRating || 0))
+        .slice(0, 6);
+      renderWidget('diamonds-widget', diamonds, 'No diamonds yet. Once high-rated prospects with few offers are submitted, they\'ll appear here.');
+
+      // Top by class: pick one top prospect per class year (newest classes first).
+      const byClass = {};
+      list.forEach(p => {
+        if ((p.ratingCount || 0) < MIN_RATINGS_FOR_STARS) return;
+        const y = p.classYear;
+        if (!y) return;
+        if (!byClass[y] || (p.jjRating || 0) > (byClass[y].jjRating || 0)) byClass[y] = p;
+      });
+      const topClass = Object.keys(byClass)
+        .sort((a, b) => {
+          const na = parseInt(a, 10), nb = parseInt(b, 10);
+          if (isNaN(na) && isNaN(nb)) return a.localeCompare(b);
+          if (isNaN(na)) return 1; if (isNaN(nb)) return -1;
+          return na - nb;
+        })
+        .slice(0, 6)
+        .map(y => ({ ...byClass[y], _classLabel: y }));
+      const host = document.getElementById('topclass-widget');
+      if (!topClass.length) {
+        host.innerHTML = `<div class="jj-widget-empty">Top picks per class will appear once each class has at least one fully-rated prospect.</div>`;
+      } else {
+        host.innerHTML = topClass.map(p => `
+          <a href="/jimmysandjoes/prospect/${encodeURIComponent(p.slug)}" class="jj-widget-card">
+            <div class="jj-widget-rank">${escapeHtml(p._classLabel)}</div>
+            <div class="jj-widget-body">
+              <div class="jj-widget-name">${escapeHtml(p.fullName)}</div>
+              <div class="jj-widget-meta">${escapeHtml(p.primaryPosition || '—')} · ${escapeHtml(p.schoolName || '')}</div>
+            </div>
+            <div class="jj-widget-rating">${(p.jjRating || 0).toFixed(1)}<small>J&amp;J</small></div>
+          </a>
+        `).join('');
+      }
+    }
+
+    // ── Populate filter dropdowns ─────────────────────────────────
+    const fClass = document.getElementById('filter-class');
+    classYearOptions().forEach(y => {
+      const o = document.createElement('option');
+      o.value = y; o.textContent = y;
+      fClass.appendChild(o);
+    });
+    const fPos = document.getElementById('filter-position');
+    POSITIONS.forEach(p => {
+      const o = document.createElement('option');
+      o.value = p.code; o.textContent = `${p.code} — ${p.label}`;
+      fPos.appendChild(o);
+    });
+
+    // ── Load + filter prospects ───────────────────────────────────
+    let allProspects = [];
+
+    async function loadProspects() {
+      const grid = document.getElementById('prospect-grid');
+      try {
+        const q = query(
+          collection(db, 'prospects'),
+          where('status', '==', 'approved'),
+          orderBy('submittedAt', 'desc'),
+          limit(200)
+        );
+        const snap = await getDocs(q);
+        allProspects = [];
+        snap.forEach(d => allProspects.push({ id: d.id, ...d.data() }));
+        renderWidgets(allProspects);
+        render();
+        // Seed the random module so it doesn't re-query Firestore on click.
+        seedRandomCache(allProspects);
+      } catch (err) {
+        console.warn('[jj] load failed:', err);
+        grid.innerHTML = `<div class="jj-empty"><p>Couldn't load prospects right now.</p></div>`;
+      }
+    }
+
+    function applyFilters() {
+      const cls = fClass.value;
+      const pos = fPos.value;
+      const st  = (document.getElementById('filter-state').value || '').trim().toUpperCase();
+      const sort = document.getElementById('filter-sort').value;
+
+      let list = allProspects.slice();
+      if (cls) list = list.filter(p => p.classYear === cls);
+      if (pos) list = list.filter(p =>
+        p.primaryPosition === pos ||
+        (Array.isArray(p.secondaryPositions) && p.secondaryPositions.includes(pos))
+      );
+      if (st)  list = list.filter(p => (p.state || '').toUpperCase() === st);
+
+      if (sort === 'rating') {
+        list.sort((a, b) => (b.jjRating || 0) - (a.jjRating || 0));
+      } else if (sort === 'trending') {
+        list.sort((a, b) => (b.trendingScore || 0) - (a.trendingScore || 0));
+      } else {
+        list.sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
+      }
+      return list;
+    }
+
+    function render() {
+      const list = applyFilters();
+      const grid = document.getElementById('prospect-grid');
+      document.getElementById('prospect-count').textContent = list.length;
+
+      if (!list.length) {
+        grid.innerHTML = `
+          <div class="jj-empty">
+            <p>No prospects yet. Be the first to add one.</p>
+            <a href="/jimmysandjoes/submit" class="btn-gold">+ Add a Jimmy</a>
+          </div>
+        `;
+        return;
+      }
+      grid.innerHTML = list.map(cardHtml).join('');
+    }
+
+    function cardHtml(p) {
+      const showStars = (p.ratingCount || 0) >= MIN_RATINGS_FOR_STARS && (p.jjRating || 0) >= 1;
+      const ratingDisplay = showStars
+        ? renderStars(p.jjRating, p.ratingCount)
+        : `<span class="jj-unrated">Needs more film${p.ratingCount ? ` (${p.ratingCount}/${MIN_RATINGS_FOR_STARS})` : ''}</span>`;
+      const offers = Array.isArray(p.offers) ? p.offers : [];
+      const offerCount = offers.length;
+      return `
+        <a href="/jimmysandjoes/prospect/${encodeURIComponent(p.slug)}" class="jj-card lifted">
+          <div class="jj-card-head">
+            <div class="jj-card-name">${escapeHtml(p.fullName || 'Unnamed')}</div>
+            <div class="jj-card-meta">
+              <span>${escapeHtml(p.primaryPosition || '—')}</span>
+              <span>•</span>
+              <span>${escapeHtml(p.classYear || '—')}</span>
+            </div>
+          </div>
+          <div class="jj-card-school">
+            ${escapeHtml(p.schoolName || '')}<br>
+            <span class="jj-card-locale">${escapeHtml(p.city || '')}${p.city && p.state ? ', ' : ''}${escapeHtml(p.state || '')}</span>
+          </div>
+          <div class="jj-card-foot">
+            <div class="jj-card-rating">${ratingDisplay}</div>
+            ${offerCount ? `<div class="jj-card-offers">${offerCount} offer${offerCount === 1 ? '' : 's'}</div>` : ''}
+          </div>
+        </a>
+      `;
+    }
+
+    [fClass, fPos, document.getElementById('filter-state'), document.getElementById('filter-sort')]
+      .forEach(el => el.addEventListener('input', render));
+
+    loadProspects();
+  </script>
+</body>
+</html>

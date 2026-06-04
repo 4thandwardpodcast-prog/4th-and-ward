@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>How J&amp;J Ratings Work — Jimmys &amp; Joes — 4th &amp; Ward</title>
+  <meta name="description" content="A transparent breakdown of how Jimmys & Joes computes its 0–5 star community recruiting rating.">
+  <link rel="canonical" href="https://4thandward.com/jimmysandjoes/how-it-works">
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/jj.css">
+  <script type="module" src="js/user-menu.js"></script>
+  <script type="module" src="js/jj-random.js"></script>
+  <style>
+    .hiw-wrap { max-width: 820px; margin: 0 auto; padding: 30px 24px 80px; }
+    .hiw-formula {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+      margin: 22px 0 30px;
+    }
+    @media (max-width: 700px) { .hiw-formula { grid-template-columns: repeat(2, 1fr); } }
+    .hiw-formula-cell {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px; text-align: center;
+    }
+    .hiw-formula-pct {
+      font-family: var(--condensed); font-weight: 900; font-size: 36px;
+      color: var(--gold); line-height: 1;
+    }
+    .hiw-formula-label {
+      font-family: var(--condensed); font-weight: 700; font-size: 12px;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--white);
+      margin: 6px 0 4px;
+    }
+    .hiw-formula-sub { font-size: 11px; color: var(--muted); }
+    .hiw-wrap h2 {
+      font-family: var(--condensed); font-weight: 900; font-size: 22px;
+      letter-spacing: 0.04em; text-transform: uppercase; color: var(--gold);
+      margin: 34px 0 12px;
+    }
+    .hiw-wrap p, .hiw-wrap li { font-size: 15px; line-height: 1.6; color: #d0cfca; margin-bottom: 10px; }
+    .hiw-wrap ul { padding-left: 22px; margin-bottom: 14px; }
+    .hiw-callout {
+      background: rgba(245,197,24,0.06); border: 1px solid rgba(245,197,24,0.25);
+      border-radius: 6px; padding: 16px 20px; margin: 18px 0; font-size: 14px;
+    }
+    .hiw-callout strong { color: var(--gold); }
+    .hiw-faq { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 12px; }
+    .hiw-faq h3 { font-family: var(--condensed); font-size: 15px; font-weight: 900; color: var(--white); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo"><img src="logo-cover.svg" alt="4th & Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="totw.html">Team of the Week</a></li>
+      <li><a href="wardle.html">4th &amp; Wardle</a></li>
+      <li><a href="hsblitz.html">HS Blitz<span class="nav-beta">Beta</span></a></li>
+      <li><a href="dripordrown.html">Drip or Drown</a></li>
+      <li><a href="pulse.html">Friday Night Pulse<span class="nav-beta">New</span></a></li>
+      <li><a href="jimmysandjoes.html" class="active">Jimmys &amp; Joes<span class="nav-beta">New</span></a></li>
+      <li><a href="merch.html">Merch</a></li>
+      <li id="nav-user-slot"></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+  </nav>
+
+  <main class="page-wrap">
+    <nav class="jj-subnav" aria-label="Jimmys & Joes sections">
+      <div class="jj-subnav-inner">
+        <a href="/jimmysandjoes">Discover</a>
+        <a href="/jimmysandjoes/leaderboards">Leaderboards</a>
+        <a href="/jimmysandjoes/rankings">Sub-Rankings</a>
+        <a href="/jimmysandjoes/scouts">Hall of Scouts</a>
+        <a href="/jimmysandjoes/submit">+ Add a Jimmy</a>
+        <button type="button" class="jj-subnav-random" data-jj-random>🎲 Random Jimmy</button>
+      </div>
+    </nav>
+
+    <div class="hiw-wrap">
+      <div class="section-label">How It Works</div>
+      <h1 class="section-title">The J&amp;J Rating, explained.</h1>
+      <p style="color: #d0cfca; font-size: 16px; max-width: 640px;">Every recruit on this site has one number next to their name: their J&amp;J Rating, on a 0–5 scale. Here's exactly how we calculate it — no black-box scout politics, no inflated 1-star floors.</p>
+
+      <h2>The 70 / 15 / 10 / 5 formula</h2>
+      <p>Each prospect's J&amp;J Rating is a weighted blend of four components:</p>
+
+      <div class="hiw-formula">
+        <div class="hiw-formula-cell">
+          <div class="hiw-formula-pct">70%</div>
+          <div class="hiw-formula-label">Community Film</div>
+          <div class="hiw-formula-sub">Avg of every fan rating + per-position trait sliders</div>
+        </div>
+        <div class="hiw-formula-cell">
+          <div class="hiw-formula-pct">15%</div>
+          <div class="hiw-formula-label">Production</div>
+          <div class="hiw-formula-sub">Position-normalized stats vs. class peers</div>
+        </div>
+        <div class="hiw-formula-cell">
+          <div class="hiw-formula-pct">10%</div>
+          <div class="hiw-formula-label">Accolades</div>
+          <div class="hiw-formula-sub">Awards weighted by tier (All-State &gt; All-District)</div>
+        </div>
+        <div class="hiw-formula-cell">
+          <div class="hiw-formula-pct">5%</div>
+          <div class="hiw-formula-label">Measurables</div>
+          <div class="hiw-formula-sub">Size, 40, strength benchmarks for class</div>
+        </div>
+      </div>
+
+      <div class="hiw-callout">
+        <strong>Why 70% community?</strong> Because film doesn't lie. A scout watches dozens of guys a year; the J&amp;J community watches hundreds. When real football people — coaches, parents, fans, evaluators — all see the same things on tape, that's signal. Recruiting services flatten that into one paid scout's opinion. We let the crowd in.
+      </div>
+
+      <h2>The 1–5 star scale</h2>
+      <ul>
+        <li><strong>5★</strong> — Elite. Top-of-class talent, Power-Five caliber.</li>
+        <li><strong>4★</strong> — High-major. P5 / G5 starter projection.</li>
+        <li><strong>3★</strong> — FBS-ready. Solid contributor at the FBS level.</li>
+        <li><strong>2★</strong> — FCS / D-II / JUCO. Real college talent at the right level.</li>
+        <li><strong>1★</strong> — Developmental. Show me more film.</li>
+        <li><strong>0★</strong> — Not enough information.</li>
+      </ul>
+      <p>A prospect needs <strong>at least 15 community ratings</strong> before stars are displayed. Below that, the profile shows "Needs more film" so a small sample of friends can't skew the score. If the weighted average comes out below 1.0, the page shows zero stars and a note — no inflated minimums.</p>
+
+      <h2>The rating modal</h2>
+      <p>When you click "Rate &amp; Comment" on a prospect, you'll see:</p>
+      <ul>
+        <li><strong>Overall (1–5 stars)</strong> — your gut take on the tape.</li>
+        <li><strong>Position-specific trait sliders</strong> — for a QB: Arm Strength, Accuracy, Decision Making, Mobility, Pocket Presence, Leadership. For a WR: Route Running, Hands, Speed/Separation, YAC, Ball Tracking, Blocking. Etc.</li>
+        <li><strong>"Does the film match the stats?"</strong> — yes / somewhat / no.</li>
+        <li><strong>Comment</strong> — what stood out. Optional but encouraged.</li>
+      </ul>
+      <p>Your rating averages with every other rater on that prospect to form the 70% community component.</p>
+
+      <h2>The accolades score (10%)</h2>
+      <p>Accolades are weighted by tier and totaled, then mapped onto the 0–5 scale via a soft cap (tanh) so volume alone can't max it out. A few examples:</p>
+      <ul>
+        <li>State MVP / All-American 1st Team / State POY — heavy</li>
+        <li>All-State 1st Team / Region MVP / District MVP — medium-heavy</li>
+        <li>All-District 1st Team / Camp MVP — medium</li>
+        <li>Team Captain / All-District 2nd Team — light</li>
+      </ul>
+
+      <h2>The measurables score (5%)</h2>
+      <p>Combines 40-yard time (electronic preferred over hand), height, and weight against typical HS football benchmarks. Faster + bigger pushes this up; missing data just leaves the 5% to be redistributed across the other components.</p>
+
+      <h2>Transparency</h2>
+      <p>Every prospect's profile shows the component breakdown — you can see exactly what's driving their final number. Disagree with the community? Submit a rating with your own analysis and move the needle.</p>
+
+      <h2>FAQ</h2>
+      <div class="hiw-faq">
+        <h3>Can a prospect's profile be removed?</h3>
+        <p>Yes. Email <a href="mailto:4thandwardpodcast@gmail.com" style="color:var(--gold);">4thandwardpodcast@gmail.com</a> from the prospect's coach email or a parent's email and we'll take it down. For under-18s, profiles are removed on parental request, no questions asked.</p>
+      </div>
+      <div class="hiw-faq">
+        <h3>Can I edit my own rating?</h3>
+        <p>Yes — re-open the rating modal on a prospect you've already rated and submit. Your previous rating is replaced (one rating per browser per prospect).</p>
+      </div>
+      <div class="hiw-faq">
+        <h3>What stops vote-brigading?</h3>
+        <p>Browser-level dedup (one rating per browser per prospect) and the 15-rating minimum before stars appear. Suspicious activity surfaces on the admin dashboard and ratings can be wiped.</p>
+      </div>
+      <div class="hiw-faq">
+        <h3>Are paid scouts allowed?</h3>
+        <p>Everyone is welcome. The whole point of J&amp;J is that no one's opinion counts more than anyone else's. Watch the film, give your honest take.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.png" alt="4th & Ward Podcast"></div>
+    <ul class="footer-links">
+      <li><a href="about.html">About</a></li>
+      <li><a href="jimmysandjoes.html">Jimmys &amp; Joes</a></li>
+      <li><a href="privacy.html">Privacy</a></li>
+      <li><a href="merch.html">Merch</a></li>
+    </ul>
+    <p class="footer-copy">&#169; 2026 4th &amp; Ward Podcast. All rights reserved.</p>
+  </footer>
+</body>
+</html>

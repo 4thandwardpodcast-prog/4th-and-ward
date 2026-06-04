@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title id="page-title">Team — Jimmys &amp; Joes — 4th &amp; Ward</title>
+  <meta id="meta-description" name="description" content="A school's prospects on Jimmys & Joes — community-rated.">
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/jj.css">
+  <script type="module" src="js/user-menu.js"></script>
+  <script type="module" src="js/jj-random.js"></script>
+  <style>
+    .team-hero {
+      display: grid; grid-template-columns: 1fr auto;
+      gap: 24px; align-items: end;
+      padding: 30px 24px 18px;
+      max-width: 1200px; margin: 0 auto;
+    }
+    @media (max-width: 700px) { .team-hero { grid-template-columns: 1fr; } }
+    .team-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 8px;
+    }
+    .team-name {
+      font-family: var(--condensed); font-weight: 900;
+      font-size: clamp(36px, 5vw, 56px); line-height: 0.95;
+      letter-spacing: -0.01em; text-transform: uppercase;
+    }
+    .team-locale { color: var(--muted); font-size: 14px; margin-top: 6px; }
+    .team-stats {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+      max-width: 1200px; margin: 18px auto 0; padding: 0 24px;
+    }
+    @media (max-width: 700px) { .team-stats { grid-template-columns: repeat(2, 1fr); } }
+    .team-stat {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 16px; text-align: center;
+    }
+    .team-stat-num {
+      font-family: var(--condensed); font-weight: 900; font-size: 28px;
+      color: var(--gold); line-height: 1;
+    }
+    .team-stat-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--muted); margin-top: 4px;
+    }
+    .team-class-section { margin-top: 28px; }
+    .team-class-heading {
+      font-family: var(--condensed); font-weight: 900; font-size: 18px;
+      letter-spacing: 0.06em; text-transform: uppercase; color: var(--white);
+      margin-bottom: 12px; display: flex; align-items: center; gap: 10px;
+    }
+    .team-class-heading span { color: var(--gold); }
+    .team-class-heading::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo"><img src="logo-cover.svg" alt="4th & Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="totw.html">Team of the Week</a></li>
+      <li><a href="wardle.html">4th &amp; Wardle</a></li>
+      <li><a href="hsblitz.html">HS Blitz<span class="nav-beta">Beta</span></a></li>
+      <li><a href="dripordrown.html">Drip or Drown</a></li>
+      <li><a href="pulse.html">Friday Night Pulse<span class="nav-beta">New</span></a></li>
+      <li><a href="jimmysandjoes.html" class="active">Jimmys &amp; Joes<span class="nav-beta">New</span></a></li>
+      <li><a href="merch.html">Merch</a></li>
+      <li id="nav-user-slot"></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+  </nav>
+
+  <main class="page-wrap">
+    <nav class="jj-subnav" aria-label="Jimmys & Joes sections">
+      <div class="jj-subnav-inner">
+        <a href="/jimmysandjoes">Discover</a>
+        <a href="/jimmysandjoes/leaderboards">Leaderboards</a>
+        <a href="/jimmysandjoes/rankings">Sub-Rankings</a>
+        <a href="/jimmysandjoes/scouts">Hall of Scouts</a>
+        <a href="/jimmysandjoes/submit">+ Add a Jimmy</a>
+        <button type="button" class="jj-subnav-random" data-jj-random>🎲 Random Jimmy</button>
+      </div>
+    </nav>
+
+    <div id="team-root">
+      <div class="jj-loading" style="padding: 80px 20px;">Loading team…</div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.png" alt="4th & Ward Podcast"></div>
+    <ul class="footer-links">
+      <li><a href="about.html">About</a></li>
+      <li><a href="jimmysandjoes.html">Jimmys &amp; Joes</a></li>
+      <li><a href="privacy.html">Privacy</a></li>
+      <li><a href="merch.html">Merch</a></li>
+    </ul>
+    <p class="footer-copy">&#169; 2026 4th &amp; Ward Podcast. All rights reserved.</p>
+  </footer>
+
+  <script type="module">
+    import { db } from './js/firebase-init.js';
+    import {
+      collection, query, where, limit, getDocs
+    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { MIN_RATINGS_FOR_STARS } from './js/jj-config.js';
+    import { escapeHtml, renderStars } from './js/jj-utils.js';
+
+    // ── Read team slug from URL ────────────────────────────────
+    // Slug format: lower-case school name with hyphens, e.g. "allen-high-school".
+    // We match against prospect.schoolName by re-slugifying it client-side.
+    const teamSlug = new URLSearchParams(window.location.search).get('team');
+    const root = document.getElementById('team-root');
+
+    function slugifySchool(name) {
+      return String(name || '').toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+    }
+
+    if (!teamSlug) {
+      root.innerHTML = `<div class="jj-empty" style="margin: 40px 24px;"><p>No team specified.</p><a href="/jimmysandjoes" class="btn-gold">Browse Prospects</a></div>`;
+    } else {
+      load();
+    }
+
+    async function load() {
+      try {
+        // We don't have a normalized "schoolSlug" field on prospects, so
+        // we pull all approved prospects and filter client-side. Fine up
+        // to a few thousand prospects; if it grows we'll add a real field.
+        const snap = await getDocs(query(
+          collection(db, 'prospects'),
+          where('status', '==', 'approved'),
+          limit(2000)
+        ));
+        const list = [];
+        snap.forEach(d => {
+          const data = d.data();
+          if (slugifySchool(data.schoolName) === teamSlug) {
+            list.push({ id: d.id, ...data });
+          }
+        });
+        if (!list.length) {
+          root.innerHTML = `<div class="jj-empty" style="margin: 40px 24px;"><p>No prospects found for that school yet.</p><a href="/jimmysandjoes/submit" class="btn-gold">+ Add a Jimmy</a></div>`;
+          return;
+        }
+        render(list);
+      } catch (err) {
+        console.warn('[jj-team]', err);
+        root.innerHTML = `<div class="jj-empty" style="margin: 40px 24px;"><p>Couldn't load the team page.</p></div>`;
+      }
+    }
+
+    function render(list) {
+      // Most common school name string from these prospects is the canonical display.
+      const counts = {};
+      list.forEach(p => { counts[p.schoolName] = (counts[p.schoolName] || 0) + 1; });
+      const displayName = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+      const first = list[0];
+
+      // Update title/meta for SEO.
+      document.getElementById('page-title').textContent =
+        `${displayName} — Jimmys & Joes — 4th & Ward`;
+      document.getElementById('meta-description').setAttribute(
+        'content',
+        `${list.length} prospects from ${displayName}${first.city ? ` (${first.city}, ${first.state})` : ''} on the Jimmys & Joes community recruiting database.`
+      );
+
+      // Stats
+      const rated = list.filter(p => (p.ratingCount || 0) >= MIN_RATINGS_FOR_STARS);
+      const avg = rated.length ? rated.reduce((s, p) => s + (p.jjRating || 0), 0) / rated.length : 0;
+      const totalOffers = list.reduce((s, p) => s + ((Array.isArray(p.offers) ? p.offers.length : 0)), 0);
+      const topRated = rated.slice().sort((a, b) => (b.jjRating || 0) - (a.jjRating || 0))[0];
+
+      // Group by class year (descending = most distant / newest first).
+      const byClass = {};
+      list.forEach(p => {
+        const k = p.classYear || 'Other';
+        if (!byClass[k]) byClass[k] = [];
+        byClass[k].push(p);
+      });
+      const classKeys = Object.keys(byClass).sort((a, b) => {
+        const na = parseInt(a, 10), nb = parseInt(b, 10);
+        if (!isNaN(na) && !isNaN(nb)) return na - nb;
+        if (!isNaN(na)) return -1;
+        if (!isNaN(nb)) return 1;
+        return a.localeCompare(b);
+      });
+
+      root.innerHTML = `
+        <section class="hero-backdrop">
+          <div class="team-hero">
+            <div>
+              <div class="team-eyebrow">Team Profile</div>
+              <h1 class="team-name">${escapeHtml(displayName)}</h1>
+              <div class="team-locale">${escapeHtml(first.city || '')}${first.city && first.state ? ', ' : ''}${escapeHtml(first.state || '')}</div>
+            </div>
+            <a href="/jimmysandjoes/submit" class="btn-gold">+ Add a Jimmy</a>
+          </div>
+
+          <div class="team-stats">
+            <div class="team-stat"><div class="team-stat-num">${list.length}</div>           <div class="team-stat-label">Prospects</div></div>
+            <div class="team-stat"><div class="team-stat-num">${rated.length}</div>          <div class="team-stat-label">Fully Rated</div></div>
+            <div class="team-stat"><div class="team-stat-num">${avg ? avg.toFixed(1) : '—'}</div><div class="team-stat-label">Avg J&amp;J</div></div>
+            <div class="team-stat"><div class="team-stat-num">${totalOffers}</div>           <div class="team-stat-label">Total Offers</div></div>
+          </div>
+        </section>
+
+        <section class="jj-section" style="max-width: 1200px; margin: 0 auto;">
+          ${topRated ? `
+            <div class="section-label">⭐ Top Rated · ${escapeHtml(topRated.classYear || '')}</div>
+            <p style="color:var(--muted); margin-bottom: 22px;">${escapeHtml(topRated.fullName)} — ${escapeHtml(topRated.primaryPosition)} — <strong style="color:var(--gold);">${(topRated.jjRating || 0).toFixed(1)} J&amp;J</strong></p>
+          ` : ''}
+
+          ${classKeys.map(year => `
+            <div class="team-class-section">
+              <h2 class="team-class-heading"><span>Class of ${escapeHtml(year)}</span></h2>
+              <div class="jj-grid">${byClass[year]
+                .slice()
+                .sort((a, b) => (b.jjRating || 0) - (a.jjRating || 0))
+                .map(cardHtml).join('')}</div>
+            </div>
+          `).join('')}
+        </section>
+      `;
+    }
+
+    function cardHtml(p) {
+      const showStars = (p.ratingCount || 0) >= MIN_RATINGS_FOR_STARS && (p.jjRating || 0) >= 1;
+      const ratingDisplay = showStars
+        ? renderStars(p.jjRating, p.ratingCount)
+        : `<span class="jj-unrated">Needs more film${p.ratingCount ? ` (${p.ratingCount}/${MIN_RATINGS_FOR_STARS})` : ''}</span>`;
+      const offers = Array.isArray(p.offers) ? p.offers : [];
+      return `
+        <a href="/jimmysandjoes/prospect/${encodeURIComponent(p.slug)}" class="jj-card lifted">
+          <div class="jj-card-head">
+            <div class="jj-card-name">${escapeHtml(p.fullName)}</div>
+            <div class="jj-card-meta">
+              <span>${escapeHtml(p.primaryPosition || '—')}</span>
+            </div>
+          </div>
+          <div class="jj-card-school">${escapeHtml(p.classYear || '')}</div>
+          <div class="jj-card-foot">
+            <div class="jj-card-rating">${ratingDisplay}</div>
+            ${offers.length ? `<div class="jj-card-offers">${offers.length} offer${offers.length === 1 ? '' : 's'}</div>` : ''}
+          </div>
+        </a>
+      `;
+    }
+  </script>
+</body>
+</html>

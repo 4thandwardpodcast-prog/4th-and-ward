@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title id="page-title">Prospect — Jimmys &amp; Joes — 4th &amp; Ward</title>
+  <meta id="meta-description" name="description" content="A community-rated high school football prospect profile.">
+  <meta id="og-title"       property="og:title"       content="Jimmys & Joes">
+  <meta id="og-description" property="og:description" content="">
+  <meta id="og-image"       property="og:image"       content="">
+  <meta property="og:type" content="profile">
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/jj.css">
+  <script type="module" src="js/user-menu.js"></script>
+  <script type="module" src="js/jj-random.js"></script>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo"><img src="logo-cover.svg" alt="4th & Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="totw.html">Team of the Week</a></li>
+      <li><a href="wardle.html">4th &amp; Wardle</a></li>
+      <li><a href="hsblitz.html">HS Blitz<span class="nav-beta">Beta</span></a></li>
+      <li><a href="dripordrown.html">Drip or Drown</a></li>
+      <li><a href="pulse.html">Friday Night Pulse<span class="nav-beta">New</span></a></li>
+      <li><a href="jimmysandjoes.html" class="active">Jimmys &amp; Joes<span class="nav-beta">New</span></a></li>
+      <li><a href="merch.html">Merch</a></li>
+      <li id="nav-user-slot"></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+  </nav>
+
+  <main class="page-wrap">
+    <nav class="jj-subnav" aria-label="Jimmys & Joes sections">
+      <div class="jj-subnav-inner">
+        <a href="/jimmysandjoes">Discover</a>
+        <a href="/jimmysandjoes/leaderboards">Leaderboards</a>
+        <a href="/jimmysandjoes/rankings">Sub-Rankings</a>
+        <a href="/jimmysandjoes/scouts">Hall of Scouts</a>
+        <a href="/jimmysandjoes/submit">+ Add a Jimmy</a>
+        <button type="button" class="jj-subnav-random" data-jj-random>🎲 Random Jimmy</button>
+      </div>
+    </nav>
+
+    <div class="jj-profile-wrap" id="profile-root">
+      <div class="jj-loading" style="padding: 80px 20px;">Loading prospect…</div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.png" alt="4th & Ward Podcast"></div>
+    <ul class="footer-links">
+      <li><a href="about.html">About</a></li>
+      <li><a href="jimmysandjoes.html">Jimmys &amp; Joes</a></li>
+      <li><a href="privacy.html">Privacy</a></li>
+      <li><a href="merch.html">Merch</a></li>
+    </ul>
+    <p class="footer-copy">&#169; 2026 4th &amp; Ward Podcast. All rights reserved.</p>
+  </footer>
+
+  <!-- ── Rating modal (built once, shown on demand) ────────────── -->
+  <div class="jj-rating-overlay" id="rating-overlay" aria-hidden="true">
+    <div class="jj-rating-modal" role="dialog" aria-modal="true" aria-labelledby="rating-title">
+      <button type="button" class="jj-modal-close" id="rating-close" aria-label="Close">×</button>
+      <h2 id="rating-title">Rate This Prospect</h2>
+      <p class="jj-modal-sub" id="rating-sub">What did you see on film?</p>
+
+      <div class="jj-field">
+        <label class="jj-field-label">Overall</label>
+        <div class="jj-star-picker" id="rating-stars" role="radiogroup" aria-label="Overall rating"></div>
+      </div>
+
+      <div id="rating-traits"></div>
+
+      <div class="jj-field" style="margin-top: 14px;">
+        <label class="jj-field-label">Does the film match the stats?</label>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="jj-pill" data-match="yes">Yes</button>
+          <button type="button" class="jj-pill" data-match="somewhat">Somewhat</button>
+          <button type="button" class="jj-pill" data-match="no">No</button>
+        </div>
+      </div>
+
+      <div class="jj-field" style="margin-top: 14px;">
+        <label class="jj-field-label" for="rating-comment">Comment <span class="jj-field-hint">(optional, what stood out?)</span></label>
+        <textarea id="rating-comment" class="jj-textarea" maxlength="500" placeholder="Route running was crisp, but…"></textarea>
+      </div>
+
+      <div id="rating-msg" class="jj-submit-msg" hidden></div>
+
+      <div class="jj-form-actions">
+        <button type="button" class="btn-ghost" id="rating-cancel">Cancel</button>
+        <button type="button" class="btn-gold"  id="rating-submit">Submit Rating</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './js/firebase-init.js';
+    import { onAuthChange } from './js/auth.js';
+    import {
+      collection, doc, getDoc, getDocs, setDoc, addDoc, deleteDoc, updateDoc, increment,
+      query, where, orderBy, serverTimestamp
+    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import {
+      POSITION_LABEL, ACCOLADE_BY_ID, SCORE_WEIGHTS,
+      MIN_RATINGS_FOR_STARS, MIN_FINAL_FOR_STARS, traitsFor,
+      BADGE_BY_ID
+    } from './js/jj-config.js';
+    import {
+      escapeHtml, renderStars, inchesToFeetInches, formatWeight, getOrCreateVisitorId
+    } from './js/jj-utils.js';
+
+    // ── Read slug from URL ─────────────────────────────────────
+    const slug = new URLSearchParams(window.location.search).get('slug');
+    const root = document.getElementById('profile-root');
+    let prospect = null;
+    let currentUser = null;
+    let myExistingRating = null;
+    let myCoachProfile = null;     // populated when the viewer is a verified coach
+    let myClaim = null;            // existing claim by this coach on this prospect, if any
+    onAuthChange(async u => {
+      currentUser = u || null;
+      myCoachProfile = null; myClaim = null;
+      if (u) {
+        try {
+          const cp = await getDoc(doc(db, 'coach_profiles', u.uid));
+          if (cp.exists() && cp.data().status === 'verified') myCoachProfile = cp.data();
+        } catch (_) {}
+        if (prospect && myCoachProfile) await refreshMyClaim();
+      }
+      renderActionBar();
+      refreshMyRating();
+      renderClaimButton();
+    });
+
+    if (!slug) {
+      root.innerHTML = `<div class="jj-empty"><p>No prospect specified.</p><a href="/jimmysandjoes" class="btn-gold">Browse Prospects</a></div>`;
+    } else {
+      load();
+    }
+
+    async function load() {
+      try {
+        const snap = await getDoc(doc(db, 'prospects', slug));
+        if (!snap.exists()) {
+          root.innerHTML = `<div class="jj-empty"><p>Prospect not found.</p><a href="/jimmysandjoes" class="btn-gold">Browse Prospects</a></div>`;
+          return;
+        }
+        prospect = { id: snap.id, ...snap.data() };
+        if (prospect.status !== 'approved') {
+          root.innerHTML = `<div class="jj-empty"><p>This profile is pending review.</p></div>`;
+          return;
+        }
+        renderProfile();
+        loadComments();
+        refreshMyRating();
+        bumpView();
+        if (currentUser && myCoachProfile) refreshMyClaim().then(renderClaimButton);
+      } catch (err) {
+        console.error('[jj] load prospect:', err);
+        root.innerHTML = `<div class="jj-empty"><p>Couldn't load this prospect.</p></div>`;
+      }
+    }
+
+    // ── Render ─────────────────────────────────────────────────
+    function videoEmbedHtml() {
+      const url = prospect.highlightUrl;
+      const type = prospect.highlightType;
+      const id = prospect.highlightEmbedId;
+      if (!url) {
+        return `<div class="jj-video"><div class="jj-video-missing">No highlight video on file.</div></div>`;
+      }
+      let src = '';
+      if (type === 'youtube') src = `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1`;
+      else if (type === 'hudl') src = `https://www.hudl.com/embed/video/3/0/${id}`;
+      if (!src) return `<div class="jj-video"><div class="jj-video-missing">Couldn't embed this video — <a href="${escapeHtml(url)}" target="_blank" style="color:var(--gold);">open externally</a>.</div></div>`;
+      return `<div class="jj-video"><iframe src="${src}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`;
+    }
+
+    function ratingDisplayHtml() {
+      const count = prospect.ratingCount || 0;
+      const final = prospect.jjRating || 0;
+      if (count < MIN_RATINGS_FOR_STARS || final < MIN_FINAL_FOR_STARS) {
+        return `
+          <div class="jj-hero-rating">
+            <div class="jj-unrated">Needs more film${count ? ` (${count} / ${MIN_RATINGS_FOR_STARS})` : ''}</div>
+            <div class="jj-hero-rating-label">J&amp;J Rating</div>
+          </div>
+        `;
+      }
+      return `
+        <div class="jj-hero-rating">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <div class="jj-hero-rating-num">${final.toFixed(1)}</div>
+            <div class="jj-hero-stars">${renderStars(final, count)}</div>
+          </div>
+          <div class="jj-hero-rating-label">J&amp;J Rating · ${count} community rater${count === 1 ? '' : 's'}</div>
+        </div>
+      `;
+    }
+
+    function infoCardsHtml() {
+      const offers = Array.isArray(prospect.offers) ? prospect.offers : [];
+      const accs   = Array.isArray(prospect.accolades) ? prospect.accolades : [];
+      const t = prospect.testing || {};
+      const s = prospect.strength || {};
+      const forty = t.fortyElectronic || t.fortyHand;
+
+      return `
+        <div class="jj-info-row">
+          <div class="jj-info-card">
+            <div class="jj-info-title">Measurables</div>
+            <div class="jj-info-body">
+              <div><strong>${inchesToFeetInches(prospect.heightInches)}</strong> · ${formatWeight(prospect.weightLbs)}</div>
+              ${forty ? `<div style="color:var(--muted); font-size:12px; margin-top:4px;">40: ${forty.toFixed(2)}s${t.vertical ? ` · Vert: ${t.vertical}"` : ''}</div>` : ''}
+            </div>
+          </div>
+
+          <div class="jj-info-card">
+            <div class="jj-info-title">Strength</div>
+            <div class="jj-info-body">
+              ${s.bench225 ? `<div>Bench@225: <strong>${s.bench225} reps</strong></div>` : ''}
+              ${s.bench1rm ? `<div>Bench 1RM: <strong>${s.bench1rm}</strong></div>` : ''}
+              ${s.squat1rm ? `<div>Squat 1RM: <strong>${s.squat1rm}</strong></div>` : ''}
+              ${s.powerClean1rm ? `<div>Clean 1RM: <strong>${s.powerClean1rm}</strong></div>` : ''}
+              ${!s.bench225 && !s.bench1rm && !s.squat1rm && !s.powerClean1rm ? '<span style="color:var(--muted);">—</span>' : ''}
+            </div>
+          </div>
+
+          <div class="jj-info-card">
+            <div class="jj-info-title">Accolades</div>
+            <div class="jj-info-body">
+              ${accs.length
+                ? `<div class="jj-tags">${accs.map(a => `<span class="jj-tag gold">${escapeHtml(ACCOLADE_BY_ID[a.id]?.label || a.id)}</span>`).join('')}</div>`
+                : '<span style="color:var(--muted);">—</span>'}
+            </div>
+          </div>
+
+          <div class="jj-info-card">
+            <div class="jj-info-title">Offers</div>
+            <div class="jj-info-body">
+              ${offers.length
+                ? `<div class="jj-tags">${offers.map(o => `<span class="jj-tag">${escapeHtml(o)}</span>`).join('')}</div>`
+                : '<span style="color:var(--muted);">No offers listed</span>'}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function breakdownHtml() {
+      const film  = prospect.filmTraitsAvg   || 0;
+      const prod  = prospect.productionScore || 0;
+      const acc   = prospect.accoladesScore  || 0;
+      const meas  = prospect.measurablesScore|| 0;
+      const histo = Array.isArray(prospect.ratingDistribution) ? prospect.ratingDistribution : [0,0,0,0,0];
+      const maxBucket = Math.max(1, ...histo);
+
+      function row(label, weight, val) {
+        const pct = Math.max(0, Math.min(100, (val / 5) * 100));
+        return `
+          <div class="jj-breakdown-row">
+            <div class="jj-breakdown-label">${label}<small>${(weight * 100).toFixed(0)}%</small></div>
+            <div class="jj-breakdown-bar"><div class="jj-breakdown-fill" style="width:${pct}%"></div></div>
+            <div class="jj-breakdown-val">${val ? val.toFixed(1) : '—'}</div>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="jj-section-block">
+          <h2>Rating Breakdown <a href="/jimmysandjoes/how-it-works" style="font-size:11px; font-weight:500; letter-spacing:0.04em; text-transform:none; color:var(--muted); float:right; text-decoration:underline;">How is this calculated?</a></h2>
+          ${row('Community Film',  SCORE_WEIGHTS.film,        film)}
+          ${row('Production',      SCORE_WEIGHTS.production,  prod)}
+          ${row('Accolades',       SCORE_WEIGHTS.accolades,   acc)}
+          ${row('Measurables',     SCORE_WEIGHTS.measurables, meas)}
+        </div>
+
+        <div class="jj-section-block">
+          <h2>Rating Distribution</h2>
+          <div class="jj-histo">
+            ${[1,2,3,4,5].map(b => {
+              const h = (histo[b-1] / maxBucket) * 100;
+              return `
+                <div class="jj-histo-bar">
+                  <div class="jj-histo-count">${histo[b-1] || 0}</div>
+                  <div class="jj-histo-fill" style="height:${h}%"></div>
+                  <div class="jj-histo-label">${b}★</div>
+                </div>`;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function bioHtml() {
+      if (!prospect.shortBio) return '';
+      return `
+        <div class="jj-section-block">
+          <h2>About</h2>
+          <p style="color:#d0cfca; line-height:1.6;">${escapeHtml(prospect.shortBio)}</p>
+        </div>
+      `;
+    }
+
+    function commentsBlockHtml() {
+      return `
+        <div class="jj-section-block" id="comments-block">
+          <h2>Community Comments</h2>
+          <div id="comment-form-host"></div>
+          <div id="comment-list" class="jj-comment-list">
+            <div class="jj-loading" style="padding: 30px 0;">Loading…</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function actionBarHtml() {
+      return `
+        <div class="jj-sticky-actions">
+          <button class="btn-gold"  type="button" id="action-rate-mobile">Rate &amp; Comment</button>
+          <button class="btn-ghost" type="button" data-jj-random>🎲 Random</button>
+        </div>
+      `;
+    }
+
+    function renderProfile() {
+      const positionLabel = POSITION_LABEL[prospect.primaryPosition] || prospect.primaryPosition;
+      document.getElementById('page-title').textContent =
+        `${prospect.fullName} · ${prospect.primaryPosition} · ${prospect.classYear} — Jimmys & Joes`;
+      document.getElementById('meta-description').setAttribute(
+        'content',
+        `${prospect.fullName}, ${positionLabel}, class of ${prospect.classYear}, ${prospect.schoolName} (${prospect.city}, ${prospect.state}) — community-rated highlight reel and player profile on 4th & Ward.`
+      );
+      document.getElementById('og-title').setAttribute('content', `${prospect.fullName} — ${prospect.primaryPosition} ${prospect.classYear}`);
+      document.getElementById('og-description').setAttribute('content', `${positionLabel} at ${prospect.schoolName}. Community-rated on 4th & Ward.`);
+
+      root.innerHTML = `
+        <div class="jj-profile-hero">
+          ${videoEmbedHtml()}
+          <div class="jj-hero-card">
+            <div class="jj-hero-meta">${escapeHtml(prospect.primaryPosition)} · ${escapeHtml(prospect.classYear)}${prospect.views ? ` · ${prospect.views.toLocaleString()} view${prospect.views === 1 ? '' : 's'}` : ''}</div>
+            <h1 class="jj-hero-name">${escapeHtml(prospect.fullName)}</h1>
+            <div class="jj-hero-school">
+              <strong>${escapeHtml(prospect.schoolName)}</strong><br>
+              <span style="color:var(--muted);">${escapeHtml(prospect.city)}${prospect.city && prospect.state ? ', ' : ''}${escapeHtml(prospect.state)}</span>
+            </div>
+            ${ratingDisplayHtml()}
+            <div class="jj-hero-actions" id="hero-actions">
+              <button class="btn-gold" type="button" id="action-rate">★ Rate &amp; Comment</button>
+              <button class="btn-ghost" type="button" id="action-share">Share</button>
+              <button class="btn-ghost" type="button" data-jj-random>🎲 Rate a Random Jimmy</button>
+            </div>
+          </div>
+        </div>
+
+        ${infoCardsHtml()}
+        ${breakdownHtml()}
+        ${bioHtml()}
+        ${commentsBlockHtml()}
+        ${actionBarHtml()}
+      `;
+
+      document.getElementById('action-rate').addEventListener('click', openRatingModal);
+      document.getElementById('action-rate-mobile')?.addEventListener('click', openRatingModal);
+      document.getElementById('action-share').addEventListener('click', shareProspect);
+      renderActionBar();
+      renderClaimButton();
+    }
+
+    function renderActionBar() {
+      if (!prospect) return;
+      const btns = [document.getElementById('action-rate'), document.getElementById('action-rate-mobile')];
+      btns.forEach(b => { if (b && myExistingRating) b.textContent = '★ Update Your Rating'; });
+    }
+
+    async function shareProspect() {
+      // Always share the canonical URL so the server-rendered version with
+      // proper OG card meta is what crawlers fetch.
+      const url = `${window.location.origin}/jimmysandjoes/prospect/${encodeURIComponent(prospect.slug)}`;
+      const text = `${prospect.fullName} — ${prospect.primaryPosition} ${prospect.classYear} on 4th & Ward Jimmys & Joes`;
+      if (navigator.share) {
+        try { await navigator.share({ title: text, url, text }); return; } catch (_) {}
+      }
+      try {
+        await navigator.clipboard.writeText(url);
+        showShareToast('Link copied.');
+      } catch (_) {
+        window.prompt('Copy link', url);
+      }
+    }
+
+    function showShareToast(msg) {
+      let t = document.getElementById('jj-share-toast');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'jj-share-toast';
+        t.style.cssText = 'position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--gold); color:#0a0a0a; padding:10px 18px; border-radius:4px; font-family:var(--condensed); font-weight:900; letter-spacing:0.08em; text-transform:uppercase; font-size:13px; z-index:9999; box-shadow: 0 8px 24px rgba(0,0,0,0.5);';
+        document.body.appendChild(t);
+      }
+      t.textContent = msg;
+      t.style.opacity = '1';
+      clearTimeout(t._timer);
+      t._timer = setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; }, 1800);
+    }
+
+    // ── Rating modal ───────────────────────────────────────────
+    const overlay = document.getElementById('rating-overlay');
+    let chosenStars = 0;
+    let chosenMatch = null;
+    const traitsHost = document.getElementById('rating-traits');
+    const starsHost = document.getElementById('rating-stars');
+
+    function buildStarPicker() {
+      starsHost.innerHTML = '';
+      for (let i = 1; i <= 5; i++) {
+        const b = document.createElement('button');
+        b.type = 'button'; b.dataset.value = i; b.textContent = '★'; b.setAttribute('aria-label', `${i} star${i===1?'':'s'}`);
+        b.addEventListener('click', () => {
+          chosenStars = i;
+          [...starsHost.children].forEach((c, idx) => c.classList.toggle('active', idx < i));
+        });
+        starsHost.appendChild(b);
+      }
+    }
+
+    function buildTraitSliders() {
+      const list = traitsFor(prospect.primaryPosition);
+      traitsHost.innerHTML = list.map((t, i) => `
+        <div class="jj-trait-slider-wrap" style="margin-bottom: 10px;">
+          <div class="jj-trait-label">${escapeHtml(t)}</div>
+          <div class="jj-trait-row">
+            <input type="range" min="1" max="5" step="0.5" value="3" class="jj-trait-slider" data-trait="${escapeHtml(t)}" id="trait-${i}">
+            <div class="jj-trait-val" id="trait-val-${i}">3.0</div>
+          </div>
+        </div>
+      `).join('');
+      list.forEach((t, i) => {
+        const input = document.getElementById(`trait-${i}`);
+        const out   = document.getElementById(`trait-val-${i}`);
+        input.addEventListener('input', () => { out.textContent = Number(input.value).toFixed(1); });
+      });
+    }
+
+    function prefillFromExisting() {
+      if (!myExistingRating) return;
+      chosenStars = Math.round(myExistingRating.overall || 0);
+      [...starsHost.children].forEach((c, idx) => c.classList.toggle('active', idx < chosenStars));
+      const traits = myExistingRating.traits || {};
+      traitsFor(prospect.primaryPosition).forEach((t, i) => {
+        if (typeof traits[t] === 'number') {
+          const el = document.getElementById(`trait-${i}`);
+          const out = document.getElementById(`trait-val-${i}`);
+          if (el) { el.value = traits[t]; out.textContent = Number(el.value).toFixed(1); }
+        }
+      });
+      chosenMatch = myExistingRating.filmMatchesStats || null;
+      overlay.querySelectorAll('[data-match]').forEach(b => {
+        b.classList.toggle('selected', b.dataset.match === chosenMatch);
+      });
+      document.getElementById('rating-comment').value = myExistingRating.comment || '';
+    }
+
+    function openRatingModal() {
+      buildStarPicker();
+      buildTraitSliders();
+      chosenStars = 0; chosenMatch = null;
+      document.getElementById('rating-comment').value = '';
+      overlay.querySelectorAll('[data-match]').forEach(b => b.classList.remove('selected'));
+      document.getElementById('rating-msg').hidden = true;
+      prefillFromExisting();
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeRatingModal() {
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+    document.getElementById('rating-close').addEventListener('click', closeRatingModal);
+    document.getElementById('rating-cancel').addEventListener('click', closeRatingModal);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeRatingModal(); });
+
+    overlay.addEventListener('click', e => {
+      const m = e.target.closest('[data-match]');
+      if (!m) return;
+      chosenMatch = m.dataset.match;
+      overlay.querySelectorAll('[data-match]').forEach(b => b.classList.toggle('selected', b === m));
+    });
+
+    document.getElementById('rating-submit').addEventListener('click', async () => {
+      const msg = document.getElementById('rating-msg');
+      msg.hidden = true;
+      if (chosenStars < 1) {
+        msg.className = 'jj-submit-msg err'; msg.textContent = 'Pick an overall rating (1–5 stars).'; msg.hidden = false;
+        return;
+      }
+      const visitorId = getOrCreateVisitorId();
+      const traitInputs = traitsHost.querySelectorAll('input[type=range]');
+      const traits = {};
+      traitInputs.forEach(inp => { traits[inp.dataset.trait] = Number(inp.value); });
+      const viaRandom = new URLSearchParams(window.location.search).get('from') === 'random';
+      const data = {
+        prospectId: prospect.id,
+        raterUid: currentUser ? currentUser.uid : null,
+        raterVisitorId: visitorId,
+        ratedAt: Date.now(),
+        overall: chosenStars,
+        traits,
+        filmMatchesStats: chosenMatch,
+        comment: document.getElementById('rating-comment').value.trim().slice(0, 500),
+        viaRandom,
+      };
+      const docId = `${prospect.id}__${visitorId}`;
+      const btn = document.getElementById('rating-submit');
+      btn.disabled = true;
+      try {
+        await setDoc(doc(db, 'prospect_ratings', docId), data);
+        myExistingRating = data;
+        msg.className = 'jj-submit-msg ok'; msg.textContent = 'Rating saved. Thanks for evaluating!'; msg.hidden = false;
+        setTimeout(closeRatingModal, 900);
+        // Optimistically bump local count so UI feels responsive while the Cloud Function recomputes.
+        setTimeout(load, 1500);
+      } catch (err) {
+        console.error('[jj] rating submit:', err);
+        msg.className = 'jj-submit-msg err'; msg.textContent = err.message || 'Could not save rating.'; msg.hidden = false;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    async function refreshMyRating() {
+      if (!prospect) return;
+      const visitorId = getOrCreateVisitorId();
+      try {
+        const snap = await getDoc(doc(db, 'prospect_ratings', `${prospect.id}__${visitorId}`));
+        myExistingRating = snap.exists() ? snap.data() : null;
+        renderActionBar();
+      } catch (_) { /* no-op */ }
+    }
+
+    // ── Profile claiming (verified-coach only) ─────────────────
+    async function refreshMyClaim() {
+      if (!prospect || !currentUser) return;
+      try {
+        const snap = await getDoc(doc(db, 'prospect_claims', `${prospect.id}__${currentUser.uid}`));
+        myClaim = snap.exists() ? snap.data() : null;
+      } catch (_) { myClaim = null; }
+    }
+
+    function renderClaimButton() {
+      const hero = document.getElementById('hero-actions');
+      if (!hero) return;
+      // Remove any prior claim element so re-renders don't stack.
+      hero.querySelectorAll('[data-claim-ui]').forEach(el => el.remove());
+      if (!prospect) return;
+      // Already coached by this user → nothing to do.
+      if (prospect.coachUid && currentUser && prospect.coachUid === currentUser.uid) {
+        const tag = document.createElement('span');
+        tag.dataset.claimUi = '1';
+        tag.className = 'jj-tag gold';
+        tag.style.cssText = 'align-self:center; font-size:11px; padding:6px 10px;';
+        tag.textContent = '🏟️ Your Player';
+        hero.appendChild(tag);
+        return;
+      }
+      // Already claimed by some other coach.
+      if (prospect.coachUid) return;
+      // Viewer is not a verified coach → no claim affordance.
+      if (!myCoachProfile) return;
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn-ghost';
+      btn.dataset.claimUi = '1';
+      if (myClaim && myClaim.status === 'pending') {
+        btn.textContent = '⏳ Claim Pending';
+        btn.disabled = true;
+        btn.title = 'Your claim is awaiting admin review.';
+      } else if (myClaim && myClaim.status === 'rejected') {
+        btn.textContent = '🏟️ Claim Rejected';
+        btn.disabled = true;
+        btn.title = 'A prior claim was rejected. Contact admin to re-submit.';
+      } else {
+        btn.textContent = '🏟️ Claim for My Team';
+        btn.addEventListener('click', submitClaim);
+      }
+      hero.appendChild(btn);
+    }
+
+    async function submitClaim() {
+      if (!currentUser || !myCoachProfile || !prospect) return;
+      const note = (window.prompt(
+        `Claim ${prospect.fullName} for ${myCoachProfile.schoolName}?\n\nOptional note for the admin (e.g. "transferred from X in 2025"):`,
+        ''
+      ));
+      if (note === null) return;   // cancelled
+      const claimId = `${prospect.id}__${currentUser.uid}`;
+      try {
+        await setDoc(doc(db, 'prospect_claims', claimId), {
+          prospectId: prospect.id,
+          prospectName: prospect.fullName,
+          prospectSchool: prospect.schoolName || '',
+          coachUid: currentUser.uid,
+          coachName: currentUser.displayName || (currentUser.email || '').split('@')[0],
+          coachEmail: currentUser.email || myCoachProfile.schoolEmail || '',
+          coachSchool: myCoachProfile.schoolName,
+          status: 'pending',
+          requestedAt: Date.now(),
+          note: String(note || '').slice(0, 500),
+        });
+        showShareToast('Claim submitted for review.');
+        await refreshMyClaim();
+        renderClaimButton();
+      } catch (err) {
+        console.error('[jj] claim submit:', err);
+        alert(err.message || 'Could not submit claim.');
+      }
+    }
+
+    // Increment the prospect's `views` counter once per browser per 24h.
+    // Safe because firestore.rules only allows updates that affect `views`.
+    async function bumpView() {
+      try {
+        const key = `jj_view_${prospect.id}`;
+        const last = parseInt(localStorage.getItem(key) || '0', 10);
+        if (Date.now() - last < 24 * 3600 * 1000) return;
+        localStorage.setItem(key, String(Date.now()));
+        await updateDoc(doc(db, 'prospects', prospect.id), { views: increment(1) });
+      } catch (_) { /* no-op — view bumps are best-effort */ }
+    }
+
+    // ── Comments ───────────────────────────────────────────────
+    let commentItems = [];
+    let myVotedComments = new Set();
+
+    async function loadComments() {
+      const list = document.getElementById('comment-list');
+      const formHost = document.getElementById('comment-form-host');
+      renderCommentForm(formHost);
+      try {
+        const q = query(
+          collection(db, 'prospect_comments'),
+          where('prospectId', '==', prospect.id),
+          orderBy('createdAt', 'desc')
+        );
+        const snap = await getDocs(q);
+        commentItems = [];
+        snap.forEach(d => { const data = d.data(); if (data.status !== 'deleted') commentItems.push({ id: d.id, ...data }); });
+        if (!commentItems.length) {
+          list.innerHTML = `<div style="color:var(--muted); padding: 14px 0; font-size: 13px;">No comments yet. Be the first.</div>`;
+          return;
+        }
+        // Fetch author public stats (badges) and the current user's votes in parallel.
+        await Promise.all([annotateAuthorBadges(commentItems), loadMyVotes(commentItems)]);
+        renderCommentList();
+      } catch (err) {
+        console.warn('[jj] comments load:', err);
+        list.innerHTML = `<div style="color:var(--muted); font-size:13px;">Couldn't load comments.</div>`;
+      }
+    }
+
+    async function annotateAuthorBadges(items) {
+      const uniqueUids = [...new Set(items.map(c => c.authorUid).filter(Boolean))];
+      const pubs = await Promise.all(uniqueUids.map(uid =>
+        getDoc(doc(db, 'users_public', uid)).catch(() => null)
+      ));
+      const byUid = {};
+      pubs.forEach((snap, i) => { if (snap?.exists()) byUid[uniqueUids[i]] = snap.data(); });
+      items.forEach(c => {
+        const pub = byUid[c.authorUid];
+        c._topBadge = pub?.badges?.length ? BADGE_BY_ID[pub.badges[0]] : null;
+        c._authorPoints = pub?.points || 0;
+      });
+    }
+
+    async function loadMyVotes(items) {
+      myVotedComments = new Set();
+      if (!currentUser) return;
+      // Best-effort: check each comment's vote doc for the current user.
+      // Cheap reads (existence checks) and never more than the comment count.
+      const checks = items.map(c =>
+        getDoc(doc(db, 'comment_votes', `${c.id}__${currentUser.uid}`))
+          .then(snap => { if (snap.exists()) myVotedComments.add(c.id); })
+          .catch(() => {})
+      );
+      await Promise.all(checks);
+    }
+
+    function renderCommentList() {
+      const list = document.getElementById('comment-list');
+      // Group: top-level (parentId null/absent) and replies (parentId set).
+      // Replies render oldest-first under their parent; top-level keeps the
+      // server's descending-by-createdAt order.
+      const topLevel = commentItems.filter(c => !c.parentId);
+      const repliesByParent = {};
+      commentItems.forEach(c => {
+        if (!c.parentId) return;
+        (repliesByParent[c.parentId] ||= []).push(c);
+      });
+      for (const arr of Object.values(repliesByParent)) {
+        arr.sort((a, b) => commentTimestamp(a) - commentTimestamp(b));
+      }
+      list.innerHTML = topLevel.map(c => {
+        const replies = repliesByParent[c.id] || [];
+        const repliesHtml = replies.length
+          ? `<div class="jj-comment-replies">${replies.map(r => commentHtml(r, { isReply: true })).join('')}</div>`
+          : '';
+        return commentHtml(c, { isReply: false, repliesHtml });
+      }).join('');
+
+      list.querySelectorAll('[data-upvote]').forEach(btn => {
+        btn.addEventListener('click', () => toggleUpvote(btn.dataset.upvote));
+      });
+      list.querySelectorAll('[data-reply]').forEach(btn => {
+        btn.addEventListener('click', () => toggleReplyForm(btn.dataset.reply));
+      });
+    }
+
+    function commentTimestamp(c) {
+      if (c.createdAt?.toDate) return c.createdAt.toDate().getTime();
+      return Number(c.createdAt) || 0;
+    }
+
+    async function toggleUpvote(commentId) {
+      if (!currentUser) {
+        if (window.openAuthModal) window.openAuthModal('login');
+        return;
+      }
+      const voteRef = doc(db, 'comment_votes', `${commentId}__${currentUser.uid}`);
+      const already = myVotedComments.has(commentId);
+      try {
+        if (already) {
+          await deleteDoc(voteRef);
+          myVotedComments.delete(commentId);
+          const c = commentItems.find(x => x.id === commentId);
+          if (c) c.helpful = Math.max(0, (c.helpful || 0) - 1);
+        } else {
+          await setDoc(voteRef, {
+            commentId,
+            voterUid: currentUser.uid,
+            value: 1,
+            votedAt: Date.now(),
+          });
+          myVotedComments.add(commentId);
+          const c = commentItems.find(x => x.id === commentId);
+          if (c) c.helpful = (c.helpful || 0) + 1;
+        }
+        renderCommentList();
+      } catch (err) {
+        console.warn('[jj] upvote:', err);
+        alert(err.message || 'Could not register vote.');
+      }
+    }
+
+    function commentHtml(c, opts = {}) {
+      const { isReply = false, repliesHtml = '' } = opts;
+      const initial = ((c.authorName || '?')[0] || '?').toUpperCase();
+      const ts = c.createdAt?.toDate ? c.createdAt.toDate() : new Date(c.createdAt || Date.now());
+      const when = timeAgo(ts);
+      const avatar = c.authorPhotoURL
+        ? `<img src="${escapeHtml(c.authorPhotoURL)}" alt="">`
+        : escapeHtml(initial);
+      const badgeChip = c._topBadge
+        ? ` <span class="jj-comment-badge" title="${escapeHtml(c._topBadge.desc)}">${c._topBadge.icon} ${escapeHtml(c._topBadge.label)}</span>`
+        : '';
+      const voted = myVotedComments.has(c.id);
+      // Reply button only on top-level comments (one level deep is plenty for now).
+      const replyBtn = isReply ? '' : `
+              <button type="button" data-reply="${escapeHtml(c.id)}">↳ Reply</button>`;
+      const replyHost = isReply ? '' : `<div class="jj-reply-form-host" id="reply-host-${escapeHtml(c.id)}"></div>`;
+      return `
+        <div class="jj-comment${isReply ? ' is-reply' : ''}">
+          <div class="jj-comment-avatar">${avatar}</div>
+          <div>
+            <div class="jj-comment-head">
+              <span class="jj-comment-name">${escapeHtml(c.authorName || 'Member')}</span>${badgeChip}
+              <span class="jj-comment-time">${when}</span>
+            </div>
+            <div class="jj-comment-text">${escapeHtml(c.text)}</div>
+            <div class="jj-comment-actions">
+              <button type="button" data-upvote="${escapeHtml(c.id)}" class="${voted ? 'voted' : ''}">
+                ${voted ? '▲ Helpful' : '△ Helpful'} <span style="opacity:0.7;">(${c.helpful || 0})</span>
+              </button>${replyBtn}
+            </div>
+            ${replyHost}
+            ${repliesHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleReplyForm(parentId) {
+      if (!currentUser) {
+        if (window.openAuthModal) window.openAuthModal('login');
+        return;
+      }
+      const host = document.getElementById(`reply-host-${parentId}`);
+      if (!host) return;
+      if (host.firstChild) { host.innerHTML = ''; return; }   // toggle off
+      host.innerHTML = `
+        <form class="jj-reply-form" data-parent="${escapeHtml(parentId)}">
+          <textarea maxlength="1000" required placeholder="Reply to this comment…"></textarea>
+          <div class="jj-reply-form-foot">
+            <button type="button" class="btn-ghost" data-cancel>Cancel</button>
+            <button type="submit" class="btn-gold">Post Reply</button>
+          </div>
+        </form>
+      `;
+      const form = host.querySelector('form');
+      form.querySelector('[data-cancel]').addEventListener('click', () => { host.innerHTML = ''; });
+      form.addEventListener('submit', async e => {
+        e.preventDefault();
+        const text = form.querySelector('textarea').value.trim();
+        if (!text) return;
+        const submit = form.querySelector('button[type=submit]');
+        submit.disabled = true;
+        try {
+          await addDoc(collection(db, 'prospect_comments'), {
+            prospectId: prospect.id,
+            authorUid: currentUser.uid,
+            authorName: currentUser.displayName || (currentUser.email || '').split('@')[0],
+            authorPhotoURL: currentUser.photoURL || null,
+            createdAt: serverTimestamp(),
+            text,
+            helpful: 0,
+            parentId,
+            status: 'active',
+          });
+          loadComments();
+        } catch (err) {
+          console.error('[jj] post reply:', err);
+          alert(err.message || 'Could not post reply.');
+          submit.disabled = false;
+        }
+      });
+      form.querySelector('textarea').focus();
+    }
+
+    function timeAgo(d) {
+      const s = Math.floor((Date.now() - d.getTime()) / 1000);
+      if (s < 60) return 'just now';
+      if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+      if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+      return d.toLocaleDateString();
+    }
+
+    function renderCommentForm(host) {
+      if (!currentUser) {
+        host.innerHTML = `
+          <div style="background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:14px 16px; margin-bottom:14px;">
+            <div style="color:var(--muted); font-size:13px; margin-bottom: 10px;">Log in to leave a comment.</div>
+            <button type="button" class="btn-ghost" id="comment-login-btn">Log In</button>
+          </div>
+        `;
+        document.getElementById('comment-login-btn').addEventListener('click', () => {
+          if (window.openAuthModal) window.openAuthModal('login');
+        });
+        return;
+      }
+      host.innerHTML = `
+        <form class="jj-comment-form" id="comment-form">
+          <textarea id="comment-text" maxlength="1000" required placeholder="What stood out on film?"></textarea>
+          <div class="jj-comment-form-foot">
+            <div style="font-size:11px; color:var(--muted);">Posting as <strong style="color:var(--white);">${escapeHtml(currentUser.displayName || (currentUser.email || '').split('@')[0])}</strong></div>
+            <button type="submit" class="btn-gold">Post Comment</button>
+          </div>
+        </form>
+      `;
+      document.getElementById('comment-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        const text = document.getElementById('comment-text').value.trim();
+        if (!text) return;
+        try {
+          await addDoc(collection(db, 'prospect_comments'), {
+            prospectId: prospect.id,
+            authorUid: currentUser.uid,
+            authorName: currentUser.displayName || (currentUser.email || '').split('@')[0],
+            authorPhotoURL: currentUser.photoURL || null,
+            createdAt: serverTimestamp(),
+            text,
+            helpful: 0,
+            parentId: null,
+            status: 'active',
+          });
+          document.getElementById('comment-text').value = '';
+          loadComments();
+        } catch (err) {
+          console.error('[jj] post comment:', err);
+          alert(err.message || 'Could not post comment.');
+        }
+      });
+    }
+
+    window.addEventListener('auth:changed', () => {
+      if (prospect) renderCommentForm(document.getElementById('comment-form-host'));
+    });
+  </script>
+</body>
+</html>

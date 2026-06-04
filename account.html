@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>My Account — 4th &amp; Ward</title>
+  <meta name="description" content="Manage your 4th & Ward account, display name, and profile photo.">
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/jj.css">
+  <script type="module" src="js/user-menu.js"></script>
+  <style>
+    .account-wrap { max-width: 720px; margin: 0 auto; padding: 60px 24px 80px; }
+    .account-header { margin-bottom: 32px; }
+    .account-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+    .account-title { font-family: var(--condensed); font-weight: 900; font-size: clamp(36px, 5vw, 52px); text-transform: uppercase; line-height: 0.95; letter-spacing: -0.01em; }
+    .account-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 28px; margin-bottom: 20px; }
+    .account-card h2 { font-family: var(--condensed); font-size: 18px; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 18px; color: var(--white); }
+    .account-row { display: grid; grid-template-columns: 140px 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: center; font-size: 14px; }
+    .account-row:last-child { border-bottom: none; }
+    .account-row-label { font-family: var(--condensed); font-weight: 700; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+    .account-row-value { color: var(--white); word-break: break-word; }
+    .account-row-value.muted { color: var(--muted); font-style: italic; }
+    .account-form-row { display: grid; grid-template-columns: 140px 1fr auto; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--border); align-items: center; }
+    .account-form-row input { background: var(--black); border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; color: var(--white); font-family: var(--body); font-size: 14px; width: 100%; }
+    .account-form-row input:focus { outline: none; border-color: var(--gold); }
+    .account-save { background: linear-gradient(180deg, #FFE066 0%, var(--gold) 50%, #D9AC10 100%); color: #0a0a0a; border: 1px solid rgba(255,215,64,0.5); padding: 9px 18px; border-radius: 4px; font-family: var(--condensed); font-weight: 900; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: transform 0.15s, opacity 0.2s; }
+    .account-save:hover:not(:disabled) { transform: translateY(-1px); }
+    .account-save:disabled { opacity: 0.6; cursor: wait; }
+    .account-empty { text-align: center; padding: 60px 24px; }
+    .account-empty p { color: var(--muted); margin-bottom: 24px; }
+    .account-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .account-stat { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 16px; text-align: center; }
+    .account-stat-num { font-family: var(--condensed); font-weight: 900; font-size: 32px; color: var(--gold); line-height: 1; }
+    .account-stat-label { font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+    .account-msg { padding: 10px 14px; border-radius: 4px; font-size: 13px; margin-bottom: 16px; }
+    .account-msg.ok  { background: rgba(40,167,69,0.10);  border: 1px solid rgba(40,167,69,0.4);  color: #a8f0b8; }
+    .account-msg.err { background: rgba(220,53,69,0.10); border: 1px solid rgba(220,53,69,0.4); color: #f6a8b0; }
+    .account-msg[hidden] { display: none; }
+    @media (max-width: 600px) {
+      .account-row, .account-form-row { grid-template-columns: 1fr; gap: 6px; }
+      .account-form-row { grid-template-columns: 1fr; }
+      .account-stat-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo"><img src="logo-cover.svg" alt="4th & Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="totw.html">Team of the Week</a></li>
+      <li><a href="wardle.html">4th &amp; Wardle</a></li>
+      <li><a href="hsblitz.html">HS Blitz<span class="nav-beta">Beta</span></a></li>
+      <li><a href="dripordrown.html">Drip or Drown</a></li>
+      <li><a href="pulse.html">Friday Night Pulse<span class="nav-beta">New</span></a></li>
+      <li><a href="jimmysandjoes.html">Jimmys &amp; Joes<span class="nav-beta">New</span></a></li>
+      <li><a href="merch.html">Merch</a></li>
+      <li id="nav-user-slot"></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+  </nav>
+
+  <main class="page-wrap">
+    <div class="account-wrap">
+      <div class="account-header">
+        <div class="account-eyebrow">Member</div>
+        <h1 class="account-title">My Account</h1>
+      </div>
+
+      <div id="account-content"></div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.png" alt="4th & Ward Podcast"></div>
+    <ul class="footer-links">
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="privacy.html">Privacy</a></li>
+      <li><a href="merch.html">Merch</a></li>
+    </ul>
+    <p class="footer-copy">&#169; 2026 4th &amp; Ward Podcast. All rights reserved.</p>
+  </footer>
+
+  <script type="module">
+    import { auth, db } from './js/firebase-init.js';
+    import { onAuthChange, getUserDoc, signOutCurrent } from './js/auth.js';
+    import { doc, updateDoc, serverTimestamp }
+      from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { updateProfile }
+      from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+    import { BADGES, BADGE_BY_ID } from './js/jj-config.js';
+
+    const root = document.getElementById('account-content');
+
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[c]));
+    }
+
+    function renderLoggedOut() {
+      root.innerHTML = `
+        <div class="account-card account-empty">
+          <h2>Please log in</h2>
+          <p>You need to be logged in to manage your account.</p>
+          <button class="btn-gold" type="button" id="account-login-btn">Log In</button>
+        </div>
+      `;
+      document.getElementById('account-login-btn').addEventListener('click', () => {
+        if (window.openAuthModal) window.openAuthModal('login');
+      });
+    }
+
+    function renderAccount(user, profile) {
+      const created = profile?.createdAt?.toDate
+        ? profile.createdAt.toDate().toLocaleDateString()
+        : '—';
+      const verified = user.emailVerified ? 'Verified' : 'Not verified';
+      root.innerHTML = `
+        <div id="account-msg" class="account-msg" hidden></div>
+
+        <div class="account-card">
+          <h2>Profile</h2>
+          <form id="account-form">
+            <div class="account-form-row">
+              <label class="account-row-label" for="acc-name">Display Name</label>
+              <input id="acc-name" type="text" maxlength="40" required value="${escapeHtml(profile?.displayName || user.displayName || '')}">
+              <button type="submit" class="account-save" id="acc-save">Save</button>
+            </div>
+            <div class="account-form-row">
+              <label class="account-row-label" for="acc-photo">Photo URL</label>
+              <input id="acc-photo" type="url" placeholder="https://…" value="${escapeHtml(profile?.photoURL || user.photoURL || '')}">
+              <span></span>
+            </div>
+          </form>
+        </div>
+
+        <div class="account-card">
+          <h2>Account Info</h2>
+          <div class="account-row">
+            <span class="account-row-label">Email</span>
+            <span class="account-row-value">${escapeHtml(user.email || '—')} <small style="color:var(--muted);">(${verified})</small></span>
+          </div>
+          <div class="account-row">
+            <span class="account-row-label">Sign-in</span>
+            <span class="account-row-value">${escapeHtml(profile?.provider || '—')}</span>
+          </div>
+          <div class="account-row">
+            <span class="account-row-label">Birth Year</span>
+            <span class="account-row-value ${profile?.birthYear ? '' : 'muted'}">${escapeHtml(profile?.birthYear || 'Not set')}</span>
+          </div>
+          <div class="account-row">
+            <span class="account-row-label">Member Since</span>
+            <span class="account-row-value">${escapeHtml(created)}</span>
+          </div>
+        </div>
+
+        <div class="account-card">
+          <h2>Activity</h2>
+          <div class="account-stat-grid" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="account-stat">
+              <div class="account-stat-num">${profile?.points || 0}</div>
+              <div class="account-stat-label">Scout Points</div>
+            </div>
+            <div class="account-stat">
+              <div class="account-stat-num">${profile?.ratingsCount || 0}</div>
+              <div class="account-stat-label">Ratings</div>
+            </div>
+            <div class="account-stat">
+              <div class="account-stat-num">${profile?.streak || 0}🔥</div>
+              <div class="account-stat-label">Day Streak</div>
+            </div>
+            <div class="account-stat">
+              <div class="account-stat-num">${profile?.helpfulVotesReceived || 0}</div>
+              <div class="account-stat-label">Helpful Votes</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="account-card">
+          <h2>Badges <small style="color:var(--muted); font-weight:500; font-size:11px; letter-spacing:0;">(${(profile?.badges || []).length} of ${BADGES.length} earned)</small></h2>
+          <div class="account-badges-list">
+            ${BADGES.slice().sort((a,b) => b.tier - a.tier).map(b => {
+              const earned = (profile?.badges || []).includes(b.id);
+              return `
+                <span class="account-badge-chip ${earned ? 'earned' : 'locked'}" title="${escapeHtml(b.desc)}">
+                  <span class="account-badge-chip-icon">${b.icon}</span>
+                  <span>${escapeHtml(b.label)}</span>
+                </span>
+              `;
+            }).join('')}
+          </div>
+          <p style="font-size:12px; color:var(--muted); margin-top:14px;">Earn badges by rating prospects, keeping streaks, and getting helpful votes on your comments. See full criteria on <a href="/jimmysandjoes/scouts" style="color:var(--gold);">the Hall of Scouts</a>.</p>
+        </div>
+
+        <div class="account-card">
+          <h2>Session</h2>
+          <button class="btn-ghost" type="button" id="acc-signout">Sign Out</button>
+        </div>
+      `;
+
+      const msg = document.getElementById('account-msg');
+      function showMsg(text, ok = true) {
+        msg.textContent = text;
+        msg.className = 'account-msg ' + (ok ? 'ok' : 'err');
+        msg.hidden = false;
+        if (ok) setTimeout(() => { msg.hidden = true; }, 3000);
+      }
+
+      document.getElementById('account-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        const newName  = document.getElementById('acc-name').value.trim();
+        const newPhoto = document.getElementById('acc-photo').value.trim();
+        if (!newName || newName.length < 2) { showMsg('Display name must be at least 2 characters.', false); return; }
+        const saveBtn = document.getElementById('acc-save');
+        saveBtn.disabled = true;
+        try {
+          await updateProfile(user, { displayName: newName, photoURL: newPhoto || null });
+          await updateDoc(doc(db, 'users', user.uid), {
+            displayName: newName,
+            photoURL: newPhoto || null,
+            lastLoginAt: serverTimestamp()
+          });
+          showMsg('Saved.');
+        } catch (err) {
+          showMsg(err.message || 'Could not save.', false);
+        } finally {
+          saveBtn.disabled = false;
+        }
+      });
+
+      document.getElementById('acc-signout').addEventListener('click', async () => {
+        await signOutCurrent();
+      });
+    }
+
+    onAuthChange(async user => {
+      if (!user) { renderLoggedOut(); return; }
+      const profile = await getUserDoc(user.uid);
+      renderAccount(user, profile);
+    });
+  </script>
+</body>
+</html>

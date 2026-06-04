@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Hall of Scouts — Jimmys &amp; Joes — 4th &amp; Ward</title>
+  <meta name="description" content="Top scouts in the Jimmys & Joes community — points, streaks, and badges.">
+  <link rel="canonical" href="https://4thandward.com/jimmysandjoes/scouts">
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/jj.css">
+  <script type="module" src="js/user-menu.js"></script>
+  <script type="module" src="js/jj-random.js"></script>
+  <style>
+    .scout-row {
+      display: grid; grid-template-columns: 50px 44px 1fr auto;
+      gap: 14px; align-items: center;
+      padding: 14px 16px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; margin-bottom: 8px;
+    }
+    .scout-rank {
+      font-family: var(--condensed); font-weight: 900; font-size: 22px;
+      color: var(--gold); text-align: center; line-height: 1;
+    }
+    .scout-rank.top { font-size: 28px; }
+    .scout-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--gold); font-weight: 900; font-family: var(--condensed); font-size: 18px;
+      border: 1px solid var(--border); overflow: hidden;
+    }
+    .scout-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .scout-name {
+      font-family: var(--condensed); font-weight: 900; font-size: 16px;
+      letter-spacing: 0.04em; text-transform: uppercase; color: var(--white);
+    }
+    .scout-meta {
+      display: flex; gap: 14px; flex-wrap: wrap;
+      font-size: 12px; color: var(--muted); margin-top: 4px;
+    }
+    .scout-meta strong { color: var(--gold); font-weight: 700; }
+    .scout-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+    .scout-badge {
+      font-size: 11px; padding: 2px 8px; border-radius: 999px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--white);
+    }
+    .scout-points {
+      font-family: var(--condensed); font-weight: 900; font-size: 26px;
+      color: var(--gold); text-align: right; line-height: 1;
+    }
+    .scout-points small {
+      display: block; font-size: 10px; color: var(--muted);
+      letter-spacing: 0.12em; text-transform: uppercase;
+      margin-top: 2px;
+    }
+    @media (max-width: 600px) {
+      .scout-row { grid-template-columns: 36px 36px 1fr auto; gap: 10px; padding: 12px; }
+      .scout-avatar { width: 36px; height: 36px; font-size: 14px; }
+    }
+    .badge-legend {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 18px 20px; margin-top: 28px;
+    }
+    .badge-legend h2 {
+      font-family: var(--condensed); font-size: 18px; font-weight: 900;
+      letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold);
+      margin-bottom: 14px;
+    }
+    .badge-legend-grid {
+      display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+    .badge-legend-item {
+      display: flex; gap: 10px; align-items: center;
+      padding: 8px 12px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+    .badge-legend-icon { font-size: 18px; flex-shrink: 0; }
+    .badge-legend-text { font-size: 12px; line-height: 1.3; }
+    .badge-legend-text strong { color: var(--white); display: block; }
+    .badge-legend-text span { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo"><img src="logo-cover.svg" alt="4th & Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="totw.html">Team of the Week</a></li>
+      <li><a href="wardle.html">4th &amp; Wardle</a></li>
+      <li><a href="hsblitz.html">HS Blitz<span class="nav-beta">Beta</span></a></li>
+      <li><a href="dripordrown.html">Drip or Drown</a></li>
+      <li><a href="pulse.html">Friday Night Pulse<span class="nav-beta">New</span></a></li>
+      <li><a href="jimmysandjoes.html" class="active">Jimmys &amp; Joes<span class="nav-beta">New</span></a></li>
+      <li><a href="merch.html">Merch</a></li>
+      <li id="nav-user-slot"></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+  </nav>
+
+  <main class="page-wrap">
+    <nav class="jj-subnav" aria-label="Jimmys & Joes sections">
+      <div class="jj-subnav-inner">
+        <a href="/jimmysandjoes">Discover</a>
+        <a href="/jimmysandjoes/leaderboards">Leaderboards</a>
+        <a href="/jimmysandjoes/rankings">Sub-Rankings</a>
+        <a href="/jimmysandjoes/scouts" class="active">Hall of Scouts</a>
+        <a href="/jimmysandjoes/submit">+ Add a Jimmy</a>
+        <button type="button" class="jj-subnav-random" data-jj-random>🎲 Random Jimmy</button>
+      </div>
+    </nav>
+
+    <section class="jj-section">
+      <div class="section-inner" style="max-width: 900px;">
+        <div class="section-label">Hall of Scouts</div>
+        <h1 class="section-title">The community rates the film.</h1>
+        <p style="color:var(--muted); max-width:640px; margin-bottom:30px;">Rate prospects to earn points (1 base, +2 for detailed evaluations), get upvoted on your comments (+1 each), and rack up day-streaks. The most active scouts get a permanent spot here.</p>
+
+        <div class="jj-tabs">
+          <button class="jj-tab active" data-rank="alltime">All-Time</button>
+          <button class="jj-tab"        data-rank="weekly">Last 7 Days</button>
+          <button class="jj-tab"        data-rank="streaks">Top Streaks</button>
+        </div>
+
+        <div id="scout-list">
+          <div class="jj-loading" style="padding: 30px 0;">Loading scouts…</div>
+        </div>
+
+        <div class="badge-legend">
+          <h2>Badges</h2>
+          <div id="badge-legend" class="badge-legend-grid"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.png" alt="4th & Ward Podcast"></div>
+    <ul class="footer-links">
+      <li><a href="about.html">About</a></li>
+      <li><a href="jimmysandjoes.html">Jimmys &amp; Joes</a></li>
+      <li><a href="privacy.html">Privacy</a></li>
+      <li><a href="merch.html">Merch</a></li>
+    </ul>
+    <p class="footer-copy">&#169; 2026 4th &amp; Ward Podcast. All rights reserved.</p>
+  </footer>
+
+  <script type="module">
+    import { db } from './js/firebase-init.js';
+    import {
+      collection, doc, getDoc, query, where, orderBy, limit, getDocs
+    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { BADGES, BADGE_BY_ID, POINTS, isDetailedRating } from './js/jj-config.js';
+    import { escapeHtml } from './js/jj-utils.js';
+
+    let allScouts = [];
+    let weeklyScouts = null;        // built lazily on first 'weekly' tab visit
+    let mode = 'alltime';
+
+    function avatarHtml(s) {
+      const initial = ((s.displayName || '?')[0] || '?').toUpperCase();
+      return s.photoURL
+        ? `<div class="scout-avatar"><img src="${escapeHtml(s.photoURL)}" alt=""></div>`
+        : `<div class="scout-avatar">${escapeHtml(initial)}</div>`;
+    }
+
+    function badgesHtml(ids) {
+      const arr = Array.isArray(ids) ? ids : [];
+      if (!arr.length) return '';
+      return `<div class="scout-badges">${arr.slice(0, 4).map(id => {
+        const b = BADGE_BY_ID[id];
+        if (!b) return '';
+        return `<span class="scout-badge" title="${escapeHtml(b.desc)}">${b.icon} ${escapeHtml(b.label)}</span>`;
+      }).join('')}</div>`;
+    }
+
+    function scoutRowHtml(s, i, metricKey) {
+      const isTop = i < 3;
+      const metric = s[metricKey] || 0;
+      const metricLabel = ({
+        points:       'POINTS',
+        streak:       'DAY STREAK',
+        weeklyPoints: 'PTS THIS WEEK',
+      })[metricKey];
+      const days = s.lastRatedDate ? `last rated ${s.lastRatedDate}` : 'no ratings yet';
+      const lineExtra = metricKey === 'weeklyPoints'
+        ? `<span><strong>${s.weeklyRatings || 0}</strong> this week</span>`
+        : `<span style="opacity:0.6;">${escapeHtml(days)}</span>`;
+      return `
+        <div class="scout-row">
+          <div class="scout-rank ${isTop ? 'top' : ''}">${i + 1}</div>
+          ${avatarHtml(s)}
+          <div>
+            <div class="scout-name">${escapeHtml(s.displayName || 'Scout')}</div>
+            <div class="scout-meta">
+              <span><strong>${s.ratingsCount || 0}</strong> ratings</span>
+              <span><strong>${s.streak || 0}</strong>d streak</span>
+              <span><strong>${s.helpfulVotesReceived || 0}</strong> helpful</span>
+              ${lineExtra}
+            </div>
+            ${badgesHtml(s.badges)}
+          </div>
+          <div class="scout-points">${metric}<small>${metricLabel}</small></div>
+        </div>
+      `;
+    }
+
+    // Aggregate the last 7 days of prospect_ratings by rater. 1pt base +
+    // 2pt for detailed ratings + 1pt for "Rate a Random Jimmy" rolls. We
+    // pull at most `limit(800)` rating docs and merge with users_public so
+    // each row keeps the same display/badge fields as the all-time tab.
+    async function loadWeeklyScouts() {
+      if (weeklyScouts) return weeklyScouts;
+      const sevenDaysAgo = Date.now() - 7 * 86400000;
+      const snap = await getDocs(query(
+        collection(db, 'prospect_ratings'),
+        where('ratedAt', '>=', sevenDaysAgo),
+        orderBy('ratedAt', 'desc'),
+        limit(800)
+      ));
+      const byUid = new Map();
+      snap.forEach(d => {
+        const r = d.data();
+        if (!r.raterUid) return;                     // anonymous ratings earn no points
+        const pts = (POINTS.ratingBase || 1)
+                  + (isDetailedRating(r) ? (POINTS.ratingDetailBonus || 0) : 0)
+                  + (r.viaRandom === true ? (POINTS.ratingRandomBonus || 0) : 0);
+        const e = byUid.get(r.raterUid) || { ratings: 0, points: 0 };
+        e.ratings += 1;
+        e.points  += pts;
+        byUid.set(r.raterUid, e);
+      });
+      // Hydrate display info from users_public for the top 50 by weekly points.
+      const top = [...byUid.entries()]
+        .sort((a, b) => b[1].points - a[1].points)
+        .slice(0, 50);
+      const pubs = await Promise.all(top.map(([uid]) =>
+        getDoc(doc(db, 'users_public', uid)).catch(() => null)
+      ));
+      weeklyScouts = top.map(([uid, agg], i) => {
+        const pub = pubs[i]?.exists() ? pubs[i].data() : {};
+        return {
+          id: uid,
+          ...pub,
+          weeklyPoints:  agg.points,
+          weeklyRatings: agg.ratings,
+        };
+      });
+      return weeklyScouts;
+    }
+
+    async function load() {
+      const host = document.getElementById('scout-list');
+      try {
+        // All-time: pull top by points. We over-fetch and re-sort client-side
+        // so the same dataset feeds all 3 tabs without extra reads.
+        const snap = await getDocs(query(
+          collection(db, 'users_public'),
+          orderBy('points', 'desc'),
+          limit(100)
+        ));
+        allScouts = [];
+        snap.forEach(d => allScouts.push({ id: d.id, ...d.data() }));
+        render();
+      } catch (err) {
+        console.warn('[scouts] load failed:', err);
+        host.innerHTML = `<div class="jj-empty"><p>Couldn't load the scout leaderboard.</p></div>`;
+      }
+    }
+
+    async function render() {
+      const host = document.getElementById('scout-list');
+      let list, metricKey;
+
+      if (mode === 'weekly') {
+        host.innerHTML = `<div class="jj-loading" style="padding: 30px 0;">Tallying the last 7 days…</div>`;
+        try {
+          const weekly = await loadWeeklyScouts();
+          list = weekly.filter(s => (s.weeklyPoints || 0) > 0).slice(0, 25);
+          metricKey = 'weeklyPoints';
+        } catch (err) {
+          console.warn('[scouts] weekly load:', err);
+          host.innerHTML = `<div class="jj-empty"><p>Couldn't tally weekly points right now.</p></div>`;
+          return;
+        }
+      } else if (mode === 'streaks') {
+        list = allScouts.slice()
+          .filter(s => (s.streak || 0) > 0)
+          .sort((a, b) => (b.streak || 0) - (a.streak || 0))
+          .slice(0, 25);
+        metricKey = 'streak';
+      } else {
+        list = allScouts.slice().filter(s => (s.points || 0) > 0).slice(0, 25);
+        metricKey = 'points';
+      }
+
+      if (!list.length) {
+        host.innerHTML = `<div class="jj-empty"><p>${mode === 'weekly'
+          ? 'No active scouts this week yet — be the first to rate!'
+          : 'No scouts on the leaderboard yet. Sign in and start rating prospects to earn points.'}</p></div>`;
+        return;
+      }
+      host.innerHTML = list.map((s, i) => scoutRowHtml(s, i, metricKey)).join('');
+    }
+
+    document.querySelectorAll('.jj-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.jj-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        mode = btn.dataset.rank;
+        render();
+      });
+    });
+
+    // Render the badge legend from the canonical catalog.
+    document.getElementById('badge-legend').innerHTML = BADGES.slice()
+      .sort((a, b) => b.tier - a.tier)
+      .map(b => `
+        <div class="badge-legend-item">
+          <div class="badge-legend-icon">${b.icon}</div>
+          <div class="badge-legend-text">
+            <strong>${escapeHtml(b.label)}</strong>
+            <span>${escapeHtml(b.desc)}</span>
+          </div>
+        </div>
+      `).join('');
+
+    load();
+  </script>
+</body>
+</html>

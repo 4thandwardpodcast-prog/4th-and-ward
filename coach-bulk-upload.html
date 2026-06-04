@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Bulk Roster Upload — Jimmys &amp; Joes — 4th &amp; Ward</title>
+  <meta name="description" content="Upload your full team roster to Jimmys & Joes via CSV.">
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/jj.css">
+  <script type="module" src="js/user-menu.js"></script>
+  <style>
+    .drop-zone {
+      border: 2px dashed var(--border); border-radius: 8px;
+      padding: 40px 20px; text-align: center;
+      background: var(--surface); transition: background 0.15s, border-color 0.15s;
+      cursor: pointer;
+    }
+    .drop-zone:hover, .drop-zone.dragover { background: var(--surface2); border-color: var(--gold); }
+    .drop-zone p { color: var(--muted); margin-bottom: 8px; }
+    .preview-wrap { overflow-x: auto; margin-top: 18px; }
+    .preview-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .preview-table th {
+      background: var(--surface2); position: sticky; top: 0;
+      padding: 10px 6px; text-align: left; color: var(--muted);
+      font-family: var(--condensed); font-weight: 700; font-size: 10px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    .preview-table th.required::after { content: ' *'; color: var(--gold); }
+    .preview-table td {
+      padding: 4px 4px; border-bottom: 1px solid #1a1a1a;
+      vertical-align: middle;
+    }
+    .preview-table td input {
+      width: 100%; background: var(--black); color: var(--white);
+      border: 1px solid var(--border); border-radius: 3px;
+      padding: 6px 7px; font-family: var(--body); font-size: 12px;
+      min-width: 60px;
+    }
+    .preview-table td input:focus { outline: none; border-color: var(--gold); }
+    .preview-table td input.bad { border-color: #e74c3c; background: rgba(220,53,69,0.06); }
+    .preview-table tr.row-status td:first-child {
+      font-family: var(--condensed); font-weight: 700; text-align: center;
+      width: 28px; padding: 4px 0;
+    }
+    .preview-table tr.has-errors { background: rgba(220,53,69,0.04); }
+    .preview-row-num { color: var(--muted); font-size: 11px; }
+    .row-remove {
+      background: transparent; border: none; color: var(--muted); cursor: pointer;
+      font-size: 16px; padding: 0; line-height: 1;
+    }
+    .row-remove:hover { color: #f6a8b0; }
+    .preview-summary {
+      display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px;
+      padding: 14px 16px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 6px;
+    }
+    .preview-summary > div { font-size: 13px; color: var(--white); }
+    .preview-summary strong { color: var(--gold); font-family: var(--condensed); font-size: 18px; }
+    .preview-summary .err strong { color: #f6a8b0; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo"><img src="logo-cover.svg" alt="4th & Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="totw.html">Team of the Week</a></li>
+      <li><a href="wardle.html">4th &amp; Wardle</a></li>
+      <li><a href="hsblitz.html">HS Blitz<span class="nav-beta">Beta</span></a></li>
+      <li><a href="dripordrown.html">Drip or Drown</a></li>
+      <li><a href="pulse.html">Friday Night Pulse<span class="nav-beta">New</span></a></li>
+      <li><a href="jimmysandjoes.html" class="active">Jimmys &amp; Joes<span class="nav-beta">New</span></a></li>
+      <li><a href="merch.html">Merch</a></li>
+      <li id="nav-user-slot"></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+  </nav>
+
+  <main class="page-wrap">
+    <nav class="jj-subnav" aria-label="Jimmys & Joes sections">
+      <div class="jj-subnav-inner">
+        <a href="/jimmysandjoes">Discover</a>
+        <a href="/jimmysandjoes/leaderboards">Leaderboards</a>
+        <a href="/jimmysandjoes/rankings">Sub-Rankings</a>
+        <a href="/jimmysandjoes/scouts">Hall of Scouts</a>
+        <a href="/jimmysandjoes/submit">+ Add a Jimmy</a>
+        <a href="/coach">For Coaches</a>
+      </div>
+    </nav>
+
+    <section class="jj-section">
+      <div class="section-inner" style="max-width: 1200px;">
+        <div class="section-label">Bulk Roster Upload</div>
+        <h1 class="section-title">Upload your roster.</h1>
+
+        <div id="gate-host"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.png" alt="4th & Ward Podcast"></div>
+    <ul class="footer-links">
+      <li><a href="about.html">About</a></li>
+      <li><a href="jimmysandjoes.html">Jimmys &amp; Joes</a></li>
+      <li><a href="privacy.html">Privacy</a></li>
+      <li><a href="merch.html">Merch</a></li>
+    </ul>
+    <p class="footer-copy">&#169; 2026 4th &amp; Ward Podcast. All rights reserved.</p>
+  </footer>
+
+  <script type="module">
+    import { db } from './js/firebase-init.js';
+    import { onAuthChange, getUserDoc } from './js/auth.js';
+    import {
+      collection, doc, getDoc, setDoc, writeBatch
+    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import {
+      POSITIONS, POSITION_LABEL, ACCOLADE_BY_ID, classYearOptions
+    } from './js/jj-config.js';
+    import {
+      buildSlug, parseHighlightUrl, feetInchesToInches, escapeHtml, getOrCreateVisitorId
+    } from './js/jj-utils.js';
+    import {
+      CSV_COLUMNS, parseCsv, buildTemplateCsvBlob
+    } from './js/jj-csv.js';
+
+    const POSITION_CODES = POSITIONS.map(p => p.code);
+    const CLASS_YEARS = classYearOptions();
+
+    const gateHost = document.getElementById('gate-host');
+    let currentUser = null, myProfile = null, myCoachProfile = null;
+    let rows = [];        // {raw: {col: val}, slug: '', errors: { col: msg }}
+    let pageState = 'idle'; // 'idle' | 'preview' | 'submitting' | 'done'
+
+    onAuthChange(async u => {
+      currentUser = u || null;
+      if (!u) { renderLoggedOut(); return; }
+      myProfile = await getUserDoc(u.uid);
+      try {
+        const snap = await getDoc(doc(db, 'coach_profiles', u.uid));
+        myCoachProfile = snap.exists() ? snap.data() : null;
+      } catch (_) { myCoachProfile = null; }
+      renderGate();
+    });
+
+    function renderLoggedOut() {
+      gateHost.innerHTML = `
+        <div class="jj-card-section" style="text-align:center;">
+          <p style="color:var(--muted); margin-bottom:16px;">You need to be logged in.</p>
+          <button class="btn-gold" type="button" id="bu-login-btn">Log In</button>
+        </div>
+      `;
+      document.getElementById('bu-login-btn').addEventListener('click', () => {
+        if (window.openAuthModal) window.openAuthModal('login');
+      });
+    }
+
+    function isVerifiedCoach() {
+      return myProfile?.role === 'coach' || myCoachProfile?.status === 'verified';
+    }
+
+    function renderGate() {
+      if (!isVerifiedCoach()) {
+        gateHost.innerHTML = `
+          <div class="jj-card-section">
+            <h2>Coach verification required</h2>
+            <p style="color:#d0cfca; margin: 8px 0 18px;">Bulk upload is only available to verified coaches. ${myCoachProfile?.status === 'pending' ? "Your application is in review." : "Apply on the For Coaches page."}</p>
+            <a href="/coach" class="btn-gold">${myCoachProfile?.status === 'pending' ? 'View Application' : 'Apply for Verification'}</a>
+          </div>
+        `;
+        return;
+      }
+      renderUploader();
+    }
+
+    function renderUploader() {
+      gateHost.innerHTML = `
+        <div class="jj-card-section">
+          <h2>1 · Download the template</h2>
+          <p class="jj-section-hint">Fill in one row per player. Keep the header row exactly as-is — delete the example row and any line starting with <code>#</code>. Required columns are marked with *.</p>
+          <button class="btn-ghost" type="button" id="dl-template">↓ Download CSV Template</button>
+        </div>
+
+        <div class="jj-card-section">
+          <h2>2 · Upload your filled CSV</h2>
+          <p class="jj-section-hint">Drag &amp; drop, or click to browse. Up to ~250 players per upload is fine.</p>
+          <div class="drop-zone" id="drop-zone">
+            <p>Drop your CSV here or <strong style="color:var(--gold);">click to browse</strong></p>
+            <p style="font-size: 11px;">.csv only · max 1 MB</p>
+            <input type="file" id="file-input" accept=".csv,text/csv" style="display:none;">
+          </div>
+          <div id="parse-msg" class="jj-submit-msg" hidden></div>
+        </div>
+
+        <div id="preview-host"></div>
+      `;
+
+      document.getElementById('dl-template').addEventListener('click', () => {
+        const blob = buildTemplateCsvBlob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'jimmys-and-joes-bulk-upload-template.csv';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+
+      const dz = document.getElementById('drop-zone');
+      const fi = document.getElementById('file-input');
+      dz.addEventListener('click', () => fi.click());
+      dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+      dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+      dz.addEventListener('drop', e => {
+        e.preventDefault(); dz.classList.remove('dragover');
+        if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+      });
+      fi.addEventListener('change', () => { if (fi.files[0]) handleFile(fi.files[0]); });
+    }
+
+    function showParseMsg(text, ok) {
+      const msg = document.getElementById('parse-msg');
+      msg.textContent = text;
+      msg.className = 'jj-submit-msg ' + (ok ? 'ok' : 'err');
+      msg.hidden = false;
+    }
+
+    async function handleFile(file) {
+      if (file.size > 1024 * 1024) { showParseMsg('File is over 1 MB. Trim it down and try again.', false); return; }
+      const text = await file.text();
+      let parsed;
+      try {
+        parsed = parseCsv(text);
+      } catch (err) {
+        showParseMsg('Could not parse CSV: ' + err.message, false);
+        return;
+      }
+      if (!parsed.rows.length) { showParseMsg('No data rows found in the file.', false); return; }
+
+      // Build internal row state. Normalize headers to our key names by
+      // matching CSV_COLUMNS.label (case-insensitive trimmed).
+      const headerMap = mapHeaders(parsed.headers);
+      const missing = CSV_COLUMNS.filter(c => c.required && !headerMap[c.key]);
+      if (missing.length) {
+        showParseMsg('Missing required column(s): ' + missing.map(m => m.label).join(', '), false);
+        return;
+      }
+      rows = parsed.rows.map(r => {
+        const raw = {};
+        CSV_COLUMNS.forEach(c => { raw[c.key] = (r[headerMap[c.key]] || '').trim(); });
+        return { raw, errors: validateRow(raw) };
+      });
+      pageState = 'preview';
+      showParseMsg(`Parsed ${rows.length} row${rows.length === 1 ? '' : 's'}. Review the preview below; any row with red cells will be skipped on submit unless you fix it.`, true);
+      renderPreview();
+    }
+
+    function mapHeaders(headers) {
+      const norm = s => String(s || '').trim().toLowerCase();
+      const byLabel = {};
+      CSV_COLUMNS.forEach(c => { byLabel[norm(c.label)] = c.key; });
+      const out = {};
+      headers.forEach(h => {
+        const key = byLabel[norm(h)];
+        if (key) out[key] = h;
+      });
+      return out;
+    }
+
+    function validateRow(raw) {
+      const errs = {};
+      // Required strings
+      for (const c of CSV_COLUMNS) {
+        if (c.required && !raw[c.key]) errs[c.key] = 'required';
+      }
+      if (!errs.primaryPosition && !POSITION_CODES.includes(raw.primaryPosition.toUpperCase())) {
+        errs.primaryPosition = `must be one of ${POSITION_CODES.join(', ')}`;
+      }
+      if (!errs.classYear && !CLASS_YEARS.includes(raw.classYear)) {
+        errs.classYear = `must be one of ${CLASS_YEARS.join(', ')}`;
+      }
+      if (!errs.state && raw.state.length !== 2) {
+        errs.state = '2-letter state code';
+      }
+      if (!errs.highlightUrl) {
+        const parsed = parseHighlightUrl(raw.highlightUrl);
+        if (!parsed) errs.highlightUrl = 'must be a YouTube or Hudl link';
+      }
+      // Numeric guards
+      const numericFields = [
+        ['weightLbs',       80,  450],
+        ['heightFt',        4,   7],
+        ['heightIn',        0,   11],
+        ['fortyElectronic', 4,   7],
+        ['fortyHand',       4,   7],
+        ['vertical',        10,  50],
+        ['broad',           50,  160],
+        ['threeCone',       5,   10],
+        ['shuttle',         3,   8],
+        ['bench225',        0,   50],
+        ['bench1rm',        100, 700],
+        ['squat1rm',        100, 900],
+        ['powerClean1rm',   100, 500],
+      ];
+      for (const [k, lo, hi] of numericFields) {
+        if (raw[k] === '' || raw[k] == null) continue;
+        const n = Number(raw[k]);
+        if (isNaN(n) || n < lo || n > hi) errs[k] = `between ${lo} and ${hi}`;
+      }
+      return errs;
+    }
+
+    function renderPreview() {
+      const host = document.getElementById('preview-host');
+      const validCount = rows.filter(r => !Object.keys(r.errors).length).length;
+      const errCount = rows.length - validCount;
+
+      host.innerHTML = `
+        <div class="jj-card-section">
+          <h2>3 · Review &amp; Submit</h2>
+          <div class="preview-summary">
+            <div><strong>${rows.length}</strong> rows parsed</div>
+            <div><strong style="color:#a8f0b8;">${validCount}</strong> ready to submit</div>
+            <div class="err"><strong>${errCount}</strong> with errors</div>
+          </div>
+          <p class="jj-section-hint">Edit any cell to fix issues. Cells with red borders will block that row from submitting. Click ✕ on a row to remove it from this batch.</p>
+          <div class="preview-wrap">
+            <table class="preview-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>#</th>
+                  ${CSV_COLUMNS.map(c => `<th class="${c.required ? 'required' : ''}">${escapeHtml(c.label)}</th>`).join('')}
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="preview-tbody"></tbody>
+            </table>
+          </div>
+
+          <div id="bulk-msg" class="jj-submit-msg" style="margin-top: 14px;" hidden></div>
+          <div class="jj-form-actions">
+            <button class="btn-ghost" type="button" id="bulk-cancel">Discard</button>
+            <button class="btn-gold"  type="button" id="bulk-submit">Submit ${validCount} for Review</button>
+          </div>
+        </div>
+      `;
+      renderPreviewBody();
+      document.getElementById('bulk-cancel').addEventListener('click', () => {
+        rows = []; pageState = 'idle';
+        document.getElementById('preview-host').innerHTML = '';
+        const msg = document.getElementById('parse-msg'); if (msg) msg.hidden = true;
+      });
+      document.getElementById('bulk-submit').addEventListener('click', submitAll);
+    }
+
+    function renderPreviewBody() {
+      const tbody = document.getElementById('preview-tbody');
+      tbody.innerHTML = rows.map((r, i) => `
+        <tr class="${Object.keys(r.errors).length ? 'has-errors' : ''}" data-i="${i}">
+          <td class="row-status">${Object.keys(r.errors).length ? '⚠️' : '✓'}</td>
+          <td class="preview-row-num">${i + 1}</td>
+          ${CSV_COLUMNS.map(c => `
+            <td>
+              <input data-i="${i}" data-key="${c.key}"
+                     class="${r.errors[c.key] ? 'bad' : ''}"
+                     value="${escapeHtml(r.raw[c.key])}"
+                     title="${escapeHtml(r.errors[c.key] || '')}">
+            </td>
+          `).join('')}
+          <td><button class="row-remove" type="button" data-remove="${i}" title="Remove row">✕</button></td>
+        </tr>
+      `).join('');
+
+      tbody.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('input', e => {
+          const i = Number(inp.dataset.i);
+          const k = inp.dataset.key;
+          rows[i].raw[k] = inp.value;
+          rows[i].errors = validateRow(rows[i].raw);
+          inp.classList.toggle('bad', !!rows[i].errors[k]);
+          inp.title = rows[i].errors[k] || '';
+          const tr = inp.closest('tr');
+          const hasErrs = Object.keys(rows[i].errors).length > 0;
+          tr.classList.toggle('has-errors', hasErrs);
+          tr.querySelector('.row-status').textContent = hasErrs ? '⚠️' : '✓';
+          // Update summary counts.
+          const validCount = rows.filter(r => !Object.keys(r.errors).length).length;
+          const errCount = rows.length - validCount;
+          const summary = document.querySelector('.preview-summary');
+          if (summary) {
+            summary.children[1].innerHTML = `<strong style="color:#a8f0b8;">${validCount}</strong> ready to submit`;
+            summary.children[2].innerHTML = `<strong>${errCount}</strong> with errors`;
+          }
+          const submitBtn = document.getElementById('bulk-submit');
+          if (submitBtn) submitBtn.textContent = `Submit ${validCount} for Review`;
+        });
+      });
+      tbody.querySelectorAll('[data-remove]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const i = Number(btn.dataset.remove);
+          rows.splice(i, 1);
+          renderPreview();
+        });
+      });
+    }
+
+    async function submitAll() {
+      const valid = rows.filter(r => !Object.keys(r.errors).length);
+      const msg = document.getElementById('bulk-msg');
+      if (!valid.length) {
+        msg.textContent = 'No valid rows to submit. Fix the highlighted cells first.';
+        msg.className = 'jj-submit-msg err'; msg.hidden = false; return;
+      }
+      const submitBtn = document.getElementById('bulk-submit');
+      submitBtn.disabled = true;
+      submitBtn.textContent = `Submitting 0/${valid.length}…`;
+      msg.hidden = true;
+
+      // Pre-compute slugs (uniqueness is best-effort here — collisions get
+      // resolved by appending the row index. Admin can review and adjust.)
+      const visitorId = getOrCreateVisitorId();
+      const submittedAt = Date.now();
+      const docs = valid.map((r, idx) => {
+        const raw = r.raw;
+        const base = buildSlug(raw.fullName, raw.primaryPosition.toUpperCase(), raw.classYear);
+        const slug = idx === 0 ? base : `${base}-${idx + 1}`;   // light dedup
+        const parsedV = parseHighlightUrl(raw.highlightUrl);
+        const ftIn = feetInchesToInches(raw.heightFt, raw.heightIn);
+        const accolades = (raw.accolades || '').split(',').map(s => s.trim()).filter(Boolean)
+          .filter(id => ACCOLADE_BY_ID[id])
+          .map(id => ({ id, year: new Date().getFullYear() }));
+        const offers = (raw.offers || '').split(',').map(s => s.trim()).filter(Boolean);
+        const secondary = (raw.secondaryPositions || '').split(',').map(s => s.trim().toUpperCase()).filter(Boolean)
+          .filter(c => POSITION_CODES.includes(c));
+        const data = {
+          slug, status: 'pending',
+          submittedAt, submittedBy: currentUser.uid, submittedByVisitorId: visitorId,
+          fullName: raw.fullName,
+          primaryPosition: raw.primaryPosition.toUpperCase(),
+          secondaryPositions: secondary,
+          classYear: raw.classYear,
+          schoolName: raw.schoolName,
+          city: raw.city,
+          state: raw.state.toUpperCase(),
+          highlightUrl: raw.highlightUrl,
+          highlightType: parsedV?.type || null,
+          highlightEmbedId: parsedV?.rawId || null,
+          heightInches: ftIn,
+          weightLbs: numOrNull(raw.weightLbs),
+          testing: {
+            fortyHand:       numOrNull(raw.fortyHand),
+            fortyElectronic: numOrNull(raw.fortyElectronic),
+            vertical:        numOrNull(raw.vertical),
+            broad:           numOrNull(raw.broad),
+            threeCone:       numOrNull(raw.threeCone),
+            shuttle:         numOrNull(raw.shuttle),
+          },
+          strength: {
+            bench225:      numOrNull(raw.bench225),
+            bench1rm:      numOrNull(raw.bench1rm),
+            squat1rm:      numOrNull(raw.squat1rm),
+            powerClean1rm: numOrNull(raw.powerClean1rm),
+          },
+          stats: {},
+          accolades, offers,
+          shortBio: (raw.shortBio || '').slice(0, 500),
+          coachContact: {
+            name: raw.coachName || '',
+            email: raw.coachEmail || '',
+            phone: raw.coachPhone || '',
+            public: ['yes','y','true','1'].includes((raw.coachPublic || '').toLowerCase()),
+          },
+        };
+        return { slug, data };
+      });
+
+      // Batched writes: Firestore supports 500 ops per batch.
+      let succeeded = 0, failed = 0;
+      const BATCH_SIZE = 100;
+      for (let i = 0; i < docs.length; i += BATCH_SIZE) {
+        const batch = writeBatch(db);
+        const slice = docs.slice(i, i + BATCH_SIZE);
+        slice.forEach(({ slug, data }) => {
+          batch.set(doc(db, 'prospects', slug), data);
+        });
+        try {
+          await batch.commit();
+          succeeded += slice.length;
+        } catch (err) {
+          console.error('[bulk] batch failed:', err);
+          failed += slice.length;
+        }
+        submitBtn.textContent = `Submitting ${succeeded}/${valid.length}…`;
+      }
+
+      msg.className = failed ? 'jj-submit-msg err' : 'jj-submit-msg ok';
+      msg.textContent = failed
+        ? `Submitted ${succeeded} of ${valid.length}. ${failed} failed — check the browser console and try again, or contact admin.`
+        : `All ${succeeded} prospects submitted. They'll appear on the site once an admin approves them.`;
+      msg.hidden = false;
+      submitBtn.textContent = `✓ Submitted ${succeeded}`;
+      if (!failed) {
+        rows = []; pageState = 'done';
+        setTimeout(() => { window.location.href = '/coach/dashboard'; }, 2000);
+      } else {
+        submitBtn.disabled = false;
+      }
+    }
+
+    function numOrNull(s) {
+      if (s === '' || s == null) return null;
+      const n = Number(s);
+      return isNaN(n) ? null : n;
+    }
+  </script>
+</body>
+</html>

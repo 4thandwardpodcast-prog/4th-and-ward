@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Sub-Rankings — Jimmys &amp; Joes — 4th &amp; Ward</title>
+  <meta name="description" content="Strongest, Fastest, Best Size + Speed, and Trending — sub-rankings for the Jimmys & Joes recruiting database.">
+  <link rel="canonical" href="https://4thandward.com/jimmysandjoes/rankings">
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/jj.css">
+  <script type="module" src="js/user-menu.js"></script>
+  <script type="module" src="js/jj-random.js"></script>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo"><img src="logo-cover.svg" alt="4th & Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="totw.html">Team of the Week</a></li>
+      <li><a href="wardle.html">4th &amp; Wardle</a></li>
+      <li><a href="hsblitz.html">HS Blitz<span class="nav-beta">Beta</span></a></li>
+      <li><a href="dripordrown.html">Drip or Drown</a></li>
+      <li><a href="pulse.html">Friday Night Pulse<span class="nav-beta">New</span></a></li>
+      <li><a href="jimmysandjoes.html" class="active">Jimmys &amp; Joes<span class="nav-beta">New</span></a></li>
+      <li><a href="merch.html">Merch</a></li>
+      <li id="nav-user-slot"></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+  </nav>
+
+  <main class="page-wrap">
+    <nav class="jj-subnav" aria-label="Jimmys & Joes sections">
+      <div class="jj-subnav-inner">
+        <a href="/jimmysandjoes">Discover</a>
+        <a href="/jimmysandjoes/leaderboards">Leaderboards</a>
+        <a href="/jimmysandjoes/rankings" class="active">Sub-Rankings</a>
+        <a href="/jimmysandjoes/scouts">Hall of Scouts</a>
+        <a href="/jimmysandjoes/submit">+ Add a Jimmy</a>
+        <button type="button" class="jj-subnav-random" data-jj-random>🎲 Random Jimmy</button>
+      </div>
+    </nav>
+
+    <section class="jj-section">
+      <div class="section-inner">
+        <div class="section-label">Sub-Rankings</div>
+        <h1 class="section-title">Sub-Rankings</h1>
+        <p style="color:var(--muted); max-width:680px; margin-bottom:18px;">Single-trait leaderboards for everything outside the headline J&amp;J rating — speed, size, strength, and recent buzz.</p>
+
+        <div class="jj-tabs" role="tablist">
+          <button class="jj-tab active" data-tab="trending"  role="tab">🔥 Trending</button>
+          <button class="jj-tab"        data-tab="strongest" role="tab">💪 Strongest</button>
+          <button class="jj-tab"        data-tab="fastest"   role="tab">⚡ Fastest</button>
+          <button class="jj-tab"        data-tab="sizespeed" role="tab">📐 Size + Speed</button>
+        </div>
+
+        <div id="ranking-host"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.png" alt="4th & Ward Podcast"></div>
+    <ul class="footer-links">
+      <li><a href="about.html">About</a></li>
+      <li><a href="jimmysandjoes.html">Jimmys &amp; Joes</a></li>
+      <li><a href="privacy.html">Privacy</a></li>
+      <li><a href="merch.html">Merch</a></li>
+    </ul>
+    <p class="footer-copy">&#169; 2026 4th &amp; Ward Podcast. All rights reserved.</p>
+  </footer>
+
+  <script type="module">
+    import { db } from './js/firebase-init.js';
+    import {
+      collection, query, where, getDocs, limit
+    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { escapeHtml, inchesToFeetInches } from './js/jj-utils.js';
+
+    const TOP_N = 25;
+    let allProspects = [];
+    let activeTab = 'trending';
+
+    async function load() {
+      const host = document.getElementById('ranking-host');
+      host.innerHTML = `<div class="jj-loading" style="padding: 40px 20px;">Loading rankings…</div>`;
+      try {
+        const snap = await getDocs(query(
+          collection(db, 'prospects'),
+          where('status', '==', 'approved'),
+          limit(500)
+        ));
+        allProspects = [];
+        snap.forEach(d => allProspects.push({ id: d.id, ...d.data() }));
+        render();
+      } catch (err) {
+        console.warn('[jj-rankings]', err);
+        host.innerHTML = `<div class="jj-empty"><p>Couldn't load rankings.</p></div>`;
+      }
+    }
+
+    function metricForTab(p, tab) {
+      const t = p.testing || {};
+      const s = p.strength || {};
+      if (tab === 'trending')  return p.trendingScore || 0;
+      if (tab === 'fastest') {
+        const forty = t.fortyElectronic ?? t.fortyHand;
+        return typeof forty === 'number' ? -forty : null;   // negate so higher = faster
+      }
+      if (tab === 'strongest') {
+        // Strength index: bench 1RM + squat 1RM + 2 × clean 1RM, with bench@225 reps weighted.
+        const bench  = s.bench1rm  || (s.bench225 ? 225 + s.bench225 * 5 : 0);
+        const squat  = s.squat1rm  || 0;
+        const clean  = s.powerClean1rm || 0;
+        const total  = bench + squat + 2 * clean;
+        return total > 0 ? total : null;
+      }
+      if (tab === 'sizespeed') {
+        const h = p.heightInches, w = p.weightLbs;
+        const forty = t.fortyElectronic ?? t.fortyHand;
+        if (typeof h !== 'number' || typeof w !== 'number' || typeof forty !== 'number') return null;
+        // Composite: heavier, taller, faster all push score up. Scaled to ~0–10.
+        const sizeIdx  = Math.max(0, h - 70) + Math.max(0, (w - 170) / 10);
+        const speedIdx = Math.max(0, (5.4 - forty) * 10);
+        return sizeIdx + speedIdx;
+      }
+      return null;
+    }
+
+    function formatMetricCell(p, tab) {
+      const t = p.testing || {};
+      const s = p.strength || {};
+      if (tab === 'trending')  return `${p.trendingScore || 0}`;
+      if (tab === 'fastest') {
+        const forty = t.fortyElectronic ?? t.fortyHand;
+        const which = (t.fortyElectronic != null) ? 'e' : 'h';
+        return `${forty.toFixed(2)}s <small style="color:var(--muted);">(${which})</small>`;
+      }
+      if (tab === 'strongest') {
+        const parts = [];
+        if (s.bench1rm) parts.push(`B ${s.bench1rm}`);
+        else if (s.bench225) parts.push(`B 225×${s.bench225}`);
+        if (s.squat1rm) parts.push(`Sq ${s.squat1rm}`);
+        if (s.powerClean1rm) parts.push(`PC ${s.powerClean1rm}`);
+        return parts.join(' · ') || '—';
+      }
+      if (tab === 'sizespeed') {
+        const forty = t.fortyElectronic ?? t.fortyHand;
+        return `${inchesToFeetInches(p.heightInches)} · ${p.weightLbs} lbs · ${forty.toFixed(2)}s`;
+      }
+      return '';
+    }
+
+    function render() {
+      const host = document.getElementById('ranking-host');
+      const sortable = allProspects
+        .map(p => ({ p, m: metricForTab(p, activeTab) }))
+        .filter(x => x.m != null)
+        .sort((a, b) => b.m - a.m)
+        .slice(0, TOP_N);
+
+      if (!sortable.length) {
+        host.innerHTML = `<div class="jj-empty"><p>No prospects with the data needed for this ranking yet.</p></div>`;
+        return;
+      }
+      host.innerHTML = `
+        <div style="overflow-x:auto;">
+          <table class="jj-ranking-table">
+            <thead>
+              <tr>
+                <th style="width:50px;">#</th>
+                <th>Name</th>
+                <th>Pos</th>
+                <th>Class</th>
+                <th>School</th>
+                <th class="right">${headerFor(activeTab)}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${sortable.map((x, i) => {
+                const p = x.p;
+                return `
+                  <tr>
+                    <td class="jj-ranking-rank">${i + 1}</td>
+                    <td><a href="/jimmysandjoes/prospect/${encodeURIComponent(p.slug)}"><strong>${escapeHtml(p.fullName)}</strong></a></td>
+                    <td>${escapeHtml(p.primaryPosition || '—')}</td>
+                    <td>${escapeHtml(p.classYear || '—')}</td>
+                    <td>${escapeHtml(p.schoolName || '')}<br><small style="color:var(--muted);">${escapeHtml(p.city || '')}${p.city && p.state ? ', ' : ''}${escapeHtml(p.state || '')}</small></td>
+                    <td class="right">${formatMetricCell(p, activeTab)}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function headerFor(tab) {
+      return {
+        trending:  'Buzz score',
+        strongest: 'Strength',
+        fastest:   '40-yd',
+        sizespeed: 'Profile'
+      }[tab];
+    }
+
+    document.querySelectorAll('.jj-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.jj-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeTab = btn.dataset.tab;
+        render();
+        history.replaceState(null, '', `?tab=${activeTab}`);
+      });
+    });
+
+    // Deep link via ?tab=
+    const initialTab = new URLSearchParams(window.location.search).get('tab');
+    if (initialTab && ['trending','strongest','fastest','sizespeed'].includes(initialTab)) {
+      activeTab = initialTab;
+      document.querySelectorAll('.jj-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === initialTab));
+    }
+
+    load();
+  </script>
+</body>
+</html>

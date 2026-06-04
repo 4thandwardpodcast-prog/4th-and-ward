@@ -239,6 +239,23 @@
         <span id="pulse-corrections-badge" style="margin-left:auto;display:none;background:#e05555;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;"></span>
       </button>
 
+      <div class="sidebar-section">Jimmys &amp; Joes</div>
+      <button class="sidebar-item" onclick="showPage('jj-pending')">
+        <span class="sidebar-icon">&#128737;</span> Pending Prospects
+        <span id="jj-pending-badge" style="margin-left:auto;display:none;background:#e05555;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;"></span>
+      </button>
+      <button class="sidebar-item" onclick="showPage('jj-all')">
+        <span class="sidebar-icon">&#128218;</span> All Prospects
+      </button>
+      <button class="sidebar-item" onclick="showPage('jj-coaches')">
+        <span class="sidebar-icon">&#129489;&#8205;&#127979;</span> Coach Verifications
+        <span id="jj-coaches-badge" style="margin-left:auto;display:none;background:#e05555;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;"></span>
+      </button>
+      <button class="sidebar-item" onclick="showPage('jj-claims')">
+        <span class="sidebar-icon">&#127967;</span> Profile Claims
+        <span id="jj-claims-badge" style="margin-left:auto;display:none;background:#e05555;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;"></span>
+      </button>
+
       <div class="sidebar-section">HS Blitz</div>
       <button class="sidebar-item" onclick="showPage('blitz-feedback')">
         <span class="sidebar-icon">&#128172;</span> Beta Feedback
@@ -744,6 +761,132 @@
         </div>
       </div>
 
+      <!-- ══ JIMMYS & JOES — PENDING PROSPECTS ══ -->
+      <div class="page" id="page-jj-pending">
+        <div class="page-header">
+          <div class="page-title">Jimmys &amp; Joes — Pending Prospects</div>
+          <div class="page-sub">Approve, edit, or reject new prospect submissions. Approved profiles go live at <code>/jimmysandjoes/prospect/&lt;slug&gt;</code>.</div>
+        </div>
+        <div class="stat-row" style="margin-bottom:28px;">
+          <div class="stat-card"><div class="stat-card-num" id="jj-pending-count">—</div><div class="stat-card-label">Pending Review</div></div>
+          <div class="stat-card green"><div class="stat-card-num" id="jj-approved-count">—</div><div class="stat-card-label">Approved (live)</div></div>
+          <div class="stat-card"><div class="stat-card-num" id="jj-total-count">—</div><div class="stat-card-label">Total Submissions</div></div>
+        </div>
+        <div class="data-card">
+          <div class="data-card-header">
+            <h3 class="data-card-title">Pending submissions</h3>
+            <button class="btn btn-ghost btn-sm" onclick="loadJJPending()">&#8635; Refresh</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Submitted</th><th>Name</th><th>Pos</th><th>Class</th>
+                  <th>School</th><th>Locale</th><th>Highlight</th><th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="jj-pending-body">
+                <tr><td colspan="8" class="loading-row">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ JIMMYS & JOES — ALL PROSPECTS ══ -->
+      <div class="page" id="page-jj-all">
+        <div class="page-header">
+          <div class="page-title">Jimmys &amp; Joes — All Prospects</div>
+          <div class="page-sub">Every prospect, regardless of status. Use the rejected status to keep an audit trail without deleting.</div>
+        </div>
+        <div class="data-card">
+          <div class="data-card-header">
+            <h3 class="data-card-title">All submissions</h3>
+            <button class="btn btn-ghost btn-sm" onclick="loadJJAll()">&#8635; Refresh</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Status</th><th>Name</th><th>Pos</th><th>Class</th>
+                  <th>School</th><th>J&amp;J</th><th>#Ratings</th><th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="jj-all-body">
+                <tr><td colspan="8" class="loading-row">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ JIMMYS & JOES — COACH VERIFICATIONS ══ -->
+      <div class="page" id="page-jj-coaches">
+        <div class="page-header">
+          <div class="page-title">Jimmys &amp; Joes — Coach Verifications</div>
+          <div class="page-sub">Review coach applications. Approving sets <code>users/{uid}.role = 'coach'</code> and unlocks the bulk upload tools.</div>
+        </div>
+        <div class="stat-row" style="margin-bottom:28px;">
+          <div class="stat-card"><div class="stat-card-num" id="jj-coaches-pending-count">—</div><div class="stat-card-label">Pending</div></div>
+          <div class="stat-card green"><div class="stat-card-num" id="jj-coaches-verified-count">—</div><div class="stat-card-label">Verified</div></div>
+          <div class="stat-card"><div class="stat-card-num" id="jj-coaches-total-count">—</div><div class="stat-card-label">Total Applications</div></div>
+        </div>
+
+        <div class="data-card">
+          <div class="data-card-header">
+            <h3 class="data-card-title">Applications</h3>
+            <button class="btn btn-ghost btn-sm" onclick="loadJJCoaches()">&#8635; Refresh</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Submitted</th><th>Status</th><th>Name</th><th>School</th>
+                  <th>Email</th><th>Title</th><th>Locale</th><th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="jj-coaches-body">
+                <tr><td colspan="8" class="loading-row">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ JIMMYS & JOES — PROFILE CLAIMS ══ -->
+      <div class="page" id="page-jj-claims">
+        <div class="page-header">
+          <div class="page-title">Jimmys &amp; Joes — Profile Claims</div>
+          <div class="page-sub">Verified coaches claim existing prospects for their team. Approving stamps <code>coachUid</code> + <code>coachSchool</code> on the prospect doc.</div>
+        </div>
+        <div class="stat-row" style="margin-bottom:28px;">
+          <div class="stat-card"><div class="stat-card-num" id="jj-claims-pending-count">—</div><div class="stat-card-label">Pending</div></div>
+          <div class="stat-card green"><div class="stat-card-num" id="jj-claims-approved-count">—</div><div class="stat-card-label">Approved</div></div>
+          <div class="stat-card"><div class="stat-card-num" id="jj-claims-total-count">—</div><div class="stat-card-label">Total</div></div>
+        </div>
+
+        <div class="data-card">
+          <div class="data-card-header">
+            <h3 class="data-card-title">Claims</h3>
+            <button class="btn btn-ghost btn-sm" onclick="loadJJClaims()">&#8635; Refresh</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Requested</th><th>Status</th><th>Coach</th><th>Coach School</th>
+                  <th>Prospect</th><th>Listed School</th><th>Note</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="jj-claims-body">
+                <tr><td colspan="8" class="loading-row">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- ══ HS BLITZ FEEDBACK ══ -->
       <div class="page" id="page-blitz-feedback">
         <div class="page-header">
@@ -1195,6 +1338,10 @@
     if (id === 'pulse-comments-pending') { loadPulseCommentsPending(); }
     if (id === 'pulse-stadiums-all')     { /* manual load via button */ }
     if (id === 'pulse-corrections-pending') { loadPulseCorrectionsPending(); }
+    if (id === 'jj-pending')          { loadJJPending(); }
+    if (id === 'jj-all')              { loadJJAll(); }
+    if (id === 'jj-coaches')          { loadJJCoaches(); }
+    if (id === 'jj-claims')           { loadJJClaims(); }
     if (id === 'blitz-feedback')      { loadBlitzFeedback(); }
     if (id === 'visitors')            { loadVisitors(); }
   };
@@ -2893,6 +3040,376 @@
       toast('Delete failed: ' + err.message, 'error');
     }
   };
+
+  // ── JIMMYS & JOES — APPROVAL QUEUE ───────────────────────────
+  function jjFmtDate(ts) {
+    if (!ts) return '—';
+    const d = (typeof ts === 'number') ? new Date(ts) : (ts.toDate ? ts.toDate() : new Date(ts));
+    return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  function jjStatusBadge(status) {
+    const cls = status === 'approved' ? 'badge-green'
+              : status === 'rejected' ? 'badge-red'
+              : 'badge-gold';
+    return `<span class="badge ${cls}">${escapeHtml(status || 'pending')}</span>`;
+  }
+
+  async function loadJJPending() {
+    const tbody = document.getElementById('jj-pending-body');
+    tbody.innerHTML = `<tr><td colspan="8" class="loading-row">Loading…</td></tr>`;
+    try {
+      const snap = await getDocs(query(
+        collection(db, 'prospects'),
+        where('status', '==', 'pending'),
+        orderBy('submittedAt', 'desc'),
+        limit(200)
+      ));
+      const list = [];
+      snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+      document.getElementById('jj-pending-count').textContent = list.length;
+      const badge = document.getElementById('jj-pending-badge');
+      if (badge) {
+        badge.style.display = list.length ? 'inline-block' : 'none';
+        badge.textContent = list.length;
+      }
+      if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="loading-row">No pending submissions.</td></tr>`;
+      } else {
+        tbody.innerHTML = list.map(p => `
+          <tr>
+            <td style="white-space:nowrap; font-size:12px; color:var(--muted);">${jjFmtDate(p.submittedAt)}</td>
+            <td><strong>${escapeHtml(p.fullName)}</strong></td>
+            <td>${escapeHtml(p.primaryPosition || '')}</td>
+            <td>${escapeHtml(p.classYear || '')}</td>
+            <td>${escapeHtml(p.schoolName || '')}</td>
+            <td style="font-size:12px;">${escapeHtml(p.city || '')}${p.city && p.state ? ', ' : ''}${escapeHtml(p.state || '')}</td>
+            <td><a href="${escapeHtml(p.highlightUrl || '#')}" target="_blank" rel="noopener" style="color:var(--gold);">▶ Watch</a></td>
+            <td style="text-align:right; white-space:nowrap;">
+              <a class="btn btn-ghost btn-sm" href="/jimmysandjoes/prospect/${encodeURIComponent(p.slug)}" target="_blank">Preview</a>
+              <button class="btn btn-gold btn-sm" onclick="jjApprove('${escapeHtml(p.id)}')">Approve</button>
+              <button class="btn btn-ghost btn-sm" onclick="jjReject('${escapeHtml(p.id)}')">Reject</button>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Stat cards (cheap secondary queries).
+      const allSnap = await getDocs(collection(db, 'prospects'));
+      let approved = 0, total = 0;
+      allSnap.forEach(d => { total++; if (d.data().status === 'approved') approved++; });
+      document.getElementById('jj-approved-count').textContent = approved;
+      document.getElementById('jj-total-count').textContent = total;
+    } catch (err) {
+      console.error('[jj-admin] loadJJPending:', err);
+      tbody.innerHTML = `<tr><td colspan="8" class="loading-row">Error: ${escapeHtml(err.message)}</td></tr>`;
+    }
+  }
+  window.loadJJPending = loadJJPending;
+
+  async function loadJJAll() {
+    const tbody = document.getElementById('jj-all-body');
+    tbody.innerHTML = `<tr><td colspan="8" class="loading-row">Loading…</td></tr>`;
+    try {
+      const snap = await getDocs(query(
+        collection(db, 'prospects'),
+        orderBy('submittedAt', 'desc'),
+        limit(500)
+      ));
+      const list = [];
+      snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+      if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="loading-row">No prospects yet.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = list.map(p => `
+        <tr>
+          <td>${jjStatusBadge(p.status)}</td>
+          <td><strong>${escapeHtml(p.fullName)}</strong></td>
+          <td>${escapeHtml(p.primaryPosition || '')}</td>
+          <td>${escapeHtml(p.classYear || '')}</td>
+          <td>${escapeHtml(p.schoolName || '')}</td>
+          <td style="text-align:right;">${p.jjRating ? p.jjRating.toFixed(1) : '—'}</td>
+          <td style="text-align:right;">${p.ratingCount || 0}</td>
+          <td style="text-align:right; white-space:nowrap;">
+            <a class="btn btn-ghost btn-sm" href="/jimmysandjoes/prospect/${encodeURIComponent(p.slug)}" target="_blank">View</a>
+            ${p.status !== 'approved' ? `<button class="btn btn-gold btn-sm" onclick="jjApprove('${escapeHtml(p.id)}')">Approve</button>` : ''}
+            ${p.status !== 'rejected' ? `<button class="btn btn-ghost btn-sm" onclick="jjReject('${escapeHtml(p.id)}')">Reject</button>` : ''}
+            <button class="btn btn-ghost btn-sm" onclick="jjDelete('${escapeHtml(p.id)}','${escapeHtml(p.fullName)}')">Delete</button>
+          </td>
+        </tr>
+      `).join('');
+    } catch (err) {
+      console.error('[jj-admin] loadJJAll:', err);
+      tbody.innerHTML = `<tr><td colspan="8" class="loading-row">Error: ${escapeHtml(err.message)}</td></tr>`;
+    }
+  }
+  window.loadJJAll = loadJJAll;
+
+  window.jjApprove = async function(id) {
+    try {
+      await updateDoc(doc(db, 'prospects', id), {
+        status: 'approved',
+        approvedAt: Date.now(),
+        approvedBy: auth.currentUser?.uid || null,
+      });
+      toast('Approved — now live.');
+      loadJJPending();
+    } catch (err) {
+      console.error('[jj-admin] approve:', err);
+      toast('Approve failed: ' + err.message, 'error');
+    }
+  };
+
+  window.jjReject = async function(id) {
+    if (!confirm('Reject this prospect? It will be hidden from the public site.')) return;
+    try {
+      await updateDoc(doc(db, 'prospects', id), {
+        status: 'rejected',
+        rejectedAt: Date.now(),
+        rejectedBy: auth.currentUser?.uid || null,
+      });
+      toast('Rejected.', 'error');
+      loadJJPending();
+    } catch (err) {
+      console.error('[jj-admin] reject:', err);
+      toast('Reject failed: ' + err.message, 'error');
+    }
+  };
+
+  window.jjDelete = async function(id, name) {
+    if (!confirm(`PERMANENTLY delete "${name}"? This can't be undone.`)) return;
+    try {
+      await deleteDoc(doc(db, 'prospects', id));
+      toast(name + ' deleted.', 'error');
+      loadJJAll();
+    } catch (err) {
+      console.error('[jj-admin] delete:', err);
+      toast('Delete failed: ' + err.message, 'error');
+    }
+  };
+
+  // ── JIMMYS & JOES — COACH VERIFICATION QUEUE ────────────────
+  async function loadJJCoaches() {
+    const tbody = document.getElementById('jj-coaches-body');
+    tbody.innerHTML = `<tr><td colspan="8" class="loading-row">Loading…</td></tr>`;
+    try {
+      const snap = await getDocs(query(
+        collection(db, 'coach_profiles'),
+        orderBy('submittedAt', 'desc'),
+        limit(500)
+      ));
+      const list = [];
+      snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+      const pending  = list.filter(c => c.status === 'pending').length;
+      const verified = list.filter(c => c.status === 'verified').length;
+      document.getElementById('jj-coaches-pending-count').textContent  = pending;
+      document.getElementById('jj-coaches-verified-count').textContent = verified;
+      document.getElementById('jj-coaches-total-count').textContent    = list.length;
+      const badge = document.getElementById('jj-coaches-badge');
+      if (badge) {
+        badge.textContent = pending;
+        badge.style.display = pending ? 'inline-block' : 'none';
+      }
+      if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="loading-row">No coach applications yet.</td></tr>`;
+        return;
+      }
+      // Pull user display names in parallel for context.
+      const userDocs = await Promise.all(list.map(c => getDoc(doc(db, 'users', c.id)).catch(() => null)));
+      tbody.innerHTML = list.map((c, i) => {
+        const u = userDocs[i]?.exists() ? userDocs[i].data() : null;
+        return `
+          <tr>
+            <td style="white-space:nowrap; font-size:12px; color:var(--muted);">${jjFmtDate(c.submittedAt)}</td>
+            <td>${jjStatusBadge(c.status === 'verified' ? 'approved' : c.status)}</td>
+            <td><strong>${escapeHtml(u?.displayName || u?.email || c.id)}</strong></td>
+            <td>${escapeHtml(c.schoolName || '')}</td>
+            <td><a href="mailto:${escapeHtml(c.schoolEmail || '')}" style="color:var(--gold);">${escapeHtml(c.schoolEmail || '')}</a></td>
+            <td>${escapeHtml(c.title || '')}</td>
+            <td style="font-size:12px;">${escapeHtml(c.schoolCity || '')}${c.schoolCity && c.schoolState ? ', ' : ''}${escapeHtml(c.schoolState || '')}</td>
+            <td style="text-align:right; white-space:nowrap;">
+              ${c.status !== 'verified' ? `<button class="btn btn-gold btn-sm" onclick="jjVerifyCoach('${escapeHtml(c.id)}')">Verify</button>` : ''}
+              ${c.status !== 'rejected' ? `<button class="btn btn-ghost btn-sm" onclick="jjRejectCoach('${escapeHtml(c.id)}')">Reject</button>` : ''}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    } catch (err) {
+      console.error('[jj-admin] loadJJCoaches:', err);
+      tbody.innerHTML = `<tr><td colspan="8" class="loading-row">Error: ${escapeHtml(err.message)}</td></tr>`;
+    }
+  }
+  window.loadJJCoaches = loadJJCoaches;
+
+  window.jjVerifyCoach = async function(uid) {
+    if (!confirm('Verify this coach? They will gain bulk upload access immediately.')) return;
+    try {
+      // Two writes: flip coach_profiles status, set users.role = 'coach'.
+      await updateDoc(doc(db, 'coach_profiles', uid), {
+        status: 'verified',
+        verifiedAt: Date.now(),
+        verifiedBy: auth.currentUser?.uid || null,
+      });
+      await updateDoc(doc(db, 'users', uid), { role: 'coach' });
+      toast('Coach verified.');
+      loadJJCoaches();
+    } catch (err) {
+      console.error('[jj-admin] verify coach:', err);
+      toast('Verify failed: ' + err.message, 'error');
+    }
+  };
+
+  window.jjRejectCoach = async function(uid) {
+    const reason = prompt('Reason for rejection (shown to the applicant):', 'Could not verify school affiliation.');
+    if (reason == null) return;
+    try {
+      await updateDoc(doc(db, 'coach_profiles', uid), {
+        status: 'rejected',
+        rejectedAt: Date.now(),
+        notes: reason,
+      });
+      toast('Application rejected.', 'error');
+      loadJJCoaches();
+    } catch (err) {
+      console.error('[jj-admin] reject coach:', err);
+      toast('Reject failed: ' + err.message, 'error');
+    }
+  };
+
+  // ── JIMMYS & JOES — PROFILE CLAIMS QUEUE ─────────────────────
+  async function loadJJClaims() {
+    const tbody = document.getElementById('jj-claims-body');
+    tbody.innerHTML = `<tr><td colspan="8" class="loading-row">Loading…</td></tr>`;
+    try {
+      const snap = await getDocs(query(
+        collection(db, 'prospect_claims'),
+        orderBy('requestedAt', 'desc'),
+        limit(500)
+      ));
+      const list = [];
+      snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+      const pending  = list.filter(c => c.status === 'pending').length;
+      const approved = list.filter(c => c.status === 'approved').length;
+      document.getElementById('jj-claims-pending-count').textContent  = pending;
+      document.getElementById('jj-claims-approved-count').textContent = approved;
+      document.getElementById('jj-claims-total-count').textContent    = list.length;
+      const badge = document.getElementById('jj-claims-badge');
+      if (badge) {
+        badge.textContent = pending;
+        badge.style.display = pending ? 'inline-block' : 'none';
+      }
+      if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="8" class="loading-row">No claims yet.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = list.map(c => {
+        const actions = c.status === 'pending'
+          ? `<button class="btn btn-gold btn-sm" onclick="jjApproveClaim('${escapeHtml(c.id)}')">Approve</button>
+             <button class="btn btn-ghost btn-sm" onclick="jjRejectClaim('${escapeHtml(c.id)}')">Reject</button>`
+          : '';
+        return `
+          <tr>
+            <td style="white-space:nowrap; font-size:12px; color:var(--muted);">${jjFmtDate(c.requestedAt)}</td>
+            <td>${jjStatusBadge(c.status === 'approved' ? 'approved' : c.status)}</td>
+            <td><strong>${escapeHtml(c.coachName || c.coachUid)}</strong><br><span style="font-size:11px; color:var(--muted);">${escapeHtml(c.coachEmail || '')}</span></td>
+            <td>${escapeHtml(c.coachSchool || '')}</td>
+            <td><a href="/jimmysandjoes/prospect/${encodeURIComponent(c.prospectId)}" target="_blank" style="color:var(--gold);">${escapeHtml(c.prospectName || c.prospectId)}</a></td>
+            <td>${escapeHtml(c.prospectSchool || '')}</td>
+            <td style="font-size:12px; color:#d0cfca; max-width:240px;">${escapeHtml(c.note || '')}</td>
+            <td style="text-align:right; white-space:nowrap;">${actions}</td>
+          </tr>
+        `;
+      }).join('');
+    } catch (err) {
+      console.error('[jj-admin] loadJJClaims:', err);
+      tbody.innerHTML = `<tr><td colspan="8" class="loading-row">Error: ${escapeHtml(err.message)}</td></tr>`;
+    }
+  }
+  window.loadJJClaims = loadJJClaims;
+
+  window.jjApproveClaim = async function(claimId) {
+    if (!confirm('Approve this claim? The prospect will be stamped as coached by this user.')) return;
+    try {
+      // Flip status — the awardProfileClaim Cloud Function stamps coachUid + coachSchool on the prospect.
+      await updateDoc(doc(db, 'prospect_claims', claimId), {
+        status: 'approved',
+        decidedAt: Date.now(),
+        decidedBy: auth.currentUser?.uid || null,
+      });
+      toast('Claim approved.');
+      loadJJClaims();
+    } catch (err) {
+      console.error('[jj-admin] approve claim:', err);
+      toast('Approve failed: ' + err.message, 'error');
+    }
+  };
+
+  window.jjRejectClaim = async function(claimId) {
+    const reason = prompt('Reason for rejection (shown to the coach):', '');
+    if (reason == null) return;
+    try {
+      await updateDoc(doc(db, 'prospect_claims', claimId), {
+        status: 'rejected',
+        decidedAt: Date.now(),
+        decidedBy: auth.currentUser?.uid || null,
+        rejectionReason: String(reason).slice(0, 500),
+      });
+      toast('Claim rejected.', 'error');
+      loadJJClaims();
+    } catch (err) {
+      console.error('[jj-admin] reject claim:', err);
+      toast('Reject failed: ' + err.message, 'error');
+    }
+  };
+
+  async function pollJJClaimsBadge() {
+    try {
+      const snap = await getDocs(query(
+        collection(db, 'prospect_claims'),
+        where('status', '==', 'pending'),
+        limit(50)
+      ));
+      let n = 0; snap.forEach(() => n++);
+      const badge = document.getElementById('jj-claims-badge');
+      if (badge) { badge.textContent = n; badge.style.display = n ? 'inline-block' : 'none'; }
+    } catch (_) { /* silent */ }
+  }
+  pollJJClaimsBadge();
+  setInterval(pollJJClaimsBadge, 60_000);
+
+  async function pollJJCoachesBadge() {
+    try {
+      const snap = await getDocs(query(
+        collection(db, 'coach_profiles'),
+        where('status', '==', 'pending'),
+        limit(50)
+      ));
+      let n = 0; snap.forEach(() => n++);
+      const badge = document.getElementById('jj-coaches-badge');
+      if (badge) { badge.textContent = n; badge.style.display = n ? 'inline-block' : 'none'; }
+    } catch (_) { /* silent */ }
+  }
+  pollJJCoachesBadge();
+  setInterval(pollJJCoachesBadge, 60_000);
+
+  // Surface a pending-count badge on the sidebar when admin loads.
+  async function pollJJPendingBadge() {
+    try {
+      const snap = await getDocs(query(
+        collection(db, 'prospects'),
+        where('status', '==', 'pending'),
+        limit(50)
+      ));
+      let n = 0; snap.forEach(() => n++);
+      const badge = document.getElementById('jj-pending-badge');
+      if (badge) {
+        badge.textContent = n;
+        badge.style.display = n ? 'inline-block' : 'none';
+      }
+    } catch (_) { /* silent */ }
+  }
+  pollJJPendingBadge();
+  setInterval(pollJJPendingBadge, 60_000);
 
 </script>
 </body>

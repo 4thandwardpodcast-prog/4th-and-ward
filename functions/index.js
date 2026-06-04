@@ -391,3 +391,441 @@ exports.copyApprovedPulsePhoto = onDocumentWritten(
   }
 );
 
+
+// ─────────────────────────────────────────────────────────────────────
+// JIMMYS & JOES — Recompute prospect rating on every rating write.
+// Mirrors recomputeStadiumPulse: triggered on prospect_ratings/{ratingId}
+// writes, re-aggregates all ratings for the affected prospect, and writes
+// the composite J&J rating + histogram back onto the prospect doc.
+//
+// Component weights and accolade points are duplicated here from
+// js/jj-config.js so this CommonJS function stays self-contained.
+// Keep these in sync if you edit the client-side config.
+// ─────────────────────────────────────────────────────────────────────
+
+// Match SCORE_WEIGHTS in js/jj-config.js.
+const JJ_WEIGHTS = { film: 0.70, production: 0.15, accolades: 0.10, measurables: 0.05 };
+
+// Match ACCOLADES[].points in js/jj-config.js.
+const JJ_ACCOLADE_POINTS = {
+  'aa-1st': 30, 'aa-2nd': 22,
+  'as-1st': 18, 'as-2nd': 14, 'as-hm': 8,
+  'state-mvp': 25, 'state-poy': 25, 'state-opoy': 22, 'state-dpoy': 22,
+  'region-mvp': 15, 'region-opoy': 12, 'region-dpoy': 12,
+  'dist-mvp': 12, 'dist-opoy': 10, 'dist-dpoy': 10, 'dist-nfp': 6,
+  'all-dist-1st': 8, 'all-dist-2nd': 5,
+  'team-capt': 4, 'state-champ': 12, 'state-runner': 7,
+  'combine-elite': 10, 'camp-mvp': 6,
+};
+
+function jjAccoladesScore(accs) {
+  if (!Array.isArray(accs) || !accs.length) return 0;
+  const total = accs.reduce((sum, a) => sum + (JJ_ACCOLADE_POINTS[a?.id] || 0), 0);
+  return 5 * Math.tanh(total / 35);
+}
+
+function jjMeasurablesScore({ testing, heightInches, weightLbs }) {
+  const pieces = [];
+  const forty = testing?.fortyElectronic ?? testing?.fortyHand;
+  if (typeof forty === 'number' && forty > 0) {
+    const s = 5 - ((forty - 4.4) / 0.80) * 4;
+    pieces.push(Math.max(1, Math.min(5, s)));
+  }
+  if (typeof heightInches === 'number' && typeof weightLbs === 'number') {
+    const surplus = Math.max(0, heightInches - 70) + Math.max(0, (weightLbs - 170) / 10);
+    pieces.push(Math.min(5, 1 + surplus / 8));
+  }
+  if (!pieces.length) return 0;
+  return pieces.reduce((a, b) => a + b, 0) / pieces.length;
+}
+
+// Match STATS_BY_POSITION in js/jj-config.js.
+const JJ_STATS_BY_POSITION = {
+  QB:   [{ key:'passYards',bench:3000},{ key:'passTDs',bench:35},{ key:'completionPct',bench:65},{ key:'rushYards',bench:800}],
+  RB:   [{ key:'rushYards',bench:1800},{ key:'rushTDs',bench:25},{ key:'yardsPerCarry',bench:8},{ key:'recYards',bench:500}],
+  WR:   [{ key:'receptions',bench:70},{ key:'recYards',bench:1200},{ key:'recTDs',bench:15},{ key:'yardsPerRec',bench:18}],
+  TE:   [{ key:'receptions',bench:50},{ key:'recYards',bench:700},{ key:'recTDs',bench:10}],
+  OL:   [{ key:'pancakes',bench:60},{ key:'gamesStarted',bench:14},{ key:'sacksAllowed',inverse:true,hardCap:8}],
+  DL:   [{ key:'tackles',bench:70},{ key:'tfl',bench:20},{ key:'sacks',bench:12}],
+  EDGE: [{ key:'tackles',bench:60},{ key:'tfl',bench:22},{ key:'sacks',bench:15},{ key:'forcedFumbles',bench:5}],
+  LB:   [{ key:'tackles',bench:120},{ key:'tfl',bench:18},{ key:'sacks',bench:8},{ key:'interceptions',bench:3}],
+  CB:   [{ key:'interceptions',bench:5},{ key:'passBreakups',bench:12},{ key:'tackles',bench:50}],
+  S:    [{ key:'tackles',bench:80},{ key:'interceptions',bench:5},{ key:'passBreakups',bench:10},{ key:'forcedFumbles',bench:3}],
+};
+
+function jjProductionScore(stats, positionCode) {
+  if (!stats || !positionCode) return 0;
+  const schema = JJ_STATS_BY_POSITION[positionCode];
+  if (!schema || !schema.length) return 0;
+  let sum = 0, count = 0;
+  for (const f of schema) {
+    const v = Number(stats[f.key]);
+    if (!Number.isFinite(v) || v < 0) continue;
+    let s;
+    if (f.inverse) {
+      const cap = f.hardCap || 10;
+      s = Math.max(0, 5 - (v / cap) * 5);
+    } else {
+      s = Math.min(5, 5 * (v / (f.bench || 1)));
+    }
+    sum += s;
+    count++;
+  }
+  if (count === 0) return 0;
+  return sum / count;
+}
+
+exports.recomputeProspectRating = onDocumentWritten(
+  { document: 'prospect_ratings/{ratingId}', timeoutSeconds: 30, memory: '256MiB' },
+  async (event) => {
+    const after  = event.data?.after?.data();
+    const before = event.data?.before?.data();
+    const prospectId = after?.prospectId || before?.prospectId;
+    if (!prospectId) return;
+
+    const prospectRef = db.collection('prospects').doc(prospectId);
+    const prospectSnap = await prospectRef.get();
+    if (!prospectSnap.exists) return;
+    const prospect = prospectSnap.data();
+
+    const snap = await db.collection('prospect_ratings')
+      .where('prospectId', '==', prospectId)
+      .get();
+
+    if (snap.empty) {
+      await prospectRef.update({
+        ratingCount: 0,
+        ratingAvg: null,
+        filmTraitsAvg: 0,
+        productionScore: 0,
+        accoladesScore: 0,
+        measurablesScore: 0,
+        jjRating: 0,
+        ratingDistribution: [0, 0, 0, 0, 0],
+        trendingScore: 0,
+        lastRatedAt: null,
+      }).catch(err => console.warn('[jj] reset prospect failed:', prospectId, err.message));
+      return;
+    }
+
+    const ratings = [];
+    snap.forEach(d => ratings.push(d.data()));
+
+    // Per-rating combined score = mean of overall + all trait values present.
+    const perRater = ratings.map(r => {
+      const vals = [r.overall];
+      if (r.traits && typeof r.traits === 'object') {
+        Object.values(r.traits).forEach(v => { if (typeof v === 'number') vals.push(v); });
+      }
+      return vals.reduce((a, b) => a + b, 0) / Math.max(1, vals.length);
+    });
+
+    const filmTraitsAvg = perRater.reduce((a, b) => a + b, 0) / perRater.length;
+    const accoladesScore = jjAccoladesScore(prospect.accolades);
+    const measurablesScore = jjMeasurablesScore({
+      testing: prospect.testing,
+      heightInches: prospect.heightInches,
+      weightLbs: prospect.weightLbs,
+    });
+    const productionScore = jjProductionScore(prospect.stats, prospect.primaryPosition);
+
+    // Weighted composite, re-normalizing across components that actually
+    // contributed (so missing production/measurables don't drag the score).
+    const components = [
+      { w: JJ_WEIGHTS.film,        v: filmTraitsAvg   },
+      { w: JJ_WEIGHTS.production,  v: productionScore },
+      { w: JJ_WEIGHTS.accolades,   v: accoladesScore  },
+      { w: JJ_WEIGHTS.measurables, v: measurablesScore},
+    ];
+    const active = components.filter(c => c.v > 0);
+    const totalW = active.reduce((s, c) => s + c.w, 0) || 1;
+    const jjRating = active.reduce((s, c) => s + (c.v * c.w / totalW), 0);
+
+    // Histogram by integer overall bucket (1–5).
+    const dist = [0, 0, 0, 0, 0];
+    ratings.forEach(r => {
+      const b = Math.max(1, Math.min(5, Math.round(r.overall)));
+      dist[b - 1] += 1;
+    });
+
+    // Trending score = ratings + comments-like activity in the last 48h.
+    const now = Date.now();
+    const recent = ratings.filter(r => (now - (r.ratedAt || 0)) < 48 * 3600 * 1000).length;
+    const trendingScore = recent * 3 + ratings.length;   // weighted toward recency
+
+    const lastRatedAt = Math.max(...ratings.map(r => r.ratedAt || 0));
+
+    await prospectRef.update({
+      ratingCount:       ratings.length,
+      ratingAvg:         ratings.reduce((s, r) => s + r.overall, 0) / ratings.length,
+      filmTraitsAvg:     round2(filmTraitsAvg),
+      productionScore:   round2(productionScore),
+      accoladesScore:    round2(accoladesScore),
+      measurablesScore:  round2(measurablesScore),
+      jjRating:          round2(jjRating),
+      ratingDistribution: dist,
+      trendingScore,
+      lastRatedAt,
+    }).catch(err => console.warn('[jj] update prospect failed:', prospectId, err.message));
+
+    console.log(`[jj] recomputed ${prospectId}: ${ratings.length} rating(s), jj=${jjRating.toFixed(2)}`);
+  }
+);
+
+function round2(n) {
+  if (typeof n !== 'number' || isNaN(n)) return 0;
+  return Math.round(n * 100) / 100;
+}
+
+
+// ─────────────────────────────────────────────────────────────────────
+// JIMMYS & JOES — GAMIFICATION (points, streaks, badges, public mirror)
+//
+// Hard rule: clients cannot write points/badges/streak directly (enforced
+// by Firestore rules). All writes happen here via the Admin SDK.
+//
+// Three triggers:
+//  1. awardRatingPoints      — on prospect_ratings/{id} create
+//  2. awardCommentVotePoints — on comment_votes/{id} create
+//  3. mirrorUserPublic       — on users/{uid} write (sync to users_public)
+//
+// Badge thresholds + points-per-event are duplicated here from
+// js/jj-config.js. Keep in sync if you change either.
+// ─────────────────────────────────────────────────────────────────────
+
+const { FieldValue } = require('firebase-admin/firestore');
+
+const JJ_POINTS = {
+  ratingBase:         1,
+  ratingDetailBonus:  2,
+  ratingRandomBonus:  1,   // awarded when the rater landed via "Rate a Random Jimmy"
+  commentUpvote:      1,
+};
+
+// Sorted highest-tier-first so the "top badge" is just badges[0] after sort.
+const JJ_BADGES = [
+  { id: 'rater-500',   tier: 6, check: u => (u.ratingsCount || 0) >= 500 },
+  { id: 'helpful-100', tier: 6, check: u => (u.helpfulVotesReceived || 0) >= 100 },
+  { id: 'streak-30',   tier: 5, check: u => (u.streak || 0) >= 30 },
+  { id: 'rater-100',   tier: 4, check: u => (u.ratingsCount || 0) >= 100 },
+  { id: 'helpful-25',  tier: 4, check: u => (u.helpfulVotesReceived || 0) >= 25 },
+  { id: 'rater-50',    tier: 3, check: u => (u.ratingsCount || 0) >= 50 },
+  { id: 'streak-7',    tier: 3, check: u => (u.streak || 0) >= 7 },
+  { id: 'rater-10',    tier: 2, check: u => (u.ratingsCount || 0) >= 10 },
+  { id: 'streak-3',    tier: 2, check: u => (u.streak || 0) >= 3 },
+  { id: 'helpful-5',   tier: 2, check: u => (u.helpfulVotesReceived || 0) >= 5 },
+  { id: 'first-rating',tier: 1, check: u => (u.ratingsCount || 0) >= 1 },
+];
+
+function jjEarnedBadges(userStats) {
+  const earned = [];
+  for (const b of JJ_BADGES) {
+    if (b.check(userStats)) earned.push(b.id);
+  }
+  return earned;
+}
+
+function jjIsDetailedRating(rating) {
+  if (!rating) return false;
+  const text = (rating.comment || '').trim();
+  if (text.length >= 20) return true;
+  const traits = rating.traits || {};
+  return Object.values(traits).some(v => typeof v === 'number' && Math.abs(v - 3) > 0.01);
+}
+
+// YYYY-MM-DD in UTC (rater could be anywhere; UTC is fine for streak math
+// and keeps the function deterministic regardless of server timezone).
+function jjDayKey(tsMillis) {
+  const d = new Date(tsMillis);
+  return d.getUTCFullYear() + '-' +
+         String(d.getUTCMonth() + 1).padStart(2, '0') + '-' +
+         String(d.getUTCDate()).padStart(2, '0');
+}
+
+// 1 if same day, 2 if next day, > 2 if streak broke, 0 if first ever.
+function jjDayDelta(prevKey, newKey) {
+  if (!prevKey) return 0;
+  if (prevKey === newKey) return 1;
+  const p = new Date(prevKey + 'T00:00:00Z').getTime();
+  const n = new Date(newKey + 'T00:00:00Z').getTime();
+  return Math.round((n - p) / 86400000) + 1;   // 2 = next day, 3+ = broke
+}
+
+// ── Trigger 1: rating points ────────────────────────────────────────
+exports.awardRatingPoints = onDocumentCreated(
+  { document: 'prospect_ratings/{ratingId}', timeoutSeconds: 30, memory: '256MiB' },
+  async (event) => {
+    const rating = event.data?.data();
+    if (!rating?.raterUid) return;           // anonymous ratings don't earn points
+    const uid = rating.raterUid;
+
+    const ratingId = event.params.ratingId;
+    const ratingTime = rating.ratedAt || Date.now();
+
+    const userRef = db.collection('users').doc(uid);
+    const result = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(userRef);
+      if (!snap.exists) return { skipped: 'no user doc' };
+
+      const prev = snap.data();
+      const newDayKey = jjDayKey(ratingTime);
+      const prevDayKey = prev.lastRatedDate || null;
+      const delta = jjDayDelta(prevDayKey, newDayKey);
+
+      // Idempotency: track which rating IDs we've credited so re-running
+      // the function (cold start, etc.) doesn't double-pay.
+      const credited = Array.isArray(prev.creditedRatingIds) ? prev.creditedRatingIds : [];
+      if (credited.includes(ratingId)) return { skipped: 'already credited' };
+
+      const pointsEarned = JJ_POINTS.ratingBase
+        + (jjIsDetailedRating(rating) ? JJ_POINTS.ratingDetailBonus : 0)
+        + (rating.viaRandom === true   ? JJ_POINTS.ratingRandomBonus : 0);
+
+      // Streak: 1 if first ever or broken; ++ if next day; unchanged if same day.
+      let streak;
+      if (delta === 0)      streak = 1;                   // first ever
+      else if (delta === 1) streak = prev.streak || 1;    // same day
+      else if (delta === 2) streak = (prev.streak || 0) + 1; // next day
+      else                  streak = 1;                   // broke
+
+      const newRatingsCount = (prev.ratingsCount || 0) + 1;
+      const newPoints       = (prev.points || 0) + pointsEarned;
+
+      // Compute badges using the updated stats (keep helpfulVotesReceived as-is).
+      const newBadges = jjEarnedBadges({
+        ratingsCount: newRatingsCount,
+        helpfulVotesReceived: prev.helpfulVotesReceived || 0,
+        streak,
+      });
+
+      // Trim creditedRatingIds to last 200 to bound the user doc size.
+      const newCredited = credited.concat([ratingId]).slice(-200);
+
+      tx.update(userRef, {
+        points: newPoints,
+        ratingsCount: newRatingsCount,
+        streak,
+        badges: newBadges,
+        lastRatedAt: ratingTime,
+        lastRatedDate: newDayKey,
+        creditedRatingIds: newCredited,
+      });
+      return { uid, pointsEarned, streak, badges: newBadges, newRatingsCount };
+    });
+
+    if (result?.skipped) {
+      console.log(`[jj-points] rating ${ratingId}: ${result.skipped}`);
+      return;
+    }
+    console.log(`[jj-points] +${result.pointsEarned} to ${result.uid} ` +
+                `(ratings=${result.newRatingsCount}, streak=${result.streak}d)`);
+  }
+);
+
+// ── Trigger 2: upvote a comment → bump comment helpful + author points ──
+exports.awardCommentVotePoints = onDocumentWritten(
+  { document: 'comment_votes/{voteId}', timeoutSeconds: 30, memory: '256MiB' },
+  async (event) => {
+    const before = event.data?.before?.data();
+    const after  = event.data?.after?.data();
+    const data   = after || before;
+    if (!data?.commentId) return;
+
+    const wasCounted = !!before;
+    const isCounted  = !!after;
+    if (wasCounted === isCounted) return;
+
+    const direction = isCounted ? 1 : -1;     // +1 on create, -1 on delete
+    const commentRef = db.collection('prospect_comments').doc(data.commentId);
+    const commentSnap = await commentRef.get();
+    if (!commentSnap.exists) return;
+
+    const comment = commentSnap.data();
+    const authorUid = comment.authorUid;
+
+    // Bump the helpful counter on the comment doc itself.
+    await commentRef.update({
+      helpful: FieldValue.increment(direction),
+    }).catch(err => console.warn('[jj-vote] comment update failed:', err.message));
+
+    if (!authorUid) return;
+
+    // Award/refund a point on the author's user doc.
+    const userRef = db.collection('users').doc(authorUid);
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(userRef);
+      if (!snap.exists) return;
+      const prev = snap.data();
+      const newPoints    = Math.max(0, (prev.points || 0) + direction * JJ_POINTS.commentUpvote);
+      const newHelpful   = Math.max(0, (prev.helpfulVotesReceived || 0) + direction);
+      const badges = jjEarnedBadges({
+        ratingsCount: prev.ratingsCount || 0,
+        helpfulVotesReceived: newHelpful,
+        streak: prev.streak || 0,
+      });
+      tx.update(userRef, {
+        points: newPoints,
+        helpfulVotesReceived: newHelpful,
+        badges,
+      });
+    }).catch(err => console.warn('[jj-vote] author point update failed:', err.message));
+
+    console.log(`[jj-vote] comment ${data.commentId}: ${direction > 0 ? '+' : '−'}1 helpful → author ${authorUid}`);
+  }
+);
+
+// ── Trigger 3: mirror safe fields from users/{uid} to users_public/{uid} ──
+exports.mirrorUserPublic = onDocumentWritten(
+  { document: 'users/{uid}', timeoutSeconds: 20, memory: '256MiB' },
+  async (event) => {
+    const uid = event.params.uid;
+    const after = event.data?.after?.data();
+    if (!after) {
+      await db.collection('users_public').doc(uid).delete().catch(() => {});
+      return;
+    }
+    await db.collection('users_public').doc(uid).set({
+      uid,
+      displayName: after.displayName || null,
+      photoURL:    after.photoURL    || null,
+      role:        after.role        || 'member',
+      points:                after.points || 0,
+      streak:                after.streak || 0,
+      badges:                Array.isArray(after.badges) ? after.badges : [],
+      ratingsCount:          after.ratingsCount || 0,
+      helpfulVotesReceived:  after.helpfulVotesReceived || 0,
+      lastRatedDate:         after.lastRatedDate || null,
+      updatedAt:             Date.now(),
+    }, { merge: true }).catch(err => console.warn('[jj-mirror] failed:', uid, err.message));
+  }
+);
+
+// ── Trigger 4: profile claim approved → stamp prospect doc ───────────
+// Admin flips prospect_claims/{id}.status to 'approved'. This function
+// then writes coachUid + coachSchool + coachName + claimedAt onto the
+// referenced prospect, which the rules allow for the Admin SDK only.
+exports.awardProfileClaim = onDocumentWritten(
+  { document: 'prospect_claims/{claimId}', timeoutSeconds: 30, memory: '256MiB' },
+  async (event) => {
+    const before = event.data?.before?.data();
+    const after  = event.data?.after?.data();
+    if (!after) return;
+    const wasApproved = before?.status === 'approved';
+    const isApproved  = after.status   === 'approved';
+    if (wasApproved || !isApproved) return;        // only fire on the transition
+
+    const prospectId = after.prospectId;
+    if (!prospectId) return;
+    try {
+      await db.collection('prospects').doc(prospectId).update({
+        coachUid:    after.coachUid    || null,
+        coachName:   after.coachName   || null,
+        coachSchool: after.coachSchool || null,
+        claimedAt:   after.decidedAt   || Date.now(),
+      });
+      console.log(`[jj-claim] stamped ${prospectId} → coach ${after.coachUid}`);
+    } catch (err) {
+      console.warn(`[jj-claim] failed to stamp ${prospectId}:`, err.message);
+    }
+  }
+);

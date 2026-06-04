@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Coach Dashboard — Jimmys &amp; Joes — 4th &amp; Ward</title>
+  <meta name="description" content="Your team's prospects on Jimmys & Joes.">
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;900&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/jj.css">
+  <script type="module" src="js/user-menu.js"></script>
+  <style>
+    .coach-dash-grid {
+      display: grid; gap: 14px;
+      grid-template-columns: repeat(4, 1fr);
+      margin-bottom: 22px;
+    }
+    @media (max-width: 800px) { .coach-dash-grid { grid-template-columns: repeat(2, 1fr); } }
+    .coach-stat {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 18px;
+    }
+    .coach-stat-num { font-family: var(--condensed); font-weight: 900; font-size: 34px; color: var(--gold); line-height: 1; }
+    .coach-stat-label { font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+    .coach-pill {
+      display: inline-block; padding: 3px 9px; border-radius: 999px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      border: 1px solid var(--border);
+    }
+    .coach-pill.pending  { background: rgba(245,197,24,0.10); color: var(--gold);  border-color: rgba(245,197,24,0.35); }
+    .coach-pill.approved { background: rgba(40,167,69,0.10);  color: #a8f0b8;       border-color: rgba(40,167,69,0.35);  }
+    .coach-pill.rejected { background: rgba(220,53,69,0.10); color: #f6a8b0;       border-color: rgba(220,53,69,0.35); }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo"><img src="logo-cover.svg" alt="4th & Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="episodes.html">Episodes</a></li>
+      <li><a href="totw.html">Team of the Week</a></li>
+      <li><a href="wardle.html">4th &amp; Wardle</a></li>
+      <li><a href="hsblitz.html">HS Blitz<span class="nav-beta">Beta</span></a></li>
+      <li><a href="dripordrown.html">Drip or Drown</a></li>
+      <li><a href="pulse.html">Friday Night Pulse<span class="nav-beta">New</span></a></li>
+      <li><a href="jimmysandjoes.html" class="active">Jimmys &amp; Joes<span class="nav-beta">New</span></a></li>
+      <li><a href="merch.html">Merch</a></li>
+      <li id="nav-user-slot"></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+  </nav>
+
+  <main class="page-wrap">
+    <nav class="jj-subnav" aria-label="Jimmys & Joes sections">
+      <div class="jj-subnav-inner">
+        <a href="/jimmysandjoes">Discover</a>
+        <a href="/jimmysandjoes/leaderboards">Leaderboards</a>
+        <a href="/jimmysandjoes/rankings">Sub-Rankings</a>
+        <a href="/jimmysandjoes/scouts">Hall of Scouts</a>
+        <a href="/jimmysandjoes/submit">+ Add a Jimmy</a>
+        <a href="/coach">For Coaches</a>
+      </div>
+    </nav>
+
+    <section class="jj-section">
+      <div class="section-inner" style="max-width: 1100px;">
+        <div class="section-label">Coach Dashboard</div>
+        <h1 class="section-title" id="dash-title">Loading…</h1>
+        <div id="dash-host"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-logo"><img src="logo.png" alt="4th & Ward Podcast"></div>
+    <ul class="footer-links">
+      <li><a href="about.html">About</a></li>
+      <li><a href="jimmysandjoes.html">Jimmys &amp; Joes</a></li>
+      <li><a href="privacy.html">Privacy</a></li>
+      <li><a href="merch.html">Merch</a></li>
+    </ul>
+    <p class="footer-copy">&#169; 2026 4th &amp; Ward Podcast. All rights reserved.</p>
+  </footer>
+
+  <script type="module">
+    import { db } from './js/firebase-init.js';
+    import { onAuthChange, getUserDoc } from './js/auth.js';
+    import {
+      collection, doc, getDoc, getDocs, query, where, orderBy, limit
+    } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { escapeHtml } from './js/jj-utils.js';
+
+    const host = document.getElementById('dash-host');
+    const title = document.getElementById('dash-title');
+    let currentUser = null, myProfile = null, myCoachProfile = null;
+
+    onAuthChange(async u => {
+      currentUser = u || null;
+      if (!u) { renderLoggedOut(); return; }
+      myProfile = await getUserDoc(u.uid);
+      try {
+        const snap = await getDoc(doc(db, 'coach_profiles', u.uid));
+        myCoachProfile = snap.exists() ? snap.data() : null;
+      } catch (_) { myCoachProfile = null; }
+      renderGate();
+    });
+
+    function renderLoggedOut() {
+      title.textContent = 'Coach Dashboard';
+      host.innerHTML = `
+        <div class="jj-card-section" style="text-align:center;">
+          <p style="color:var(--muted); margin-bottom:16px;">You need to be logged in.</p>
+          <button class="btn-gold" type="button" id="dash-login-btn">Log In</button>
+        </div>
+      `;
+      document.getElementById('dash-login-btn').addEventListener('click', () => {
+        if (window.openAuthModal) window.openAuthModal('login');
+      });
+    }
+
+    function renderGate() {
+      const verified = myProfile?.role === 'coach' || myCoachProfile?.status === 'verified';
+      if (verified) { renderDashboard(); return; }
+      if (myCoachProfile?.status === 'pending') {
+        title.textContent = 'Application Pending';
+        host.innerHTML = `
+          <div class="jj-card-section">
+            <h2>You're in the queue.</h2>
+            <p style="color:#d0cfca; margin-top:8px;">Your application for <strong>${escapeHtml(myCoachProfile.schoolName)}</strong> is under review. We'll email you at <strong>${escapeHtml(myCoachProfile.schoolEmail)}</strong> with a decision within 24–48 hours.</p>
+          </div>
+        `;
+        return;
+      }
+      title.textContent = 'Become a Verified Coach';
+      host.innerHTML = `
+        <div class="jj-card-section">
+          <p style="color:#d0cfca; margin-bottom: 18px;">This dashboard unlocks once your coach verification is approved.</p>
+          <a href="/coach" class="btn-gold">Apply for Verification</a>
+        </div>
+      `;
+    }
+
+    async function renderDashboard() {
+      const schoolName = myCoachProfile?.schoolName || 'your school';
+      title.textContent = `Coach Dashboard · ${schoolName}`;
+      host.innerHTML = `
+        <div class="coach-dash-grid">
+          <div class="coach-stat"><div class="coach-stat-num" id="ds-total">—</div>      <div class="coach-stat-label">Submissions</div></div>
+          <div class="coach-stat"><div class="coach-stat-num" id="ds-pending">—</div>    <div class="coach-stat-label">Pending Review</div></div>
+          <div class="coach-stat"><div class="coach-stat-num" id="ds-approved">—</div>   <div class="coach-stat-label">Live on Site</div></div>
+          <div class="coach-stat"><div class="coach-stat-num" id="ds-ratings">—</div>    <div class="coach-stat-label">Total Ratings</div></div>
+        </div>
+
+        <div class="jj-form-actions" style="justify-content: flex-start; margin-bottom: 18px;">
+          <a href="/coach/bulk-upload" class="btn-gold">📋 Bulk Upload Roster</a>
+          <a href="/jimmysandjoes/submit" class="btn-ghost">+ Single Submission</a>
+        </div>
+
+        <div class="jj-card-section">
+          <h2>My Submissions</h2>
+          <div id="ds-list">Loading…</div>
+        </div>
+      `;
+      await loadMyProspects();
+    }
+
+    async function loadMyProspects() {
+      const list = document.getElementById('ds-list');
+      try {
+        // submittedBy index: this requires `submittedBy` to be set on the
+        // prospect doc, which the submission form does for logged-in users.
+        const snap = await getDocs(query(
+          collection(db, 'prospects'),
+          where('submittedBy', '==', currentUser.uid),
+          orderBy('submittedAt', 'desc'),
+          limit(500)
+        ));
+        const items = [];
+        snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+
+        document.getElementById('ds-total').textContent = items.length;
+        document.getElementById('ds-pending').textContent  = items.filter(p => p.status === 'pending').length;
+        document.getElementById('ds-approved').textContent = items.filter(p => p.status === 'approved').length;
+        document.getElementById('ds-ratings').textContent  = items.reduce((s, p) => s + (p.ratingCount || 0), 0);
+
+        if (!items.length) {
+          list.innerHTML = `<div style="color:var(--muted); padding: 18px 0;">No submissions yet. Use the bulk upload above to add a whole roster, or submit one at a time.</div>`;
+          return;
+        }
+        list.innerHTML = `
+          <div style="overflow-x:auto;">
+            <table class="jj-ranking-table">
+              <thead>
+                <tr>
+                  <th>Status</th><th>Name</th><th>Pos</th><th>Class</th><th>School</th>
+                  <th class="right">J&amp;J</th><th class="right">Raters</th><th></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${items.map(p => `
+                  <tr>
+                    <td><span class="coach-pill ${escapeHtml(p.status)}">${escapeHtml(p.status)}</span></td>
+                    <td><strong>${escapeHtml(p.fullName)}</strong></td>
+                    <td>${escapeHtml(p.primaryPosition || '—')}</td>
+                    <td>${escapeHtml(p.classYear || '—')}</td>
+                    <td>${escapeHtml(p.schoolName || '')}</td>
+                    <td class="right">${p.jjRating ? p.jjRating.toFixed(1) : '—'}</td>
+                    <td class="right">${p.ratingCount || 0}</td>
+                    <td style="text-align:right;">
+                      ${p.status === 'approved'
+                        ? `<a class="btn-ghost" style="padding:6px 12px; font-size:11px;" href="/jimmysandjoes/prospect/${encodeURIComponent(p.slug)}" target="_blank">View</a>`
+                        : `<span style="color:var(--muted); font-size:11px;">—</span>`}
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } catch (err) {
+        console.warn('[coach-dash]', err);
+        list.innerHTML = `<div style="color:var(--muted);">Couldn't load your submissions: ${escapeHtml(err.message)}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>

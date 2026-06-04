@@ -2,12 +2,16 @@
 User-agent: *
 Allow: /
 
-# Block admin / scripts data
+# Block admin / scripts data + private user pages
 Disallow: /admin
 Disallow: /admin.html
+Disallow: /account
+Disallow: /coach/dashboard
+Disallow: /coach/bulk-upload
 Disallow: /scripts/
 
 # Sitemaps
 Sitemap: https://4thandward.com/sitemap.xml
 Sitemap: https://4thandward.com/sitemap-stadiums.xml
 Sitemap: https://4thandward.com/sitemap-schools.xml
+Sitemap: https://4thandward.com/sitemap-jimmys.xml

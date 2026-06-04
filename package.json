@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.89.0"
+    "@anthropic-ai/sdk": "^0.89.0",
+    "@vercel/og": "^0.6.4"
   },
   "devDependencies": {
     "cheerio": "^1.2.0",
