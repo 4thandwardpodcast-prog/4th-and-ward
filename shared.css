@@ -51,6 +51,7 @@ nav.nav-open .nav-mobile-btn span:nth-child(2) { opacity: 0; }
 nav.nav-open .nav-mobile-btn span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 .nav-links-wrap { display: flex; align-items: center; gap: 4px; }
 .page-wrap { padding-top: 68px; }
+@media (max-width: 900px) { .page-wrap { padding-top: 60px; } }
 .section-inner { max-width: 1200px; margin: 0 auto; }
 .section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
 .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); max-width: 60px; }

@@ -515,6 +515,31 @@
   background: rgba(245,197,24,0.07);
 }
 
+/* Mobile: subnav becomes a single horizontally-scrollable row.
+   Avoids the 6 items wrapping into 3 rows and overlapping
+   the next section. Also matches the smaller 64px nav offset. */
+@media (max-width: 900px) {
+  .jj-subnav {
+    top: 64px;
+    padding: 8px 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .jj-subnav::-webkit-scrollbar { display: none; }
+  .jj-subnav-inner {
+    flex-wrap: nowrap;
+    width: max-content;
+    min-width: 100%;
+  }
+  .jj-subnav a, .jj-subnav-random {
+    flex-shrink: 0;
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+}
+
 /* ── Hub widget sections (Trending, Diamonds, Top) ────────────── */
 .jj-widget-grid {
   display: grid; gap: 14px;
