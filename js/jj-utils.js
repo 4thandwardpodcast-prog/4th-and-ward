@@ -67,16 +67,21 @@ export function parseHighlightUrl(rawUrl) {
   }
 
   // ── Hudl ──────────────────────────────────────────────────────────
-  // hudl.com/video/<n>/<n>/<id>  e.g. hudl.com/video/3/1234567/abcdef123456
-  // Also: hudl.com/v/<id> short-share links.
-  const hudlLong = url.match(/hudl\.com\/video\/\d+\/\d+\/([A-Za-z0-9]+)/);
-  if (hudlLong) {
-    const id = hudlLong[1];
+  // Long-share:  hudl.com/video/<a>/<b>/<id>  (b is the team/series id, not 0)
+  // Short-share: hudl.com/v/<id>
+  // The embed URL mirrors the path: /video/X → /embed/video/X. We store
+  // the *full* suffix as the embedId so render-time doesn't have to
+  // reconstruct the team segment.
+  const hudlPath = url.match(/hudl\.com\/(?:video|embed\/video)\/([^?#]+?)\/?(?:[?#]|$)/);
+  if (hudlPath) {
+    const suffix = hudlPath[1];                       // "3/18397992/6a105e..."
+    const lastSeg = suffix.split('/').pop();
     return {
       type: 'hudl',
-      rawId: id,
-      embedUrl: `https://www.hudl.com/embed/video/3/0/${id}`,
+      rawId: suffix,                                  // full path under /video/
+      embedUrl: `https://www.hudl.com/embed/video/${suffix}`,
       thumbUrl: null,
+      _legacyLastSeg: lastSeg,                        // for back-compat sniffs
     };
   }
   const hudlShort = url.match(/hudl\.com\/v\/([A-Za-z0-9_-]+)/);
@@ -85,8 +90,6 @@ export function parseHighlightUrl(rawUrl) {
     return {
       type: 'hudl',
       rawId: id,
-      // Short links fall back to the share URL inside the iframe; Hudl
-      // accepts this and rewrites it to the proper embed source.
       embedUrl: `https://www.hudl.com/embed/video/${id}`,
       thumbUrl: null,
     };

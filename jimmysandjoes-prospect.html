@@ -115,7 +115,8 @@
       BADGE_BY_ID
     } from '/js/jj-config.js';
     import {
-      escapeHtml, renderStars, inchesToFeetInches, formatWeight, getOrCreateVisitorId
+      escapeHtml, renderStars, inchesToFeetInches, formatWeight, getOrCreateVisitorId,
+      parseHighlightUrl
     } from '/js/jj-utils.js';
 
     // ── Read slug from URL ─────────────────────────────────────
@@ -178,16 +179,17 @@
     // ── Render ─────────────────────────────────────────────────
     function videoEmbedHtml() {
       const url = prospect.highlightUrl;
-      const type = prospect.highlightType;
-      const id = prospect.highlightEmbedId;
       if (!url) {
         return `<div class="jj-video"><div class="jj-video-missing">No highlight video on file.</div></div>`;
       }
-      let src = '';
-      if (type === 'youtube') src = `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1`;
-      else if (type === 'hudl') src = `https://www.hudl.com/embed/video/3/0/${id}`;
-      if (!src) return `<div class="jj-video"><div class="jj-video-missing">Couldn't embed this video — <a href="${escapeHtml(url)}" target="_blank" style="color:var(--gold);">open externally</a>.</div></div>`;
-      return `<div class="jj-video"><iframe src="${src}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`;
+      // Re-parse the URL at render time. Older prospects may have a stale
+      // `highlightEmbedId` (Hudl team-segment used to be hardcoded to "0"),
+      // so we always rebuild the embed URL from the source.
+      const parsed = parseHighlightUrl(url);
+      if (!parsed?.embedUrl) {
+        return `<div class="jj-video"><div class="jj-video-missing">Couldn't embed this video — <a href="${escapeHtml(url)}" target="_blank" style="color:var(--gold);">open externally</a>.</div></div>`;
+      }
+      return `<div class="jj-video"><iframe src="${escapeHtml(parsed.embedUrl)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`;
     }
 
     function ratingDisplayHtml() {
