@@ -119,7 +119,12 @@
     } from '/js/jj-utils.js';
 
     // ── Read slug from URL ─────────────────────────────────────
-    const slug = new URLSearchParams(window.location.search).get('slug');
+    // Pretty URL: /jimmysandjoes/prospect/<slug>. The Vercel rewrite
+    // serves this page but doesn't change the browser URL, so we parse
+    // the path. Fall back to ?slug= so direct-file access still works.
+    const _pathMatch = window.location.pathname.match(/\/jimmysandjoes\/prospect\/([^/?#]+)\/?$/);
+    const slug = new URLSearchParams(window.location.search).get('slug')
+              || (_pathMatch ? decodeURIComponent(_pathMatch[1]) : null);
     const root = document.getElementById('profile-root');
     let prospect = null;
     let currentUser = null;

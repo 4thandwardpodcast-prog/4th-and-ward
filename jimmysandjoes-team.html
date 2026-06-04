@@ -118,7 +118,11 @@
     // ── Read team slug from URL ────────────────────────────────
     // Slug format: lower-case school name with hyphens, e.g. "allen-high-school".
     // We match against prospect.schoolName by re-slugifying it client-side.
-    const teamSlug = new URLSearchParams(window.location.search).get('team');
+    // Pretty URL: /jimmysandjoes/team/<slug> — Vercel rewrite doesn't change
+    // the browser URL, so parse the path; fall back to ?team= for direct access.
+    const _teamPathMatch = window.location.pathname.match(/\/jimmysandjoes\/team\/([^/?#]+)\/?$/);
+    const teamSlug = new URLSearchParams(window.location.search).get('team')
+                  || (_teamPathMatch ? decodeURIComponent(_teamPathMatch[1]) : null);
     const root = document.getElementById('team-root');
 
     function slugifySchool(name) {
