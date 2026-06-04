@@ -348,6 +348,57 @@ onAuthChange(async user => {
 // Allow other code to programmatically open the modal.
 window.openAuthModal = openAuthModal;
 
+// ── Mobile hamburger nav ────────────────────────────────────────────
+// Injects a hamburger button into the page's <nav> and toggles a
+// .nav-open class for CSS to swap to drawer mode. Closes on outside
+// click, link tap, or Escape.
+function mountMobileNav() {
+  const nav = document.querySelector('nav');
+  if (!nav || nav.querySelector('.nav-mobile-btn')) return;
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'nav-mobile-btn';
+  btn.setAttribute('aria-label', 'Toggle menu');
+  btn.setAttribute('aria-expanded', 'false');
+  btn.innerHTML = '<span></span><span></span><span></span>';
+
+  // Sit right after the logo so it's the rightmost element on mobile.
+  const links = nav.querySelector('.nav-links');
+  if (links) nav.insertBefore(btn, links);
+  else nav.appendChild(btn);
+
+  function close() {
+    nav.classList.remove('nav-open');
+    btn.setAttribute('aria-expanded', 'false');
+  }
+  function toggle() {
+    const open = nav.classList.toggle('nav-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  btn.addEventListener('click', e => { e.stopPropagation(); toggle(); });
+  // Close on outside click
+  document.addEventListener('click', e => {
+    if (!nav.classList.contains('nav-open')) return;
+    if (nav.contains(e.target)) return;
+    close();
+  });
+  // Close on link tap so navigation feels natural
+  links?.addEventListener('click', e => {
+    if (e.target.closest('a')) close();
+  });
+  // Close on Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && nav.classList.contains('nav-open')) close();
+  });
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', mountMobileNav);
+} else {
+  mountMobileNav();
+}
+
 // ── Utilities ───────────────────────────────────────────────────────
 function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({

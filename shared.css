@@ -32,7 +32,23 @@ nav { position: fixed; top: 0; left: 0; right: 0; z-index: 500; display: flex; a
   text-shadow: 0 1px 0 rgba(255,255,255,0.2) !important;
 }
 .nav-listen:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,197,24,0.5), inset 0 1px 0 rgba(255,255,255,0.5) !important; }
-.nav-mobile-btn { display: none; background: none; border: none; color: var(--white); font-size: 22px; cursor: pointer; }
+/* Hamburger: 3 stacked bars that animate into an X when nav.nav-open. */
+.nav-mobile-btn {
+  display: none;
+  background: none; border: none; cursor: pointer;
+  width: 44px; height: 44px;
+  padding: 10px; margin-left: auto;
+  flex-direction: column; justify-content: center; gap: 5px;
+}
+.nav-mobile-btn span {
+  display: block; width: 24px; height: 2px;
+  background: var(--white); border-radius: 2px;
+  transition: transform 0.22s ease, opacity 0.18s ease;
+  transform-origin: center;
+}
+nav.nav-open .nav-mobile-btn span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+nav.nav-open .nav-mobile-btn span:nth-child(2) { opacity: 0; }
+nav.nav-open .nav-mobile-btn span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 .nav-links-wrap { display: flex; align-items: center; gap: 4px; }
 .page-wrap { padding-top: 68px; }
 .section-inner { max-width: 1200px; margin: 0 auto; }
@@ -144,20 +160,61 @@ footer { padding: 48px; border-top: 1px solid var(--border); display: flex; alig
   .nav-links a { font-size: 14px; padding: 6px 10px; }
   .nav-listen { font-size: 14px !important; padding: 8px 16px !important; }
 }
+/* Below 900px: hamburger + drawer. Above: keep the horizontal layout
+   (with the 1100px tightening above this rule). */
 @media (max-width: 900px) {
-  nav { padding: 0 16px; height: auto; min-height: 64px; flex-wrap: wrap; gap: 0; }
-  .nav-logo img { height: 34px; }
-  .nav-links { gap: 4px; flex-wrap: wrap; justify-content: flex-end; padding: 6px 0; }
-  .nav-links a { font-size: 13px; padding: 5px 9px; letter-spacing: 0.04em; }
-  .nav-listen { font-size: 13px !important; padding: 7px 14px !important; }
+  nav { padding: 0 16px; height: 64px; flex-wrap: nowrap; gap: 0; }
+  .nav-logo img { height: 32px; }
+  .nav-mobile-btn { display: flex; }
+
+  /* Drawer: collapses out of layout under the navbar, slides open. */
+  .nav-links {
+    position: fixed;
+    top: 64px; left: 0; right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    background: rgba(8, 8, 8, 0.98);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 16px;
+    transition: max-height 0.28s ease, padding 0.28s ease;
+  }
+  nav.nav-open .nav-links {
+    max-height: calc(100vh - 64px);
+    padding: 8px 16px 16px;
+    overflow-y: auto;
+  }
+  .nav-links li { width: 100%; }
+  .nav-links a {
+    display: block;
+    padding: 14px 12px;
+    font-size: 15px;
+    border-radius: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    letter-spacing: 0.05em;
+  }
+  .nav-links a.active {
+    background: rgba(245, 197, 24, 0.10);
+    border-color: rgba(245, 197, 24, 0.25);
+  }
+  .nav-listen {
+    display: block !important;
+    margin-top: 14px;
+    text-align: center;
+    padding: 12px 18px !important;
+    font-size: 15px !important;
+  }
+  /* Auth/user slot keeps its block layout in the drawer */
+  #nav-user-slot { width: 100%; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+
   footer { flex-direction: column; align-items: flex-start; padding: 32px 24px; gap: 16px; }
   .footer-links { flex-wrap: wrap; gap: 16px; }
 }
 @media (max-width: 600px) {
-  nav { padding: 10px 16px; flex-direction: column; align-items: flex-start; height: auto; }
-  .nav-links { width: 100%; justify-content: flex-start; gap: 4px; flex-wrap: wrap; padding: 6px 0 4px; }
-  .nav-links a { font-size: 12px; padding: 5px 8px; }
-  .nav-listen { display: none; }
   footer { padding: 24px 16px; }
   .footer-copy { font-size: 11px; }
 }
