@@ -1131,9 +1131,6 @@
       const samples = [9.4, 7.8, 6.1, 4.3, 8.7];
       let i = 0;
       const gauge = document.getElementById('hero-gauge');
-      const meta  = document.getElementById('hero-gauge-meta');
-
-      meta.innerHTML = 'Sample preview <span class="dot">•</span> Real ratings begin at launch';
 
       function tick() {
         setGaugeScore(gauge, samples[i % samples.length]);
