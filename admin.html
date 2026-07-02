@@ -747,14 +747,20 @@
                 <option>LA</option><option>NM</option><option>OK</option><option>PA</option>
                 <option>TN</option><option>TX</option><option>WV</option>
               </select>
+              <select id="stadium-sort" class="form-input" style="width:180px;" disabled>
+                <option value="updated">Sort: Recently updated</option>
+                <option value="rated">Sort: Recently rated</option>
+                <option value="pulse">Sort: Highest pulse</option>
+                <option value="name">Sort: Name (A–Z)</option>
+              </select>
               <span style="font-size:12px;color:var(--muted);" id="stadium-search-meta">Click "Load all" to begin.</span>
             </div>
             <table class="data-table">
               <thead>
-                <tr><th style="width:80px">Photo</th><th>Stadium</th><th>Cap</th><th>Ratings</th><th>Flags</th><th style="width:80px">Actions</th></tr>
+                <tr><th style="width:80px">Photo</th><th>Stadium</th><th>Cap</th><th>Ratings</th><th>Updated</th><th>Flags</th><th style="width:80px">Actions</th></tr>
               </thead>
               <tbody id="stadium-edit-body">
-                <tr><td colspan="6" class="loading-row">Click <strong>Load all</strong> in the top right to enable search.</td></tr>
+                <tr><td colspan="7" class="loading-row">Click <strong>Load all</strong> in the top right to enable search.</td></tr>
               </tbody>
             </table>
           </div>
@@ -2880,21 +2886,33 @@
       btn.disabled = false;
       search.disabled = false;
       stateFilter.disabled = false;
+      document.getElementById('stadium-sort').disabled = false;
       renderStadiumEditTable();
     } catch(e) {
-      tbody.innerHTML = '<tr><td colspan="6" class="loading-row">Error: ' + escapeHtml(e.message) + '</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="loading-row">Error: ' + escapeHtml(e.message) + '</td></tr>';
       btn.disabled = false;
       btn.textContent = 'Load all (~3,500)';
     }
   }
   window.loadAllStadiumsForEdit = loadAllStadiumsForEdit;
 
+  function stadiumUpdatedLabel(s) {
+    const ts = Math.max(s.lastRatedAt || 0, s.lastEditedAt || 0);
+    if (!ts) return '<span style="color:var(--muted);">—</span>';
+    const days = Math.floor((Date.now() - ts) / 86400000);
+    const when = days <= 0 ? 'today' : days === 1 ? '1d ago' : days < 30 ? days + 'd ago' : new Date(ts).toLocaleDateString();
+    const kind = (s.lastRatedAt || 0) >= (s.lastEditedAt || 0) ? 'rated' : 'edited';
+    const hot = days < 14 ? 'color:var(--gold);' : '';
+    return `<span style="${hot}">${when}</span><div style="font-size:10px;color:var(--muted);">${kind}</div>`;
+  }
+
   function renderStadiumEditTable() {
     const tbody = document.getElementById('stadium-edit-body');
     const search = (document.getElementById('stadium-search').value || '').toLowerCase().trim();
     const stateFilter = document.getElementById('stadium-state-filter').value;
+    const sortBy = document.getElementById('stadium-sort').value;
 
-    let list = window._allStadiums || [];
+    let list = (window._allStadiums || []).slice();
     if (stateFilter) list = list.filter(s => s.state === stateFilter);
     if (search) {
       list = list.filter(s =>
@@ -2905,12 +2923,18 @@
       );
     }
 
+    const activityTs = s => Math.max(s.lastRatedAt || 0, s.lastEditedAt || 0);
+    if (sortBy === 'rated')      list.sort((a, b) => (b.lastRatedAt || 0) - (a.lastRatedAt || 0));
+    else if (sortBy === 'pulse') list.sort((a, b) => (b.bayesianScore || 0) - (a.bayesianScore || 0));
+    else if (sortBy === 'name')  list.sort((a, b) => (a.stadiumName || '').localeCompare(b.stadiumName || ''));
+    else                         list.sort((a, b) => activityTs(b) - activityTs(a)); // 'updated'
+
     const limited = list.slice(0, 100);
     document.getElementById('stadium-search-meta').textContent =
       `${list.length} match${list.length === 1 ? '' : 'es'}${list.length > 100 ? ' (showing first 100)' : ''}`;
 
     if (!list.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="loading-row">No matches.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="loading-row">No matches.</td></tr>';
       return;
     }
 
@@ -2930,6 +2954,7 @@
         </td>
         <td>${s.capacity ? s.capacity.toLocaleString() : '—'}</td>
         <td>${s.ratingsCount || 0}${score}</td>
+        <td style="font-size:11px;line-height:1.4;">${stadiumUpdatedLabel(s)}</td>
         <td style="font-size:11px;line-height:1.5;">${flags.join('<br>') || '—'}</td>
         <td><button class="btn btn-ghost btn-sm" data-stadium-action="edit" data-id="${escapeHtml(s.id)}">Edit</button></td>
       </tr>`;
@@ -2942,6 +2967,7 @@
     _stadiumSearchTimer = setTimeout(renderStadiumEditTable, 180);
   });
   document.getElementById('stadium-state-filter').addEventListener('change', renderStadiumEditTable);
+  document.getElementById('stadium-sort').addEventListener('change', renderStadiumEditTable);
 
   // Action delegation
   document.addEventListener('click', function(e) {

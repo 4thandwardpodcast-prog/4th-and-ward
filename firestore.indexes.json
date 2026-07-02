@@ -18,6 +18,25 @@
       ]
     },
     {
+      "collectionGroup": "stadiums",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isHsVenue", "order": "ASCENDING" },
+        { "fieldPath": "pulseScore", "order": "DESCENDING" },
+        { "fieldPath": "capacity", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "stadiums",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isHsVenue", "order": "ASCENDING" },
+        { "fieldPath": "state", "order": "ASCENDING" },
+        { "fieldPath": "pulseScore", "order": "DESCENDING" },
+        { "fieldPath": "capacity", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "pulse_photo_submissions",
       "queryScope": "COLLECTION",
       "fields": [
@@ -111,20 +130,6 @@
       "fields": [
         { "fieldPath": "prospectId", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "users_public",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "points", "order": "DESCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "users_public",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "streak", "order": "DESCENDING" }
       ]
     }
   ],

@@ -724,6 +724,7 @@
           <option value="CA">California</option>
         </select>
         <select class="filter-select" id="all-sort">
+          <option value="pulse">Sort: Pulse (highest)</option>
           <option value="capacity">Sort: Capacity (largest)</option>
           <option value="name">Sort: Name (A-Z)</option>
           <option value="recent">Sort: Recently rated</option>
@@ -984,21 +985,30 @@
 
     // ── data loading ───────────────────────────────────────────
     async function loadTop25() {
-      // Day 1: orderBy capacity. Once ratings flow, switch to bayesianScore.
+      // Ranked by user rating (pulseScore). Unrated stadiums have pulseScore null,
+      // so capacity is the tiebreaker and keeps the order sensible before ratings flow.
       // isHsVenue filter excludes multi-use venues (Rose Bowl, Legion Field, etc.)
       const q = query(
         collection(db, 'stadiums'),
         where('isHsVenue', '==', true),
+        orderBy('pulseScore', 'desc'),
         orderBy('capacity', 'desc'),
         limit(25),
       );
-      const snap = await getDocs(q);
-      const out = [];
-      snap.forEach(d => out.push(d.data()));
-      topStadiums = out;
-      renderGrid(document.getElementById('top-grid'), topStadiums, true);
-      document.getElementById('top-meta').textContent =
-        `${topStadiums.length} stadiums • Sorted by capacity until ratings begin`;
+      try {
+        const snap = await getDocs(q);
+        const out = [];
+        snap.forEach(d => out.push(d.data()));
+        topStadiums = out;
+        renderGrid(document.getElementById('top-grid'), topStadiums, true);
+        document.getElementById('top-meta').textContent =
+          `${topStadiums.length} stadiums • Ranked by Friday Night Pulse`;
+      } catch (e) {
+        // Likely missing composite index — Firebase prints a link in the console
+        console.error('top query failed', e);
+        document.getElementById('top-grid').innerHTML =
+          `<div class="empty-state">Loading… first run may need a Firestore index. Check console.</div>`;
+      }
     }
 
     async function loadStateTop25(stateCode) {
@@ -1008,6 +1018,7 @@
         collection(db, 'stadiums'),
         where('isHsVenue', '==', true),
         where('state', '==', stateCode),
+        orderBy('pulseScore', 'desc'),
         orderBy('capacity', 'desc'),
         limit(25),
       );
@@ -1032,6 +1043,7 @@
       const q = query(
         collection(db, 'stadiums'),
         where('isHsVenue', '==', true),
+        orderBy('pulseScore', 'desc'),
         orderBy('capacity', 'desc'),
       );
       const snap = await getDocs(q);
@@ -1058,7 +1070,8 @@
       }
       if (sortBy === 'name') list.sort((a, b) => a.stadiumName.localeCompare(b.stadiumName));
       else if (sortBy === 'recent') list.sort((a, b) => (b.lastRatedAt || 0) - (a.lastRatedAt || 0));
-      // 'capacity' = default order (already sorted)
+      else if (sortBy === 'capacity') list.sort((a, b) => (b.capacity || 0) - (a.capacity || 0));
+      else list.sort((a, b) => (b.pulseScore || 0) - (a.pulseScore || 0) || (b.capacity || 0) - (a.capacity || 0)); // 'pulse'
 
       renderGrid(document.getElementById('all-grid'), list, false);
       document.getElementById('all-meta').textContent = `${list.length} of ${allStadiums.length}`;
