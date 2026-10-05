@@ -657,7 +657,7 @@
 
   <div class="tab-bar" role="tablist">
     <button class="tab-btn active" data-tab="top">National Top 25</button>
-    <button class="tab-btn" data-tab="state">By State</button>
+    <button class="tab-btn" data-tab="state">By State / Province</button>
     <button class="tab-btn" data-tab="all">All Stadiums</button>
     <button class="tab-btn" data-tab="submit">Submit</button>
   </div>
@@ -684,19 +684,7 @@
         <span class="section-meta" id="state-meta"></span>
       </div>
       <div class="filter-row">
-        <select class="filter-select" id="state-picker">
-          <option value="TX">Texas</option>
-          <option value="PA">Pennsylvania</option>
-          <option value="GA">Georgia</option>
-          <option value="AL">Alabama</option>
-          <option value="OK">Oklahoma</option>
-          <option value="TN">Tennessee</option>
-          <option value="LA">Louisiana</option>
-          <option value="AR">Arkansas</option>
-          <option value="WV">West Virginia</option>
-          <option value="NM">New Mexico</option>
-          <option value="CA">California</option>
-        </select>
+        <select class="filter-select" id="state-picker"></select>
       </div>
       <div id="state-grid"></div>
     </div>
@@ -710,18 +698,7 @@
       <div class="filter-row">
         <input class="filter-input" id="all-search" type="search" placeholder="Search stadium, school, or city…">
         <select class="filter-select" id="all-state-filter">
-          <option value="">All states</option>
-          <option value="TX">Texas</option>
-          <option value="PA">Pennsylvania</option>
-          <option value="GA">Georgia</option>
-          <option value="AL">Alabama</option>
-          <option value="OK">Oklahoma</option>
-          <option value="TN">Tennessee</option>
-          <option value="LA">Louisiana</option>
-          <option value="AR">Arkansas</option>
-          <option value="WV">West Virginia</option>
-          <option value="NM">New Mexico</option>
-          <option value="CA">California</option>
+          <option value="">All states / provinces</option>
         </select>
         <select class="filter-select" id="all-sort">
           <option value="pulse">Sort: Pulse (highest)</option>
@@ -767,22 +744,9 @@
               <input type="text" id="sf-city" maxlength="80" required placeholder="e.g. Allen">
             </div>
             <div class="form-field">
-              <label>State <span class="req">*</span></label>
+              <label>State / Province <span class="req">*</span> <span class="hint">outside US/Canada: pick International, put country in City</span></label>
               <select id="sf-state" required>
                 <option value="">— Select —</option>
-                <option>AL</option><option>AK</option><option>AZ</option><option>AR</option>
-                <option>CA</option><option>CO</option><option>CT</option><option>DE</option>
-                <option>FL</option><option>GA</option><option>HI</option><option>ID</option>
-                <option>IL</option><option>IN</option><option>IA</option><option>KS</option>
-                <option>KY</option><option>LA</option><option>ME</option><option>MD</option>
-                <option>MA</option><option>MI</option><option>MN</option><option>MS</option>
-                <option>MO</option><option>MT</option><option>NE</option><option>NV</option>
-                <option>NH</option><option>NJ</option><option>NM</option><option>NY</option>
-                <option>NC</option><option>ND</option><option>OH</option><option>OK</option>
-                <option>OR</option><option>PA</option><option>RI</option><option>SC</option>
-                <option>SD</option><option>TN</option><option>TX</option><option>UT</option>
-                <option>VT</option><option>VA</option><option>WA</option><option>WV</option>
-                <option>WI</option><option>WY</option><option>DC</option>
               </select>
             </div>
 
@@ -911,11 +875,37 @@
     let allStadiums = [];      // For All tab — fetched lazily
     let allFetched = false;
 
-    const STATE_NAMES = {
-      TX: 'Texas', PA: 'Pennsylvania', GA: 'Georgia', AL: 'Alabama',
-      OK: 'Oklahoma', TN: 'Tennessee', LA: 'Louisiana', AR: 'Arkansas',
-      WV: 'West Virginia', NM: 'New Mexico', CA: 'California',
+    // Region codes live in the stadium doc's `state` field. Canadian province
+    // codes don't collide with US ones; anything else is the INTL bucket.
+    const REGIONS = {
+      'United States': {
+        AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas', CA: 'California',
+        CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware', DC: 'District of Columbia',
+        FL: 'Florida', GA: 'Georgia', HI: 'Hawaii', ID: 'Idaho', IL: 'Illinois',
+        IN: 'Indiana', IA: 'Iowa', KS: 'Kansas', KY: 'Kentucky', LA: 'Louisiana',
+        ME: 'Maine', MD: 'Maryland', MA: 'Massachusetts', MI: 'Michigan', MN: 'Minnesota',
+        MS: 'Mississippi', MO: 'Missouri', MT: 'Montana', NE: 'Nebraska', NV: 'Nevada',
+        NH: 'New Hampshire', NJ: 'New Jersey', NM: 'New Mexico', NY: 'New York',
+        NC: 'North Carolina', ND: 'North Dakota', OH: 'Ohio', OK: 'Oklahoma', OR: 'Oregon',
+        PA: 'Pennsylvania', RI: 'Rhode Island', SC: 'South Carolina', SD: 'South Dakota',
+        TN: 'Tennessee', TX: 'Texas', UT: 'Utah', VT: 'Vermont', VA: 'Virginia',
+        WA: 'Washington', WV: 'West Virginia', WI: 'Wisconsin', WY: 'Wyoming',
+      },
+      'Canada': {
+        AB: 'Alberta', BC: 'British Columbia', MB: 'Manitoba', NB: 'New Brunswick',
+        NL: 'Newfoundland and Labrador', NS: 'Nova Scotia', NT: 'Northwest Territories',
+        NU: 'Nunavut', ON: 'Ontario', PE: 'Prince Edward Island', QC: 'Quebec',
+        SK: 'Saskatchewan', YT: 'Yukon',
+      },
+      'Other': { INTL: 'International' },
     };
+    const STATE_NAMES = Object.assign({}, ...Object.values(REGIONS));
+    const regionOptions = Object.entries(REGIONS).map(([country, codes]) =>
+      `<optgroup label="${country}">${Object.entries(codes).map(([c, n]) =>
+        `<option value="${c}">${n}</option>`).join('')}</optgroup>`).join('');
+    ['state-picker', 'all-state-filter', 'sf-state'].forEach(id =>
+      document.getElementById(id).insertAdjacentHTML('beforeend', regionOptions));
+    document.getElementById('state-picker').value = 'TX';
 
     // ── helpers ────────────────────────────────────────────────
     function escapeHtml(s) {

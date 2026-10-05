@@ -551,6 +551,14 @@
     .photo-cell:hover { transform: translateY(-3px); border-color: rgba(245,197,24,0.4); }
     .photo-cell img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
     .photo-cell:hover img { transform: scale(1.04); }
+    #lightbox { border: 0; padding: 0; background: transparent; max-width: 100vw; max-height: 100vh; }
+    #lightbox::backdrop { background: rgba(0,0,0,0.92); }
+    #lightbox img { display: block; max-width: 96vw; max-height: 94vh; object-fit: contain; cursor: zoom-out; }
+    .photo-cell { cursor: zoom-in; }
+    #lightbox .hero-arrow { position: fixed; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; font-size: 26px; }
+    #lightbox .hero-arrow[data-lb="-1"] { left: 12px; }
+    #lightbox .hero-arrow[data-lb="1"]  { right: 12px; }
+    #lightbox.single .hero-arrow { display: none; }
     .photo-credit {
       position: absolute; left: 0; right: 0; bottom: 0;
       padding: 8px 12px;
@@ -972,6 +980,11 @@
         <span class="section-meta" id="photos-meta"></span>
       </div>
       <div class="photo-grid" id="photo-grid"></div>
+      <dialog id="lightbox" aria-label="Photo viewer">
+        <button type="button" class="hero-arrow" data-lb="-1" aria-label="Previous photo">‹</button>
+        <img id="lightbox-img" alt="">
+        <button type="button" class="hero-arrow" data-lb="1" aria-label="Next photo">›</button>
+      </dialog>
     </section>
 
     <!-- COMMENTS -->
@@ -1471,13 +1484,54 @@
       });
     }
 
+    // ── photo lightbox (native <dialog>: Esc + backdrop for free) ──
+    let galleryPhotos = [];
+    let lightboxIdx = 0;
+    const lightbox = document.getElementById('lightbox');
+    function showLightbox(idx) {
+      const n = galleryPhotos.length;
+      if (!n) return;
+      lightboxIdx = (idx + n) % n;
+      document.getElementById('lightbox-img').src = galleryPhotos[lightboxIdx].url;
+      lightbox.classList.toggle('single', n < 2);
+      if (!lightbox.open) lightbox.showModal();
+    }
+    function openFromCell(e) {
+      const cell = e.target.closest('.photo-cell');
+      if (!cell || e.target.closest('a')) return;   // credit links still navigate
+      if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      showLightbox(parseInt(cell.dataset.photoIdx));
+    }
+    document.getElementById('photo-grid').addEventListener('click', openFromCell);
+    document.getElementById('photo-grid').addEventListener('keydown', openFromCell);
+    let touchX = null, swiped = false;
+    lightbox.addEventListener('touchstart', (e) => { touchX = e.touches[0].clientX; swiped = false; }, { passive: true });
+    lightbox.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - touchX;
+      if (Math.abs(dx) < 40) return;
+      swiped = true;                                 // the tap that follows a swipe must not close
+      showLightbox(lightboxIdx + (dx < 0 ? 1 : -1));
+    });
+    lightbox.addEventListener('click', (e) => {
+      if (swiped) { swiped = false; return; }
+      const arrow = e.target.closest('[data-lb]');
+      if (arrow) showLightbox(lightboxIdx + parseInt(arrow.dataset.lb));
+      else lightbox.close();
+    });
+    lightbox.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') showLightbox(lightboxIdx + 1);
+      if (e.key === 'ArrowLeft')  showLightbox(lightboxIdx - 1);
+    });
+
     // ── render photos ──────────────────────────────────────────
     function renderPhotos(extraPhotos = []) {
       const seedPhotos = (stadium.photos || []).filter(p => p.approved !== false);
       const all = [...seedPhotos, ...extraPhotos];
       const grid = document.getElementById('photo-grid');
-      const cells = all.map(p => `
-        <div class="photo-cell">
+      galleryPhotos = all;
+      const cells = all.map((p, i) => `
+        <div class="photo-cell" data-photo-idx="${i}" tabindex="0" role="button" aria-label="View photo full screen">
           <img src="${escapeHtml(p.url)}" alt="" loading="lazy">
           ${p.credit || p.sourcePage ? `<div class="photo-credit">
             ${p.credit ? `Photo: ${escapeHtml(p.credit)}` : 'Photo'}

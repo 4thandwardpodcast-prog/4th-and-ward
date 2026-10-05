@@ -743,9 +743,6 @@
               <input type="text" class="form-input" id="stadium-search" placeholder="Search by name, city, or slug…" style="flex:1;min-width:280px;" disabled>
               <select id="stadium-state-filter" class="form-input" style="width:160px;" disabled>
                 <option value="">All states</option>
-                <option>AL</option><option>AR</option><option>CA</option><option>GA</option>
-                <option>LA</option><option>NM</option><option>OK</option><option>PA</option>
-                <option>TN</option><option>TX</option><option>WV</option>
               </select>
               <select id="stadium-sort" class="form-input" style="width:180px;" disabled>
                 <option value="updated">Sort: Recently updated</option>
@@ -1196,7 +1193,7 @@
       </div>
       <div class="form-group">
         <label class="form-label">State</label>
-        <input type="text" class="form-input" id="stadium-edit-state" maxlength="2" style="text-transform:uppercase;">
+        <input type="text" class="form-input" id="stadium-edit-state" maxlength="4" style="text-transform:uppercase;">
       </div>
       <div class="form-group">
         <label class="form-label">County</label>
@@ -2882,6 +2879,9 @@
       snap.forEach(d => all.push({ id: d.id, ...d.data() }));
       all.sort((a, b) => (a.stadiumName || '').localeCompare(b.stadiumName || ''));
       window._allStadiums = all;
+      // State filter options come from the data, so provinces / INTL show up on their own
+      stateFilter.length = 1;
+      [...new Set(all.map(s => s.state).filter(Boolean))].sort().forEach(c => stateFilter.add(new Option(c)));
       btn.textContent = `✓ Loaded ${all.length}`;
       btn.disabled = false;
       search.disabled = false;
