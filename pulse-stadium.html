@@ -95,7 +95,7 @@
     .stadium-hero-inner {
       position: relative; z-index: 1;
       max-width: 1280px; margin: 0 auto;
-      padding: 100px 48px 48px;
+      padding: 48px 48px 48px;
       display: grid; grid-template-columns: 1fr; gap: 24px;
     }
     .back-link {
@@ -280,6 +280,32 @@
     @media (prefers-reduced-motion: reduce) { .pulse-gauge, .pulse-bar.lit { animation: none !important; } }
 
     /* ── PULSE SECTION + 8-CATEGORY BREAKDOWN ─────────────────── */
+    /* Compact Friday Night Pulse header — smaller cut of the pulse.html hero.
+       Logo ships on white, so it sits on a white chip. */
+    .pulse-mini-hero {
+      text-align: center; padding: 96px 20px 22px;   /* 72px fixed nav + breathing room */
+      background: radial-gradient(ellipse at 50% 0%, rgba(245,197,24,0.10), transparent 70%);
+      border-bottom: 1px solid var(--border);
+    }
+    .pulse-mini-title {
+      display: block; text-decoration: none; color: var(--white);
+      font-family: var(--condensed); font-weight: 900;
+      font-size: clamp(30px, 5vw, 46px); line-height: 0.95;
+      letter-spacing: -0.01em; text-transform: uppercase; margin-bottom: 12px;
+    }
+    .pulse-mini-title .accent { color: var(--gold); }
+    .pulse-sponsor {
+      display: inline-flex; flex-direction: column; align-items: center; gap: 8px;
+      text-decoration: none;
+      font-family: var(--condensed); font-weight: 800; font-size: 11px;
+      letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted);
+    }
+    .pulse-sponsor img {
+      height: 28px; width: auto; display: block; box-sizing: content-box;
+      padding: 10px 16px; background: #fff; border-radius: 8px;
+      transition: transform 0.2s;
+    }
+    .pulse-sponsor:hover img { transform: translateY(-2px); }
     .pulse-section {
       padding: 48px 48px 32px;
       max-width: 980px; margin: 0 auto;
@@ -826,7 +852,7 @@
     /* ── RESPONSIVE ──────────────────────────────────────────── */
     @media (max-width: 900px) {
       .stadium-hero { min-height: 360px; }
-      .stadium-hero-inner { padding: 80px 20px 32px; }
+      .stadium-hero-inner { padding: 32px 20px 32px; }
       .stadium-stats { gap: 20px; }
       .stat-cell-value { font-size: 20px; }
       .pulse-section, .photos-section, .comments-section { padding: 32px 20px; }
@@ -836,7 +862,7 @@
       .breakdown-label { font-size: 12px; letter-spacing: 0.06em; }
     }
     @media (max-width: 600px) {
-      .stadium-hero-inner { padding: 70px 16px 24px; }
+      .stadium-hero-inner { padding: 24px 16px 24px; }
       .stadium-stats { gap: 16px; }
       .photo-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
       .breakdown-row { grid-template-columns: 110px 1fr 36px; padding: 8px 10px; }
@@ -879,12 +905,20 @@
   <!-- Main content -->
   <div id="page-content" style="display:none;">
     <!-- HERO -->
+    <header class="pulse-mini-hero">
+      <a href="pulse.html" class="pulse-mini-title">Friday Night <span class="accent">Pulse</span></a>
+      <a class="pulse-sponsor" target="_blank" rel="sponsored noopener"
+         href="https://www.charterup.com/live/?utm_medium=influencer&amp;utm_source=podcast&amp;utm_campaign=driving+greantess&amp;utm_content=coaches"
+         aria-label="Friday Night Pulse is powered by CharterUP">
+        <span>Powered by</span>
+        <img src="charterup-logo.png" alt="CharterUP" width="602" height="103">
+      </a>
+    </header>
     <section class="stadium-hero">
       <div class="stadium-hero-photo" id="hero-photo"></div>
       <div class="stadium-hero-inner">
         <a href="pulse.html" class="back-link">← All stadiums</a>
         <div>
-          <div class="stadium-eyebrow">Friday Night Pulse</div>
           <h1 class="stadium-name" id="hero-name">—</h1>
           <div class="stadium-secondary" id="hero-secondary" style="display:none;"></div>
           <div class="stadium-location" id="hero-location"></div>

@@ -42,6 +42,19 @@
       text-align: center;
       isolation: isolate;
     }
+    /* Sponsor lockup — logo ships on white, so it sits on a white chip */
+    .pulse-sponsor {
+      display: inline-flex; flex-direction: column; align-items: center; gap: 10px;
+      margin: 6px 0 24px; text-decoration: none;
+      font-family: var(--condensed); font-weight: 800; font-size: 13px;
+      letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted);
+    }
+    .pulse-sponsor img {
+      height: 40px; width: auto; max-width: 70vw; display: block; box-sizing: content-box;
+      padding: 14px 22px; background: #fff; border-radius: 10px;
+      transition: transform 0.2s;
+    }
+    .pulse-sponsor:hover img { transform: translateY(-2px); }
     .pulse-hero-bg {
       position: absolute; inset: 0; z-index: -1; pointer-events: none;
       background:
@@ -621,6 +634,14 @@
     <div class="pulse-hero-bg"></div>
     <div class="pulse-eyebrow">A 4th &amp; Ward Original</div>
     <h1 class="pulse-title">Friday Night <span class="accent">Pulse</span></h1>
+    <div>
+      <a class="pulse-sponsor" target="_blank" rel="sponsored noopener"
+         href="https://www.charterup.com/live/?utm_medium=influencer&amp;utm_source=podcast&amp;utm_campaign=driving+greantess&amp;utm_content=coaches"
+         aria-label="Friday Night Pulse is powered by CharterUP">
+        <span>Powered by</span>
+        <img src="charterup-logo.png" alt="CharterUP" width="602" height="103">
+      </a>
+    </div>
     <p class="pulse-subtitle">
       Rate the atmosphere, energy, and home-field advantage of every high school football stadium in the country.
       The crowd decides. The pulse goes up.

@@ -19,15 +19,20 @@
   <link rel="icon" href="/logo.png">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"SportsActivityLocation","name":"Miner Stadium","url":"https://4thandward.com/stadium/miner-stadium-yreka-ca","image":"https://4thandward.com/logo.png","address":{"@type":"PostalAddress","addressLocality":"Yreka","addressRegion":"CA","postalCode":"96097","addressCountry":"US"}}</script>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;700;800&family=Barlow+Condensed:wght@800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared.css">
+  <link rel="stylesheet" href="/css/auth.css">
+  <script type="module" src="/js/user-menu.js"></script>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #080808; color: #F4F2ED; font-family: 'Barlow', sans-serif; line-height: 1.6; }
     a { color: inherit; }
-    .nav { padding: 18px 24px; border-bottom: 1px solid #252525; }
-    .nav a { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; color: #F5C518; text-decoration: none; font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; }
+    .pulse-head { text-align: center; padding: 96px 20px 22px; border-bottom: 1px solid #252525; }
+    .pulse-head-title { display: block; font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: clamp(30px, 5vw, 46px); line-height: 0.95; text-transform: uppercase; text-decoration: none; margin-bottom: 12px; }
+    .pulse-head-title span { color: #F5C518; }
+    .sponsor { display: inline-flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: #888884; }
+    .sponsor img { height: 28px; width: auto; box-sizing: content-box; padding: 10px 16px; background: #fff; border-radius: 8px; }
     .wrap { max-width: 720px; margin: 0 auto; padding: 36px 24px 60px; }
     .hero-img { width: 100%; aspect-ratio: 16/10; object-fit: cover; background: #0a0a0a; border-radius: 8px; margin-bottom: 24px; }
-    .eyebrow { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 12px; letter-spacing: 0.32em; text-transform: uppercase; color: #F5C518; margin-bottom: 10px; }
     h1 { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: clamp(36px, 6vw, 56px); line-height: 0.95; letter-spacing: -0.01em; text-transform: uppercase; margin-bottom: 8px; }
     .city { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 16px; letter-spacing: 0.06em; text-transform: uppercase; color: #888884; margin-bottom: 20px; }
     .city .pill { display: inline-block; background: rgba(245,197,24,0.12); color: #F5C518; padding: 2px 8px; border-radius: 3px; font-size: 13px; margin-left: 6px; border: 1px solid rgba(245,197,24,0.3); }
@@ -47,10 +52,32 @@
   </style>
 </head>
 <body>
-  <header class="nav"><a href="/">4th &amp; Ward</a> &nbsp;·&nbsp; <a href="/pulse">Friday Night Pulse</a></header>
+  <nav>
+    <a href="/" class="nav-logo"><img src="/logo-cover.svg" alt="4th &amp; Ward Podcast"></a>
+    <ul class="nav-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/about.html">About</a></li>
+      <li><a href="/episodes.html">Episodes</a></li>
+      <li><a href="/totw.html">Team of the Week</a></li>
+      <li><a href="/wardle.html">4th &amp; Wardle</a></li>
+      <li><a href="/hsblitz.html">HS Blitz<span class="nav-beta">Beta</span></a></li>
+      <li><a href="/dripordrown.html">Drip or Drown</a></li>
+      <li><a href="/pulse.html" class="active">Friday Night Pulse<span class="nav-beta">New</span></a></li>
+      <li><a href="/jimmysandjoes.html">Jimmys &amp; Joes<span class="nav-beta">New</span></a></li>
+      <li><a href="/merch.html">Merch</a></li>
+      <li id="nav-user-slot"></li>
+      <li><a href="https://open.spotify.com/show/0xmgSTyk4RQFx3XgVWomeS" target="_blank" class="nav-listen">Listen Now</a></li>
+    </ul>
+  </nav>
+  <div class="pulse-head">
+    <a class="pulse-head-title" href="/pulse">Friday Night <span>Pulse</span></a>
+    <a class="sponsor" target="_blank" rel="sponsored noopener" href="https://www.charterup.com/live/?utm_medium=influencer&amp;utm_source=podcast&amp;utm_campaign=driving+greantess&amp;utm_content=coaches" aria-label="Friday Night Pulse is powered by CharterUP">
+      <span>Powered by</span>
+      <img src="/charterup-logo.png" alt="CharterUP" width="602" height="103">
+    </a>
+  </div>
   <main class="wrap">
     <img class="hero-img" src="https://4thandward.com/logo.png" alt="Miner Stadium" loading="eager">
-    <div class="eyebrow">Friday Night Pulse</div>
     <h1>Miner Stadium</h1>
     <div class="city">Yreka<span class="pill">CA</span></div>
     <p class="teams">Home of: <strong>Yreka Miners</strong></p>
