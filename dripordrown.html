@@ -448,9 +448,10 @@
               <input type="text" class="form-input" id="f-city" placeholder="City" maxlength="60">
             </div>
             <div class="form-group">
-              <label class="form-label">State *</label>
+              <label class="form-label">State / Province *</label>
               <select class="form-select" id="f-state">
                 <option value="" disabled selected>Select</option>
+                <optgroup label="United States">
                 <option>AL</option><option>AK</option><option>AZ</option><option>AR</option><option>CA</option>
                 <option>CO</option><option>CT</option><option>DE</option><option>DC</option><option>FL</option>
                 <option>GA</option><option>HI</option><option>ID</option><option>IL</option><option>IN</option>
@@ -462,6 +463,12 @@
                 <option>SC</option><option>SD</option><option>TN</option><option>TX</option><option>UT</option>
                 <option>VT</option><option>VA</option><option>WA</option><option>WV</option><option>WI</option>
                 <option>WY</option>
+                </optgroup>
+                <optgroup label="Canada">
+                <option>AB</option><option>BC</option><option>MB</option><option>NB</option><option>NL</option>
+                <option>NS</option><option>NT</option><option>NU</option><option>ON</option><option>PE</option>
+                <option>QC</option><option>SK</option><option>YT</option>
+                </optgroup>
               </select>
             </div>
           </div>
@@ -501,9 +508,9 @@
 
       <div class="schools-toolbar">
         <div class="schools-toolbar-group">
-          <label class="toolbar-label">State</label>
+          <label class="toolbar-label">State / Province</label>
           <select class="toolbar-select" id="schools-state-filter">
-            <option value="">All States</option>
+            <option value="">All States / Provinces</option>
           </select>
         </div>
         <div class="schools-toolbar-group">
@@ -1059,7 +1066,7 @@
       // Populate state dropdown (preserve current selection)
       const states = uniqueStates();
       const currentVal = stateSel.value || stateFilter || '';
-      stateSel.innerHTML = '<option value="">All States</option>' +
+      stateSel.innerHTML = '<option value="">All States / Provinces</option>' +
         states.map(s => `<option value="${s}" ${s===currentVal?'selected':''}>${s}</option>`).join('');
 
       const sortBy = sortSel.value || 'alpha';
@@ -1353,7 +1360,7 @@
       if (!pendingPhotoBlob) { showFormError('Please add a photo of the uniform.'); return; }
       if (!team)             { showFormError('Please enter the school/team name.'); return; }
       if (!city)             { showFormError('Please enter the city.'); return; }
-      if (!state)            { showFormError('Please pick a state.'); return; }
+      if (!state)            { showFormError('Please pick a state or province.'); return; }
       if (!owns)             { showFormError('You must confirm you have rights to the photo.'); return; }
 
       btn.disabled = true; btn.textContent = 'Uploading photo...';
