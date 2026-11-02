@@ -110,6 +110,27 @@
     .fp-leader-name { font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
     .fp-leader-rec { color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
+    /* STATES */
+    .state-movers { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+    .state-mover { display: inline-flex; gap: 6px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 7px 12px; font-size: 13px; font-weight: 700; color: var(--white); text-decoration: none; }
+    .state-up { color: #4ade80; }
+    .state-down { color: #f87171; }
+    .state-list { display: flex; flex-direction: column; gap: 8px; }
+    .state-row { display: grid; grid-template-columns: 34px minmax(0,1fr) auto; gap: 4px 12px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; color: var(--white); text-decoration: none; }
+    .state-row:hover { border-color: rgba(245,197,24,0.4); }
+    .state-rank { font-family: var(--condensed); font-weight: 900; font-size: 24px; color: var(--gold); grid-row: span 2; }
+    .state-name { font-family: var(--condensed); font-weight: 900; font-size: 20px; text-transform: uppercase; overflow-wrap: anywhere; }
+    .state-pct { font-family: var(--condensed); font-weight: 900; font-size: 24px; text-align: right; }
+    .state-meta { font-size: 12px; color: var(--muted); }
+    .state-delta { font-size: 12px; font-weight: 700; text-align: right; white-space: nowrap; }
+    .state-bar { grid-column: 2 / -1; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); overflow: hidden; margin-top: 4px; }
+    .state-bar div { height: 100%; background: var(--gold); }
+    .state-unranked { margin-top: 40px; }
+    .state-header-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .state-header-wrap { grid-column: 1 / -1; min-width: 0; }
+    .state-header-wrap .school-header-info { min-width: 0; }
+    .state-top { margin-bottom: 32px; }
+
     /* SPOTLIGHT */
     .spotlight-section { background: linear-gradient(180deg, rgba(245,197,24,0.04) 0%, transparent 100%); border: 1px solid rgba(245,197,24,0.2); border-radius: 12px; padding: 32px; margin-bottom: 48px; }
     .spotlight-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
@@ -399,6 +420,7 @@
   <div class="tab-bar">
     <button class="tab-btn active" data-tab="vote">Vote</button>
     <button class="tab-btn" data-tab="play">Free Play</button>
+    <button class="tab-btn" data-tab="states">States</button>
     <button class="tab-btn" data-tab="schools">Schools</button>
     <button class="tab-btn" data-tab="submit">Submit</button>
     <button class="tab-btn" data-tab="top">Top Drips</button>
@@ -466,6 +488,18 @@
         <div id="fp-tagbar"></div>
         <div id="fp-round"></div>
         <div id="fp-leaders" class="fp-leaders"></div>
+      </div>
+    </div>
+
+    <div id="tab-states" style="display:none;">
+      <div class="fp-wrap">
+        <div class="section-head">
+          <h2>&#127942; STATE <span class="accent">DRIP</span> SCORES</h2>
+        </div>
+        <p class="section-sub" id="states-sub"></p>
+        <div id="states-movers"></div>
+        <div class="state-list" id="states-ranked"></div>
+        <div class="state-unranked" id="states-unranked"></div>
       </div>
     </div>
 
@@ -656,6 +690,8 @@
              doc, getDoc, writeBatch, query, where,
              orderBy, limit, increment, Timestamp }        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
     import { pickPair, pairKey }                           from '/js/drip-freeplay.js';
+    import { scoreStates, rankChanges, stateName, wilsonLowerBound,
+             MIN_SCHOOL_VOTES, MIN_STATE_SCHOOLS }         from '/js/drip-states.js';
     import { getStorage, ref as sref, uploadBytes,
              getDownloadURL }                              from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
@@ -784,20 +820,6 @@
       return Math.round((dripVotes||0) / total * 100);
     }
 
-    // Wilson score interval (lower bound) — used for ranking Top/Bottom/Hall of Fame.
-    // Gives the lower end of a 95% confidence interval for the true success rate,
-    // which penalizes small sample sizes automatically. E.g. 3/3 (100%) scores
-    // ~0.29, but 35/45 (78%) scores ~0.64, so higher-confidence wins.
-    // Pass (drips, total) for best-drip ranking, (drowns, total) for worst-drip.
-    function wilsonLowerBound(success, total) {
-      if (!total || total <= 0) return 0;
-      const z = 1.96; // 95% CI
-      const p = (success || 0) / total;
-      const z2 = z * z;
-      const center = p + z2 / (2 * total);
-      const margin = z * Math.sqrt((p * (1 - p) + z2 / (4 * total)) / total);
-      return (center - margin) / (1 + z2 / total);
-    }
 
     function scoreEmoji(pct) {
       if (pct == null) return '\u2796';
@@ -832,7 +854,7 @@
     function switchTab(tab, opts) {
       opts = opts || {};
       currentTab = tab;
-      ['vote','play','submit','schools','top'].forEach(t => {
+      ['vote','play','states','submit','schools','top'].forEach(t => {
         const el = document.getElementById('tab-'+t);
         if (el) el.style.display = (t === tab) ? 'block' : 'none';
       });
@@ -842,6 +864,7 @@
       if (tab === 'top')     renderHallOfFame();
       if (tab === 'schools') renderSchools();
       if (tab === 'play')    openFreePlay();
+      if (tab === 'states')  openStates();
       if (!opts.noScroll) window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
@@ -1007,6 +1030,108 @@
       const url = `${location.origin}/dripordrown`;
       shareLink(`${a.teamName} vs ${b.teamName} — Versus of the Week`,
         `${a.teamName} vs ${b.teamName}: who drips harder? 🔥 Vote: ${url}`, url);
+    }
+
+    // ── STATE DRIP SCORES ────────────────────────────────
+    // Same votes as Drip %, so Versus and Free Play results don't touch these.
+    let stateSnapshot; // latest weekly snapshot; undefined until loaded, null if none yet
+    const pageTitle = document.title;
+
+    function currentStateScores() {
+      return scoreStates(computeSchoolStats(null).map(g => ({ state: g.state, drip: g.totalDrip, drown: g.totalDrown })));
+    }
+
+    async function openStates() {
+      renderStates();
+      if (stateSnapshot !== undefined) return;
+      stateSnapshot = null;
+      try {
+        const snap = await getDocs(query(collection(db,'drip_state_snapshots'), orderBy('takenAt','desc'), limit(1)));
+        if (!snap.empty) stateSnapshot = snap.docs[0].data();
+      } catch(e) { console.error('state snapshot error', e); }
+      renderStates();
+    }
+
+    function renderStates() {
+      const all = currentStateScores();
+      const ranked = all.filter(r => r.rank);
+      const unranked = all.filter(r => !r.rank);
+      const changes = stateSnapshot ? rankChanges(all, scoreStates(stateSnapshot.schools)) : [];
+      const deltaBy = new Map(changes.map(c => [c.state, c.delta]));
+      const arrow = d => d > 0
+        ? `<span class="state-up">&#9650; ${d}</span>`
+        : `<span class="state-down">&#9660; ${-d}</span>`;
+
+      document.getElementById('states-sub').textContent =
+        `Every vote across a state's schools, ranked with the same confidence scoring as Top Drips. A school counts at ${MIN_SCHOOL_VOTES} votes; a state ranks at ${MIN_STATE_SCHOOLS} schools.`;
+
+      document.getElementById('states-movers').innerHTML = changes.length
+        ? `<div class="section-head"><h2 style="font-size:22px;">&#128200; MOVERS <span class="accent">SINCE SUNDAY</span></h2></div>
+           <div class="state-movers">${changes.slice(0, 5).map(c => `
+             <a class="state-mover" href="?state=${encodeURIComponent(c.state)}" data-action="open-state" data-state="${escapeHtml(c.state)}">
+               ${escapeHtml(stateName(c.state))} ${arrow(c.delta)}
+             </a>`).join('')}</div>`
+        : '';
+
+      document.getElementById('states-ranked').innerHTML = ranked.map(r => `
+        <a class="state-row" href="?state=${encodeURIComponent(r.state)}" data-action="open-state" data-state="${escapeHtml(r.state)}">
+          <div class="state-rank">${r.rank}</div>
+          <div class="state-name">${escapeHtml(stateName(r.state))}</div>
+          <div class="state-pct">${r.pct}%</div>
+          <div class="state-meta">${r.schools} schools &middot; ${r.total.toLocaleString()} votes</div>
+          <div class="state-delta">${deltaBy.has(r.state) ? arrow(deltaBy.get(r.state)) : ''}</div>
+          <div class="state-bar"><div style="width:${r.pct}%"></div></div>
+        </a>`).join('') || '<div class="empty-state">No states have enough schools to rank yet.</div>';
+
+      document.getElementById('states-unranked').innerHTML = unranked.length
+        ? `<div class="section-head"><h2 style="font-size:22px;">NOT RANKED <span class="accent">YET</span></h2></div>
+           <p class="section-sub">These states need more schools. <a href="#" data-action="goto-submit" style="color:var(--gold);">Submit yours</a> to get them on the board.</p>
+           <div class="state-list">${unranked.map(r => `
+             <a class="state-row" style="grid-template-columns:minmax(0,1fr) auto;" href="?state=${encodeURIComponent(r.state)}" data-action="open-state" data-state="${escapeHtml(r.state)}">
+               <div class="state-name" style="font-size:17px;">${escapeHtml(stateName(r.state))}</div>
+               <div class="state-meta">${r.schools} of ${MIN_STATE_SCHOOLS} schools</div>
+             </a>`).join('')}</div>`
+        : '';
+    }
+
+    function renderStateHeader(code) {
+      const all = currentStateScores();
+      const row = all.find(r => r.state === code);
+      if (!row) return '';
+      const rankedCount = all.filter(r => r.rank).length;
+      document.title = `${stateName(code)} Football Uniforms — Drip or Drown | 4th & Ward`;
+      const top = computeSchoolStats(code)
+        .filter(g => g.totalVotes >= MIN_SCHOOL_VOTES)
+        .map(g => ({ g, lb: wilsonLowerBound(g.totalDrip, g.totalVotes) }))
+        .sort((a,b) => b.lb - a.lb)
+        .slice(0, 5);
+      return `<div class="state-header-wrap">
+        <div class="school-header">
+          <div class="school-header-info">
+            <div class="school-header-eyebrow">State Drip Score</div>
+            <div class="school-header-name">${escapeHtml(stateName(code))}</div>
+            <div class="school-header-loc">${row.rank
+              ? `Ranked #${row.rank} of ${rankedCount} states`
+              : `Not ranked yet: ${row.schools} of ${MIN_STATE_SCHOOLS} schools needed`}</div>
+            <div class="state-header-actions">
+              <button class="share-mini" data-action="state-share" data-state="${escapeHtml(code)}">&#128279; Rally your state</button>
+              <button class="share-mini" data-action="clear-filter">&times; Show all</button>
+            </div>
+          </div>
+          <div class="school-header-stats">
+            <div class="school-header-stat"><div class="school-header-stat-num">${row.pct}%</div><div class="school-header-stat-label">Drip</div></div>
+            <div class="school-header-stat"><div class="school-header-stat-num muted">${row.schools}</div><div class="school-header-stat-label">Schools</div></div>
+            <div class="school-header-stat"><div class="school-header-stat-num muted">${row.total.toLocaleString()}</div><div class="school-header-stat-label">Votes</div></div>
+          </div>
+        </div>
+        <div class="state-top fp-wrap">
+          <div class="section-head"><h2 style="font-size:22px;">TOP <span class="accent">SCHOOLS</span></h2></div>
+          ${top.map(({g}) => `<div class="fp-leader">
+            <a class="fp-leader-name" style="color:inherit;text-decoration:none;" href="?school=${encodeURIComponent(g.teamName)}" data-action="open-school" data-school="${escapeHtml(g.teamName)}">${escapeHtml(g.teamName)}</a>
+            <span class="fp-leader-rec">${g.dripPct}% &middot; ${g.totalVotes.toLocaleString()} votes</span>
+          </div>`).join('')}
+        </div>
+      </div>`;
     }
 
     // ── FREE PLAY ────────────────────────────────────────
@@ -1214,6 +1339,7 @@
           if (el) el.style.display = 'none';
         });
       } else {
+        document.title = pageTitle;
         renderVersus();
         renderSpotlight();
         renderTop3();
@@ -1370,7 +1496,7 @@
       // Filter banner (state-only filter, or no school header)
       let bannerHtml = '';
       if (stateFilter && !schoolFilter) {
-        bannerHtml = `
+        bannerHtml = renderStateHeader(stateFilter) || `
           <div class="filter-banner">
             <div class="filter-banner-text">Showing fits from <strong>${escapeHtml(stateFilter)}</strong></div>
             <button class="filter-banner-clear" data-action="clear-filter">&times; Show all</button>
@@ -1817,6 +1943,15 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    function applyStateFilter(code) {
+      schoolFilter = null;
+      stateFilter = code;
+      setUrl({ state: code });
+      switchTab('vote', { noScroll: true });
+      renderAll();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     function clearAllFilters() {
       schoolFilter = null;
       stateFilter  = null;
@@ -2198,7 +2333,15 @@
       if (!actionEl) return;
       const action = actionEl.dataset.action;
       const id = actionEl.dataset.id;
-      if (action === 'fp-pick') {
+      if (action === 'open-state') {
+        e.preventDefault();
+        applyStateFilter(actionEl.dataset.state);
+      } else if (action === 'state-share') {
+        const code = actionEl.dataset.state;
+        const url = `${location.origin}/dripordrown?state=${encodeURIComponent(code)}`;
+        shareLink(`${stateName(code)} — State Drip Score`,
+          `Where does ${stateName(code)} rank in high school football drip? Vote: ${url}`, url);
+      } else if (action === 'fp-pick') {
         freePlayPick(id);
       } else if (action === 'fp-tag') {
         freePlayTag(actionEl.dataset.tag);
@@ -2291,6 +2434,7 @@
       if (pendingTab === 'schools') switchTab('schools', { noScroll: true });
       else if (pendingTab === 'top') switchTab('top', { noScroll: true });
       else if (pendingTab === 'play') switchTab('play', { noScroll: true });
+      else if (pendingTab === 'states') switchTab('states', { noScroll: true });
       else if (pendingTab === 'submit') switchTab('submit', { noScroll: true });
       if (pendingScrollId) {
         // Wait one frame for the cards to be in the DOM

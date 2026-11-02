@@ -158,6 +158,11 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Weekly state score history, written only by snapshotDripStates.
+    match /drip_state_snapshots/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
     match /drip_freeplay/{playId} {
       allow read: if true;
       allow create: if request.resource.data.keys().hasOnly(['winnerId','loserId','visitorId','timestamp'])
