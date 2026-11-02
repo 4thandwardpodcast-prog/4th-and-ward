@@ -593,7 +593,7 @@
   <script type="module">
     import { initializeApp }                              from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
     import { getFirestore, collection, addDoc, getDocs,
-             doc, getDoc, setDoc, updateDoc, query, where,
+             doc, getDoc, writeBatch, query, where,
              orderBy, increment }                          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
     import { getStorage, ref as sref, uploadBytes,
              getDownloadURL }                              from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
@@ -1216,13 +1216,17 @@
         renderAll();
         if (!opts.skipGalleryRender) refreshGalleryAfterVote(submissionId);
 
-        await setDoc(doc(db,'drip_votes',voteDocId), {
+        // Vote record and counter save together; firestore.rules rejects either alone.
+        const field = voteType === 'drip' ? 'dripVotes' : 'drownVotes';
+        const batch = writeBatch(db);
+        batch.set(doc(db,'drip_votes',voteDocId), {
           submissionId, visitorId, vote: voteType, timestamp: Date.now()
         });
-        const field = voteType === 'drip' ? 'dripVotes' : 'drownVotes';
-        await updateDoc(doc(db,'drip_submissions',submissionId), {
-          [field]: increment(1)
+        batch.update(doc(db,'drip_submissions',submissionId), {
+          [field]: increment(1),
+          lastVoterId: visitorId
         });
+        await batch.commit();
         toast(voteType === 'drip' ? '\uD83D\uDD25 Drip locked in!' : '\uD83D\uDCA7 Drown logged.');
       } catch(e) {
         console.error('vote error', e);

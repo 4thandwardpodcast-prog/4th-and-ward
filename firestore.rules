@@ -81,13 +81,37 @@ service cloud.firestore {
     match /puzzle_queue/{id} {
       allow read, write: if isAdmin() || request.auth == null;
     }
+    // Public submissions start unapproved with zero votes; only admins edit them.
+    // Visitors may only add one vote to one counter on an approved uniform.
+    // lastVoterId is reserved for tying each +1 to its drip_votes doc in a batch.
     match /drip_submissions/{id} {
       allow read: if true;
-      allow create, update: if true;
+      allow create: if request.resource.data.keys().hasOnly([
+                         'teamName','city','state','caption','schoolKey','photoUrl',
+                         'schoolLogoUrl','submittedBy','submittedAt','approved','ownsPhoto',
+                         'podcastOptIn','dripVotes','drownVotes','featuredThisWeek','hostTake'])
+                    && request.resource.data.approved == false
+                    && request.resource.data.dripVotes == 0
+                    && request.resource.data.drownVotes == 0
+                    && request.resource.data.featuredThisWeek == false
+                    && request.resource.data.hostTake == '';
+      allow update: if isAdmin() || (
+                      resource.data.approved == true
+                      && request.resource.data.diff(resource.data).affectedKeys()
+                           .hasOnly(['dripVotes','drownVotes','lastVoterId'])
+                      && (
+                        (request.resource.data.dripVotes == resource.data.get('dripVotes', 0) + 1
+                          && request.resource.data.get('drownVotes', 0) == resource.data.get('drownVotes', 0))
+                        || (request.resource.data.drownVotes == resource.data.get('drownVotes', 0) + 1
+                          && request.resource.data.get('dripVotes', 0) == resource.data.get('dripVotes', 0))
+                      ));
       allow delete: if isAdmin();
     }
     match /drip_votes/{id} {
-      allow read, create: if true;
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['submissionId','visitorId','vote','timestamp'])
+                    && id == request.resource.data.submissionId + '_' + request.resource.data.visitorId
+                    && request.resource.data.vote in ['drip','drown'];
       allow update, delete: if false;
     }
 
