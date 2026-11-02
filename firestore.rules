@@ -82,8 +82,11 @@ service cloud.firestore {
       allow read, write: if isAdmin() || request.auth == null;
     }
     // Public submissions start unapproved with zero votes; only admins edit them.
-    // Visitors may only add one vote to one counter on an approved uniform.
-    // lastVoterId is reserved for tying each +1 to its drip_votes doc in a batch.
+    // Visitors may only add one vote to one counter on an approved uniform,
+    // in the same batch as a brand-new drip_votes doc named by lastVoterId.
+    function dripVotePath(id) {
+      return /databases/$(database)/documents/drip_votes/$(id + '_' + request.resource.data.lastVoterId);
+    }
     match /drip_submissions/{id} {
       allow read: if true;
       allow create: if request.resource.data.keys().hasOnly([
@@ -99,10 +102,14 @@ service cloud.firestore {
                       resource.data.approved == true
                       && request.resource.data.diff(resource.data).affectedKeys()
                            .hasOnly(['dripVotes','drownVotes','lastVoterId'])
+                      && !exists(dripVotePath(id))
+                      && existsAfter(dripVotePath(id))
                       && (
-                        (request.resource.data.dripVotes == resource.data.get('dripVotes', 0) + 1
+                        (getAfter(dripVotePath(id)).data.vote == 'drip'
+                          && request.resource.data.dripVotes == resource.data.get('dripVotes', 0) + 1
                           && request.resource.data.get('drownVotes', 0) == resource.data.get('drownVotes', 0))
-                        || (request.resource.data.drownVotes == resource.data.get('drownVotes', 0) + 1
+                        || (getAfter(dripVotePath(id)).data.vote == 'drown'
+                          && request.resource.data.drownVotes == resource.data.get('drownVotes', 0) + 1
                           && request.resource.data.get('dripVotes', 0) == resource.data.get('dripVotes', 0))
                       ));
       allow delete: if isAdmin();
@@ -111,7 +118,8 @@ service cloud.firestore {
       allow read: if true;
       allow create: if request.resource.data.keys().hasOnly(['submissionId','visitorId','vote','timestamp'])
                     && id == request.resource.data.submissionId + '_' + request.resource.data.visitorId
-                    && request.resource.data.vote in ['drip','drown'];
+                    && request.resource.data.vote in ['drip','drown']
+                    && getAfter(/databases/$(database)/documents/drip_submissions/$(request.resource.data.submissionId)).data.lastVoterId == request.resource.data.visitorId;
       allow update, delete: if false;
     }
 
