@@ -217,6 +217,9 @@
       <button class="sidebar-item" onclick="showPage('drip-all')">
         <span class="sidebar-icon">&#128171;</span> All Submissions
       </button>
+      <button class="sidebar-item" onclick="showPage('drip-versus')">
+        <span class="sidebar-icon">&#9876;&#65039;</span> Versus of the Week
+      </button>
 
       <div class="sidebar-section">Friday Night Pulse</div>
       <button class="sidebar-item" onclick="showPage('pulse-photos-pending')">
@@ -609,6 +612,48 @@
             <div id="drip-pending-grid" style="padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;">
               <div class="loading-row" style="grid-column:1/-1">Loading...</div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ DRIP VERSUS ══ -->
+      <div class="page" id="page-drip-versus">
+        <div class="page-header">
+          <div class="page-title">Drip or Drown — Versus of the Week</div>
+          <div class="page-sub">Runs Sunday 12:00 AM to Saturday 11:59 PM Central. Schedule ahead; it goes live on its own.</div>
+        </div>
+        <div class="card" style="margin-bottom:24px">
+          <div class="card-header"><div class="card-title">Set a Matchup</div></div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:16px">
+            <div class="form-group">
+              <label class="form-label" for="versus-week">Week starting (Sunday)</label>
+              <input type="date" class="form-input" id="versus-week">
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+              <div class="form-group">
+                <label class="form-label" for="versus-a">Uniform A</label>
+                <select class="form-input" id="versus-a" onchange="previewDripVersus('a')"></select>
+                <img id="versus-a-photo" alt="" style="display:none;width:140px;aspect-ratio:3/4;object-fit:cover;border-radius:6px">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="versus-b">Uniform B</label>
+                <select class="form-input" id="versus-b" onchange="previewDripVersus('b')"></select>
+                <img id="versus-b-photo" alt="" style="display:none;width:140px;aspect-ratio:3/4;object-fit:cover;border-radius:6px">
+              </div>
+            </div>
+            <div><button class="btn btn-sm" onclick="saveDripVersus()">Save Matchup</button></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Matchups</div>
+            <button class="btn btn-ghost btn-sm" onclick="loadDripVersus()">&#8635; Refresh</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table class="data-table">
+              <thead><tr><th>Week</th><th>Matchup</th><th>Score</th><th>Status</th><th></th></tr></thead>
+              <tbody id="drip-versus-body"><tr><td colspan="5" class="loading-row">Loading...</td></tr></tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -1274,7 +1319,7 @@
   import { getFirestore, collection, doc, getDoc,
            getDocs, setDoc, addDoc, updateDoc,
            deleteDoc, query, orderBy, limit, where,
-           increment }                                  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+           increment, Timestamp }                       from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
   import { getAuth, signInWithPopup, GoogleAuthProvider,
            signOut as fbSignOut, onAuthStateChanged }   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
   import { getStorage, ref as storageRef, deleteObject } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
@@ -1336,6 +1381,7 @@
     if (id === 'totw-winners')         { loadWinnersAdmin(); }
     if (id === 'drip-pending')        { loadDripPending(); }
     if (id === 'drip-all')            { loadDripAll(); }
+    if (id === 'drip-versus')         { loadDripVersus(); }
     if (id === 'pulse-photos-pending')   { loadPulsePhotosPending(); }
     if (id === 'pulse-stadiums-pending') { loadPulseStadiumsPending(); }
     if (id === 'pulse-comments-pending') { loadPulseCommentsPending(); }
@@ -2328,6 +2374,112 @@
     } catch(e) { tbody.innerHTML = '<tr><td colspan="6" class="loading-row">Error: ' + escapeHtml(e.message) + '</td></tr>'; }
   }
   window.loadDripAll = loadDripAll;
+
+  // ── DRIP OR DROWN — VERSUS OF THE WEEK ────────────────────
+  // Converts a Central wall-clock time to the real instant, across daylight saving.
+  function centralTime(ymd, hms) {
+    const guess = new Date(`${ymd}T${hms}Z`);
+    const offset = new Date(guess.toLocaleString('en-US', { timeZone: 'America/Chicago' }))
+                 - new Date(guess.toLocaleString('en-US', { timeZone: 'UTC' }));
+    return new Date(guess.getTime() - offset);
+  }
+
+  async function loadDripVersus() {
+    const body = document.getElementById('drip-versus-body');
+    body.innerHTML = '<tr><td colspan="5" class="loading-row">Loading...</td></tr>';
+    try {
+      const subSnap = await getDocs(collection(db, 'drip_submissions'));
+      const subs = [];
+      subSnap.forEach(d => subs.push({ id: d.id, ...d.data() }));
+      window._dripData = Object.fromEntries(subs.map(s => [s.id, s]));
+
+      const options = subs.filter(s => s.approved)
+        .sort((a,b) => (a.teamName||'').localeCompare(b.teamName||''))
+        .map(s => {
+          const total = (s.dripVotes||0) + (s.drownVotes||0);
+          const pct = total ? Math.round((s.dripVotes||0) / total * 100) : 0;
+          return `<option value="${escapeHtml(s.id)}">${escapeHtml(s.teamName||'')}${s.state ? ', ' + escapeHtml(s.state) : ''} (${pct}% drip, ${total} votes)</option>`;
+        }).join('');
+      ['a','b'].forEach(side => {
+        const sel = document.getElementById('versus-' + side);
+        const current = sel.value;
+        sel.innerHTML = '<option value="">Choose a uniform</option>' + options;
+        sel.value = current;
+        previewDripVersus(side);
+      });
+
+      const weekEl = document.getElementById('versus-week');
+      if (!weekEl.value) {
+        const next = new Date();
+        next.setDate(next.getDate() + (7 - next.getDay()));
+        weekEl.value = `${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-${String(next.getDate()).padStart(2,'0')}`;
+      }
+
+      const snap = await getDocs(query(collection(db, 'drip_versus'), orderBy('startsAt','desc')));
+      if (snap.empty) {
+        body.innerHTML = '<tr><td colspan="5" class="loading-row">No matchups yet.</td></tr>';
+        return;
+      }
+      const now = Date.now();
+      const name = id => escapeHtml(window._dripData[id]?.teamName || 'Removed uniform');
+      body.innerHTML = snap.docs.map(d => {
+        const m = d.data();
+        const status = now < m.startsAt.toMillis() ? 'Scheduled' : now < m.locksAt.toMillis() ? 'Live' : 'Final';
+        return `<tr>
+          <td>${escapeHtml(d.id)}</td>
+          <td>${name(m.aId)} vs ${name(m.bId)}</td>
+          <td>${(m.aVotes||0).toLocaleString()} – ${(m.bVotes||0).toLocaleString()}</td>
+          <td>${status}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="deleteDripVersus('${escapeHtml(d.id)}')">Delete</button></td>
+        </tr>`;
+      }).join('');
+    } catch(e) {
+      body.innerHTML = '<tr><td colspan="5" class="loading-row">Error: ' + escapeHtml(e.message) + '</td></tr>';
+    }
+  }
+  window.loadDripVersus = loadDripVersus;
+
+  window.previewDripVersus = function(side) {
+    const img = document.getElementById('versus-' + side + '-photo');
+    const s = window._dripData[document.getElementById('versus-' + side).value];
+    img.style.display = s ? 'block' : 'none';
+    img.src = s ? (s.photoUrl || '') : '';
+  };
+
+  window.saveDripVersus = async function() {
+    const week = document.getElementById('versus-week').value;
+    const a = window._dripData[document.getElementById('versus-a').value];
+    const b = window._dripData[document.getElementById('versus-b').value];
+    if (!week || new Date(week + 'T12:00:00Z').getUTCDay() !== 0) { toast('Pick a Sunday for the week.', 'error'); return; }
+    if (!a || !b) { toast('Choose both uniforms.', 'error'); return; }
+    if ((a.schoolKey || a.id) === (b.schoolKey || b.id)) { toast('Choose two different schools.', 'error'); return; }
+
+    const saturday = new Date(new Date(week + 'T12:00:00Z').getTime() + 6*24*60*60*1000).toISOString().slice(0,10);
+    const startsAt = centralTime(week, '00:00:00');
+    const locksAt  = centralTime(saturday, '23:59:59');
+    if (locksAt.getTime() <= Date.now()) { toast('That week is already over.', 'error'); return; }
+
+    try {
+      const ref = doc(db, 'drip_versus', week);
+      if ((await getDoc(ref)).exists()) { toast('That week already has a matchup. Delete it first.', 'error'); return; }
+      await setDoc(ref, {
+        aId: a.id, bId: b.id,
+        startsAt: Timestamp.fromDate(startsAt), locksAt: Timestamp.fromDate(locksAt),
+        aVotes: 0, bVotes: 0
+      });
+      toast('Matchup saved!');
+      loadDripVersus();
+    } catch(e) { toast('Error: ' + e.message, 'error'); }
+  };
+
+  window.deleteDripVersus = async function(id) {
+    if (!confirm(`Delete the ${id} matchup and its score? Anyone who already voted that week can't vote again if you recreate it.`)) return;
+    try {
+      await deleteDoc(doc(db, 'drip_versus', id));
+      toast('Matchup deleted.');
+      loadDripVersus();
+    } catch(e) { toast('Error: ' + e.message, 'error'); }
+  };
 
   // ── DRIP ACTIONS (event delegation) ───────────────────────
   document.addEventListener('click', async function(e) {

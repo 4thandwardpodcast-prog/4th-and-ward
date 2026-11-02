@@ -123,6 +123,39 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Versus of the Week: admins set the matchup; visitors add one vote per
+    // browser while it's open, in the same batch as a new drip_versus_votes doc.
+    function versusVotePath(weekId) {
+      return /databases/$(database)/documents/drip_versus_votes/$(weekId + '_' + request.resource.data.lastVoterId);
+    }
+    match /drip_versus/{weekId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (
+                      request.time >= resource.data.startsAt
+                      && request.time < resource.data.locksAt
+                      && request.resource.data.diff(resource.data).affectedKeys()
+                           .hasOnly(['aVotes','bVotes','lastVoterId'])
+                      && !exists(versusVotePath(weekId))
+                      && existsAfter(versusVotePath(weekId))
+                      && (
+                        (getAfter(versusVotePath(weekId)).data.pick == 'a'
+                          && request.resource.data.aVotes == resource.data.aVotes + 1
+                          && request.resource.data.bVotes == resource.data.bVotes)
+                        || (getAfter(versusVotePath(weekId)).data.pick == 'b'
+                          && request.resource.data.bVotes == resource.data.bVotes + 1
+                          && request.resource.data.aVotes == resource.data.aVotes)
+                      ));
+    }
+    match /drip_versus_votes/{id} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['weekId','visitorId','pick','timestamp'])
+                    && id == request.resource.data.weekId + '_' + request.resource.data.visitorId
+                    && request.resource.data.pick in ['a','b']
+                    && getAfter(/databases/$(database)/documents/drip_versus/$(request.resource.data.weekId)).data.lastVoterId == request.resource.data.visitorId;
+      allow update, delete: if false;
+    }
+
     // ── FRIDAY NIGHT PULSE ────────────────────────────────────
     // Stadium catalog: public read; bulk writes via Admin SDK only,
     // single-doc edits via admin moderation UI.

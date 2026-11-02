@@ -67,6 +67,34 @@
     .section-head .accent-blue { color: #38B2AC; }
     .section-sub { font-size: 13px; color: var(--muted); margin-top: -12px; margin-bottom: 24px; }
 
+    /* VERSUS OF THE WEEK */
+    #versus-wrap { max-width: 760px; margin: 0 auto 48px; }
+    .versus-section { background: linear-gradient(180deg, rgba(245,197,24,0.08) 0%, transparent 100%); border: 1px solid rgba(245,197,24,0.45); border-radius: 12px; padding: 28px; }
+    .vs-status { font-size: 13px; color: var(--muted); margin-top: -12px; margin-bottom: 20px; }
+    .vs-status strong { color: var(--white); font-variant-numeric: tabular-nums; }
+    .vs-grid { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); gap: 14px; }
+    .vs-side { min-width: 0; text-align: center; display: flex; flex-direction: column; }
+    .vs-side > :last-child { margin-top: auto; }
+    .vs-badge { align-self: center; }
+    .vs-side.lost { opacity: 0.55; }
+    .vs-photo { display: block; width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 8px; border: 2px solid var(--border); background: var(--surface); }
+    .vs-side.picked .vs-photo, .vs-side.won .vs-photo { border-color: var(--gold); }
+    .vs-badge { font-family: var(--condensed); font-weight: 900; font-size: 22px; color: var(--gold); }
+    .vs-school { font-family: var(--condensed); font-weight: 900; font-size: 20px; line-height: 1.1; text-transform: uppercase; margin-top: 12px; overflow-wrap: anywhere; }
+    .vs-loc { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .vs-count { font-size: 13px; font-weight: 700; margin: 8px 0 12px; }
+    .vs-flag { font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); padding: 11px 0; }
+    .vs-side .vote-btn { width: 100%; }
+    .vs-bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: rgba(255,255,255,0.18); margin-top: 20px; }
+    .vs-bar-a { background: var(--gold); transition: width 0.3s ease; }
+    .vs-foot { display: flex; justify-content: center; margin-top: 16px; }
+    @media (max-width: 600px) {
+      .versus-section { padding: 20px 14px; }
+      .vs-grid { gap: 6px; }
+      .vs-badge { font-size: 16px; }
+      .vs-school { font-size: 16px; }
+    }
+
     /* SPOTLIGHT */
     .spotlight-section { background: linear-gradient(180deg, rgba(245,197,24,0.04) 0%, transparent 100%); border: 1px solid rgba(245,197,24,0.2); border-radius: 12px; padding: 32px; margin-bottom: 48px; }
     .spotlight-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
@@ -364,6 +392,9 @@
 
     <!-- VOTE TAB -->
     <div id="tab-vote">
+      <!-- VERSUS OF THE WEEK -->
+      <div id="versus-wrap" style="display:none;"></div>
+
       <!-- THIS WEEK'S SPOTLIGHT -->
       <div id="spotlight-wrap" style="display:none;">
         <div class="spotlight-section">
@@ -594,7 +625,7 @@
     import { initializeApp }                              from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
     import { getFirestore, collection, addDoc, getDocs,
              doc, getDoc, writeBatch, query, where,
-             orderBy, increment }                          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+             orderBy, limit, increment, Timestamp }        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
     import { getStorage, ref as sref, uploadBytes,
              getDownloadURL }                              from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
@@ -809,6 +840,7 @@
 
         // Load this visitor's votes
         await loadMyVotes();
+        await loadVersus();
 
         renderAll();
       } catch(e) {
@@ -816,6 +848,131 @@
         document.getElementById('all-grid').innerHTML =
           '<div class="empty-state">Could not load submissions. Try refreshing.</div>';
       }
+    }
+
+    // ── VERSUS OF THE WEEK ───────────────────────────────
+    // Separate tally from Drip %. One vote per browser, no sign-in.
+    // ponytail: score refreshes on page load and after voting; use onSnapshot if a live score is worth the reads.
+    let versus = null;
+    let versusPick = null;
+    let versusTimer = null;
+
+    async function loadVersus() {
+      try {
+        const snap = await getDocs(query(collection(db,'drip_versus'),
+          where('startsAt','<=',Timestamp.now()), orderBy('startsAt','desc'), limit(1)));
+        if (snap.empty) return;
+        const d = snap.docs[0];
+        // The final result stays up for a week if no new matchup follows
+        if (d.data().locksAt.toMillis() + 7*24*60*60*1000 < Date.now()) return;
+        versus = { id: d.id, ...d.data() };
+        const mine = await getDoc(doc(db,'drip_versus_votes',`${d.id}_${visitorId}`));
+        if (mine.exists()) versusPick = mine.data().pick;
+      } catch(e) { console.error('loadVersus error', e); }
+    }
+
+    function versusSideHtml(side, sub, isOpen, winner) {
+      const votes = versus[side + 'Votes'] || 0;
+      const total = (versus.aVotes||0) + (versus.bVotes||0);
+      const aPct = total ? Math.round((versus.aVotes||0) / total * 100) : 0;
+      const pct = side === 'a' ? aPct : (total ? 100 - aPct : 0); // always sums to 100
+      const picked = versusPick === side;
+      const cls = [picked ? 'picked' : '', winner === side ? 'won' : '', winner && winner !== side && winner !== 'tie' ? 'lost' : ''].join(' ');
+      const flag = isOpen
+        ? (versusPick
+            ? (picked ? '<div class="vs-flag">&#10003; Your pick</div>' : '')
+            : `<button class="vote-btn drip" data-action="versus-vote" data-vote="${side}">Drips harder</button>`)
+        : (winner === side ? '<div class="vs-flag">&#127942; Winner</div>' : '');
+      return `<div class="vs-side ${cls}">
+        <img class="vs-photo" src="${escapeHtml(sub.photoUrl||'')}" alt="${escapeHtml(sub.teamName||'')} uniform">
+        <div class="vs-school">${escapeHtml(sub.teamName||'')}</div>
+        <div class="vs-loc">${escapeHtml([sub.city, sub.state].filter(Boolean).join(', '))}</div>
+        <div class="vs-count">${votes.toLocaleString()} ${votes === 1 ? 'vote' : 'votes'} &middot; ${pct}%</div>
+        ${flag}
+      </div>`;
+    }
+
+    function versusCountdownText() {
+      const s = Math.max(0, Math.floor((versus.locksAt.toMillis() - Date.now()) / 1000));
+      const pad = n => String(n).padStart(2,'0');
+      return `${Math.floor(s/86400)}d ${pad(Math.floor(s%86400/3600))}h ${pad(Math.floor(s%3600/60))}m ${pad(s%60)}s`;
+    }
+
+    function renderVersus() {
+      const wrap = document.getElementById('versus-wrap');
+      clearInterval(versusTimer);
+      const a = versus && window._submissions.find(s => s.id === versus.aId);
+      const b = versus && window._submissions.find(s => s.id === versus.bId);
+      if (!a || !b) { wrap.style.display = 'none'; return; }
+
+      const isOpen = Date.now() < versus.locksAt.toMillis();
+      const aVotes = versus.aVotes||0, bVotes = versus.bVotes||0, total = aVotes + bVotes;
+      const winner = isOpen ? null : (aVotes === bVotes ? 'tie' : aVotes > bVotes ? 'a' : 'b');
+      const status = isOpen
+        ? `Voting locks Saturday at 11:59 PM CT &middot; <strong id="vs-countdown">${versusCountdownText()}</strong> left`
+        : winner === 'tie'
+          ? `Voting is closed. It ended in a tie.`
+          : `Voting is closed. <strong>${escapeHtml((winner === 'a' ? a : b).teamName)}</strong> takes the week.`;
+
+      wrap.style.display = 'block';
+      wrap.innerHTML = `<div class="versus-section">
+        <div class="section-head"><h2>&#9876;&#65039; <span class="accent">VERSUS</span> OF THE WEEK${isOpen ? '' : ' &middot; FINAL'}</h2></div>
+        <p class="vs-status">${status}</p>
+        <div class="vs-grid">
+          ${versusSideHtml('a', a, isOpen, winner)}
+          <div class="vs-badge">VS</div>
+          ${versusSideHtml('b', b, isOpen, winner)}
+        </div>
+        <div class="vs-bar"><div class="vs-bar-a" style="width:${total ? aVotes/total*100 : 50}%"></div></div>
+        <div class="vs-foot"><button class="share-mini" data-action="versus-share">&#128279; Rally your school</button></div>
+      </div>`;
+
+      if (isOpen) {
+        versusTimer = setInterval(() => {
+          if (Date.now() >= versus.locksAt.toMillis()) return renderVersus();
+          const el = document.getElementById('vs-countdown');
+          if (el) el.textContent = versusCountdownText();
+        }, 1000);
+      }
+    }
+
+    async function versusVote(pick) {
+      if (!versus || versusPick) return;
+      if (Date.now() >= versus.locksAt.toMillis()) {
+        renderVersus();
+        toast('Voting is closed for this week.', 'error');
+        return;
+      }
+      const field = pick + 'Votes';
+      versusPick = pick;
+      versus[field] = (versus[field]||0) + 1;
+      renderVersus();
+      try {
+        const batch = writeBatch(db);
+        batch.set(doc(db,'drip_versus_votes',`${versus.id}_${visitorId}`), {
+          weekId: versus.id, visitorId, pick, timestamp: Date.now()
+        });
+        batch.update(doc(db,'drip_versus',versus.id), {
+          [field]: increment(1),
+          lastVoterId: visitorId
+        });
+        await batch.commit();
+        toast('🔥 Vote locked in!');
+      } catch(e) {
+        console.error('versus vote error', e);
+        versusPick = null;
+        versus[field] -= 1;
+        renderVersus();
+        toast('Vote failed. Try again.', 'error');
+      }
+    }
+
+    function shareVersus() {
+      const a = window._submissions.find(s => s.id === versus.aId);
+      const b = window._submissions.find(s => s.id === versus.bId);
+      const url = `${location.origin}/dripordrown`;
+      shareLink(`${a.teamName} vs ${b.teamName} — Versus of the Week`,
+        `${a.teamName} vs ${b.teamName}: who drips harder? 🔥 Vote: ${url}`, url);
     }
 
     async function loadMyVotes() {
@@ -834,11 +991,12 @@
     function renderAll() {
       if (schoolFilter || stateFilter) {
         // Hide global leaderboards when any filter is active
-        ['spotlight-wrap','top3-wrap','bottom3-wrap'].forEach(id => {
+        ['versus-wrap','spotlight-wrap','top3-wrap','bottom3-wrap'].forEach(id => {
           const el = document.getElementById(id);
           if (el) el.style.display = 'none';
         });
       } else {
+        renderVersus();
         renderSpotlight();
         renderTop3();
         renderBottom3();
@@ -1246,10 +1404,14 @@
       if (!sub) return;
       const url = `${location.origin}${location.pathname}?id=${encodeURIComponent(submissionId)}`;
       const text = `Help ${sub.teamName} get DRIP status! \uD83D\uDD25 Vote: ${url}`;
+      await shareLink(`${sub.teamName} — Drip or Drown`, text, url);
+    }
+
+    async function shareLink(title, text, url) {
       // Prefer native share on mobile, fall back to clipboard
       try {
         if (navigator.share) {
-          await navigator.share({ title: `${sub.teamName} — Drip or Drown`, text, url });
+          await navigator.share({ title, text, url });
           return;
         }
         await navigator.clipboard.writeText(text);
@@ -1818,7 +1980,11 @@
       if (!actionEl) return;
       const action = actionEl.dataset.action;
       const id = actionEl.dataset.id;
-      if (action === 'vote') {
+      if (action === 'versus-vote') {
+        versusVote(actionEl.dataset.vote);
+      } else if (action === 'versus-share') {
+        shareVersus();
+      } else if (action === 'vote') {
         const v = actionEl.dataset.vote;
         // In gallery: swipe the card off (drip=right, drown=left), then advance
         const inGallery = galleryOpen && actionEl.closest('#gallery-card-wrap');
