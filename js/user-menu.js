@@ -11,6 +11,8 @@ import {
   getUserDoc
 } from './auth.js';
 
+import './track.js';
+
 const CURRENT_YEAR = new Date().getFullYear();
 
 let modalOverlay;

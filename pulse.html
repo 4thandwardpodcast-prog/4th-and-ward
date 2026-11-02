@@ -1244,6 +1244,7 @@
           submittedAt: Date.now(),
           approved: false,
         });
+        window.trackEvent?.('pulse_stadium_submit');
 
         progressBar.style.width = '100%';
         okEl.style.display = 'block';

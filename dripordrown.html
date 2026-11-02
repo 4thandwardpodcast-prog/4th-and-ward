@@ -22,24 +22,6 @@
   <link rel="stylesheet" href="css/auth.css">
   <script type="module" src="js/user-menu.js"></script>
 
-  <!-- Page view tracking -->
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-    import { getFirestore, doc, setDoc, increment } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-    const app = initializeApp({
-      apiKey:"AIzaSyB5EJMsZT4WsfJjaFQ-srIdNwAINr7Q2yY",authDomain:"th-and-ward-b8f1c.firebaseapp.com",
-      projectId:"th-and-ward-b8f1c",storageBucket:"th-and-ward-b8f1c.firebasestorage.app",
-      messagingSenderId:"499057353962",appId:"1:499057353962:web:18f42748c242a6e0be2393"
-    });
-    const db=getFirestore(app);
-    const page='dripordrown';
-    const d=new Date();
-    const today=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    let vid=localStorage.getItem('4ward_vid'),isNew=false;
-    if(!vid){vid='v_'+Math.random().toString(36).slice(2)+Date.now();localStorage.setItem('4ward_vid',vid);isNew=true;}
-    setDoc(doc(db,'pageviews',page+'_'+today),{page,date:today,views:increment(1),allTime:increment(1),newVisitors:increment(isNew?1:0)},{merge:true});
-  </script>
-
   <style>
     /* HERO */
     .drip-hero { padding: 120px 48px 60px; border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
@@ -1014,6 +996,7 @@
           lastVoterId: visitorId
         });
         await batch.commit();
+        window.trackEvent?.('versus_vote');
         toast('🔥 Vote locked in!');
       } catch(e) {
         console.error('versus vote error', e);
@@ -1046,8 +1029,10 @@
       if (stateSnapshot !== undefined) return;
       stateSnapshot = null;
       try {
-        const snap = await getDocs(query(collection(db,'drip_state_snapshots'), orderBy('takenAt','desc'), limit(1)));
-        if (!snap.empty) stateSnapshot = snap.docs[0].data();
+        const snap = await getDocs(query(collection(db,'drip_state_snapshots'), orderBy('takenAt','desc'), limit(2)));
+        // Skip one saved in the last few days, so movers don't blank out right after a save
+        const old = snap.docs.map(d => d.data()).find(s => s.takenAt < Date.now() - 3*24*60*60*1000);
+        if (old) stateSnapshot = old;
       } catch(e) { console.error('state snapshot error', e); }
       renderStates();
     }
@@ -1066,7 +1051,7 @@
         `Every vote across a state's schools, ranked with the same confidence scoring as Top Drips. A school counts at ${MIN_SCHOOL_VOTES} votes; a state ranks at ${MIN_STATE_SCHOOLS} schools.`;
 
       document.getElementById('states-movers').innerHTML = changes.length
-        ? `<div class="section-head"><h2 style="font-size:22px;">&#128200; MOVERS <span class="accent">SINCE SUNDAY</span></h2></div>
+        ? `<div class="section-head"><h2 style="font-size:22px;">&#128200; MOVERS <span class="accent">SINCE ${new Date(stateSnapshot.takenAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }).toUpperCase()}</span></h2></div>
            <div class="state-movers">${changes.slice(0, 5).map(c => `
              <a class="state-mover" href="?state=${encodeURIComponent(c.state)}" data-action="open-state" data-state="${escapeHtml(c.state)}">
                ${escapeHtml(stateName(c.state))} ${arrow(c.delta)}
@@ -1285,7 +1270,7 @@
       batch.update(doc(db,'drip_submissions',winner.id), { versusWins: increment(1), lastPlayId: playId });
       batch.update(doc(db,'drip_submissions',loser.id), { versusLosses: increment(1), lastPlayId: playId });
       const round = { winner, loser, playId };
-      round.saved = batch.commit().then(() => true).catch(e => {
+      round.saved = batch.commit().then(() => { window.trackEvent?.('freeplay_round'); return true; }).catch(e => {
         // The next pair is already up, so just undo this round's tally
         console.error('free play error', e);
         fpPlayed.delete(key);
@@ -1314,6 +1299,7 @@
         batch.set(doc(db,'drip_tags',round.playId), { subId: sub.id, tag: tag.key, visitorId, timestamp: Date.now() });
         batch.update(doc(db,'drip_submissions',sub.id), { [`tagCounts.${tag.key}`]: increment(1), lastTagId: round.playId });
         await batch.commit();
+        window.trackEvent?.('freeplay_tag');
         sub.tagCounts = { ...(sub.tagCounts||{}), [tag.key]: (sub.tagCounts?.[tag.key]||0) + 1 };
       } catch(e) { console.error('tag error', e); }
     }
@@ -1729,6 +1715,7 @@
           lastVoterId: visitorId
         });
         await batch.commit();
+        window.trackEvent?.('drip_vote');
         toast(voteType === 'drip' ? '\uD83D\uDD25 Drip locked in!' : '\uD83D\uDCA7 Drown logged.');
       } catch(e) {
         console.error('vote error', e);
@@ -1746,6 +1733,7 @@
     async function shareSub(submissionId) {
       const sub = window._submissions.find(s => s.id === submissionId);
       if (!sub) return;
+      window.trackEvent?.('uniform_share');
       const url = `${location.origin}${location.pathname}?id=${encodeURIComponent(submissionId)}`;
       const text = `Help ${sub.teamName} get DRIP status! \uD83D\uDD25 Vote: ${url}`;
       await shareLink(`${sub.teamName} — Drip or Drown`, text, url);
@@ -1907,6 +1895,7 @@
           featuredThisWeek: false,
           hostTake: ''
         });
+        window.trackEvent?.('drip_submit');
 
         progressBar.style.width = '100%';
         successEl.style.display = 'block';
@@ -2315,6 +2304,7 @@
           setUrl({});
           renderAll();
         }
+        window.trackEvent?.(`drip_tab_${tabBtn.dataset.tab}`);
         switchTab(tabBtn.dataset.tab);
         return;
       }
@@ -2338,6 +2328,7 @@
         applyStateFilter(actionEl.dataset.state);
       } else if (action === 'state-share') {
         const code = actionEl.dataset.state;
+        window.trackEvent?.('state_share');
         const url = `${location.origin}/dripordrown?state=${encodeURIComponent(code)}`;
         shareLink(`${stateName(code)} — State Drip Score`,
           `Where does ${stateName(code)} rank in high school football drip? Vote: ${url}`, url);
@@ -2350,6 +2341,7 @@
       } else if (action === 'versus-vote') {
         versusVote(actionEl.dataset.vote);
       } else if (action === 'versus-share') {
+        window.trackEvent?.('versus_share');
         shareVersus();
       } else if (action === 'vote') {
         const v = actionEl.dataset.vote;

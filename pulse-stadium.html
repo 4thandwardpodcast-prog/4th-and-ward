@@ -1721,6 +1721,7 @@
         // without flooding with score-only ratings.
         if (comment) data.commentApproved = false;
         await setDoc(doc(db, 'pulse_ratings', ratingId), data, { merge: true });
+        window.trackEvent?.('pulse_rating');
 
         // Optimistically update local state
         myRating = { id: ratingId, ...data };
@@ -1765,6 +1766,7 @@
           approved: false,
           submittedAt: Date.now(),
         });
+        window.trackEvent?.('pulse_photo');
         toast('Photo submitted! Pending admin review.');
         e.target.value = '';
       } catch (err) {
@@ -1875,6 +1877,7 @@
           approved: false,
           likes: 0,
         });
+        window.trackEvent?.('pulse_comment');
         okEl.style.display = 'block';
         document.getElementById('comment-form').reset();
         document.getElementById('comment-text-count').textContent = '0';
@@ -1971,6 +1974,7 @@
           submittedAt: Date.now(),
           approved: false,
         });
+        window.trackEvent?.('pulse_correction');
         okEl.style.display = 'block';
         document.getElementById('correction-form').reset();
         document.getElementById('correction-current').value = '';

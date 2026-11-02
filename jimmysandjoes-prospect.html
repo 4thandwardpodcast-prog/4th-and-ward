@@ -532,6 +532,7 @@
       btn.disabled = true;
       try {
         await setDoc(doc(db, 'prospect_ratings', docId), data);
+        window.trackEvent?.('jj_rating');
         myExistingRating = data;
         msg.className = 'jj-submit-msg ok'; msg.textContent = 'Rating saved. Thanks for evaluating!'; msg.hidden = false;
         setTimeout(closeRatingModal, 900);
@@ -625,6 +626,7 @@
           requestedAt: Date.now(),
           note: String(note || '').slice(0, 500),
         });
+        window.trackEvent?.('jj_claim');
         showShareToast('Claim submitted for review.');
         await refreshMyClaim();
         renderClaimButton();
@@ -843,6 +845,7 @@
             parentId,
             status: 'active',
           });
+          window.trackEvent?.('jj_comment');
           loadComments();
         } catch (err) {
           console.error('[jj] post reply:', err);
@@ -899,6 +902,7 @@
             parentId: null,
             status: 'active',
           });
+          window.trackEvent?.('jj_comment');
           document.getElementById('comment-text').value = '';
           loadComments();
         } catch (err) {

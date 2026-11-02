@@ -504,6 +504,7 @@
         const slug = await uniqueSlug(base);
         data.slug = slug;
         await setDoc(doc(db, 'prospects', slug), data);
+        window.trackEvent?.('jj_submit');
         showMsg(`Thanks! Submission received. It’ll go live at /jimmysandjoes/prospect/${slug} once an admin approves it.`, true);
         // Reset most fields but keep school/city/state so a coach submitting a batch isn't slowed.
         document.getElementById('f-name').value = '';

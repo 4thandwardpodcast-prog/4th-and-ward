@@ -10,24 +10,6 @@
   <link rel="stylesheet" href="css/auth.css">
   <script type="module" src="js/user-menu.js"></script>
 
-  <!-- Page view tracking -->
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-    import { getFirestore, doc, setDoc, increment } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-    const app = initializeApp({
-      apiKey:"AIzaSyB5EJMsZT4WsfJjaFQ-srIdNwAINr7Q2yY",authDomain:"th-and-ward-b8f1c.firebaseapp.com",
-      projectId:"th-and-ward-b8f1c",storageBucket:"th-and-ward-b8f1c.firebasestorage.app",
-      messagingSenderId:"499057353962",appId:"1:499057353962:web:18f42748c242a6e0be2393"
-    });
-    const db=getFirestore(app);
-    const page='wardlev2';
-    const d=new Date();
-    const today=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    let vid=localStorage.getItem('4ward_vid'),isNew=false;
-    if(!vid){vid='v_'+Math.random().toString(36).slice(2)+Date.now();localStorage.setItem('4ward_vid',vid);isNew=true;}
-    setDoc(doc(db,'pageviews',page+'_'+today),{page,date:today,views:increment(1),allTime:increment(1),newVisitors:increment(isNew?1:0)},{merge:true});
-  </script>
-
   <style>
     /* ── HERO ── */
     .wardle-hero { padding: 100px 48px 0; background: var(--black); position: relative; overflow: hidden; }

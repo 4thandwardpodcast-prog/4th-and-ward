@@ -987,33 +987,21 @@
           <div class="stat-card green"><div class="stat-card-num" id="vis-total">—</div><div class="stat-card-label">All-Time Views</div></div>
         </div>
         <div class="card">
-          <div class="card-header"><div class="card-title">Views by Page (Today)</div></div>
+          <div class="card-header"><div class="card-title">Views by Page</div></div>
           <div class="card-body" style="padding:0">
             <table class="data-table">
-              <thead><tr><th>Page</th><th>Views Today</th><th>All-Time</th></tr></thead>
-              <tbody id="page-views-body"><tr><td colspan="3" class="loading-row">Loading...</td></tr></tbody>
+              <thead><tr><th>Page</th><th>Today</th><th>Last 7 Days</th><th>All-Time</th></tr></thead>
+              <tbody id="page-views-body"><tr><td colspan="4" class="loading-row">Loading...</td></tr></tbody>
             </table>
           </div>
         </div>
-        <div class="card">
-          <div class="card-header"><div class="card-title">How to Track Visitors</div></div>
-          <div class="card-body">
-            <p style="color:var(--muted);font-size:14px;line-height:1.7">
-              Add this snippet to the <code style="background:var(--surface2);padding:2px 6px;border-radius:4px">&lt;head&gt;</code> of every page you want to track.
-              It logs a page view to Firestore each time someone visits.
-            </p>
-            <pre style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:20px;margin-top:16px;font-size:13px;overflow-x:auto;color:#ccc;line-height:1.6">&lt;script type="module"&gt;
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getFirestore, doc, setDoc, increment }
-    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-  const app = initializeApp({ /* your firebaseConfig */ });
-  const db  = getFirestore(app);
-  const page = window.location.pathname.replace(/\//g,'') || 'index';
-  const d = new Date(); const today = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
-  setDoc(doc(db,'pageviews', page + '_' + today),
-    { page, date: today, views: increment(1), allTime: increment(1) },
-    { merge: true });
-&lt;/script&gt;</pre>
+        <div class="card" style="margin-top:24px">
+          <div class="card-header"><div class="card-title">Feature Use</div></div>
+          <div class="card-body" style="padding:0">
+            <table class="data-table">
+              <thead><tr><th>Feature</th><th>Today</th><th>Last 7 Days</th><th>All-Time</th></tr></thead>
+              <tbody id="feature-use-body"><tr><td colspan="4" class="loading-row">Loading...</td></tr></tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -1351,6 +1339,7 @@
       document.getElementById('dashboard').style.display    = 'block';
       document.getElementById('dash-user-email').textContent = user.email;
       initDashboard();
+      saveDripStateSnapshot();
     } else if (user) {
       fbSignOut(auth);
       document.getElementById('login-error').style.display = 'block';
@@ -2159,7 +2148,46 @@
   };
 
   // ── VISITORS ──────────────────────────────────────────────
+  // Names match the window.trackEvent() calls across the site
+  const FEATURE_LABELS = {
+    drip_vote: 'Drip or Drown: votes', drip_submit: 'Drip or Drown: uniform submissions', uniform_share: 'Drip or Drown: uniform shares',
+    versus_vote: 'Versus of the Week: votes', versus_share: 'Versus of the Week: shares',
+    freeplay_round: 'Free Play: rounds', freeplay_tag: 'Free Play: tags', state_share: 'State Scores: shares',
+    drip_tab_vote: 'Drip tab: Vote', drip_tab_play: 'Drip tab: Free Play', drip_tab_states: 'Drip tab: States',
+    drip_tab_schools: 'Drip tab: Schools', drip_tab_submit: 'Drip tab: Submit', drip_tab_top: 'Drip tab: Top Drips',
+    pulse_rating: 'Pulse: ratings', pulse_photo: 'Pulse: photos', pulse_comment: 'Pulse: comments',
+    pulse_correction: 'Pulse: corrections', pulse_stadium_submit: 'Pulse: stadium submissions',
+    totw_nomination: 'Team of the Week: nominations', wardle_play: '4th & Wardle: games played',
+    jj_rating: 'Jimmys & Joes: ratings', jj_comment: 'Jimmys & Joes: comments',
+    jj_claim: 'Jimmys & Joes: profile claims', jj_submit: 'Jimmys & Joes: prospect submissions',
+  };
+
+  async function loadFeatureUse() {
+    const tbody = document.getElementById('feature-use-body');
+    try {
+      const snap = await getDocs(collection(db, 'analytics_events'));
+      const today = todayStr();
+      const sevenDaysAgo = new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const totals = {};
+      snap.forEach(d => {
+        const e = d.data();
+        const row = totals[e.name] = totals[e.name] || { today: 0, week: 0, allTime: 0 };
+        row.allTime += e.count || 0;
+        if (e.date === today) row.today += e.count || 0;
+        if (new Date(e.date) >= sevenDaysAgo) row.week += e.count || 0;
+      });
+      const rows = Object.entries(totals).sort((a,b) => b[1].week - a[1].week);
+      tbody.innerHTML = rows.length ? rows.map(([name, r]) => `<tr>
+        <td>${escapeHtml(FEATURE_LABELS[name] || name)}</td>
+        <td>${r.today}</td><td>${r.week}</td><td>${r.allTime}</td>
+      </tr>`).join('') : '<tr><td colspan="4" class="loading-row">No feature use recorded yet.</td></tr>';
+    } catch(e) {
+      tbody.innerHTML = '<tr><td colspan="4" class="loading-row">Error: ' + escapeHtml(e.message) + '</td></tr>';
+    }
+  }
+
   async function loadVisitors() {
+    loadFeatureUse();
     try {
       const tbody = document.getElementById('page-views-body');
       const today = todayStr();
@@ -2177,8 +2205,9 @@
         allTotal += allTime;
         if (pv.date === today) todayTotal += views;
         if (pv.date && new Date(pv.date) >= sevenDaysAgo) weekTotal += views;
-        if (!pageMap[pv.page]) pageMap[pv.page] = { today: 0, allTime: 0 };
+        if (!pageMap[pv.page]) pageMap[pv.page] = { today: 0, week: 0, allTime: 0 };
         if (pv.date === today) pageMap[pv.page].today += views;
+        if (pv.date && new Date(pv.date) >= sevenDaysAgo) pageMap[pv.page].week += views;
         pageMap[pv.page].allTime += allTime;
       });
 
@@ -2186,9 +2215,9 @@
       document.getElementById('vis-week').textContent  = weekTotal;
       document.getElementById('vis-total').textContent = allTotal;
 
-      const pages = Object.entries(pageMap).sort((a,b) => b[1].today - a[1].today);
+      const pages = Object.entries(pageMap).sort((a,b) => b[1].week - a[1].week);
       if (pages.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="loading-row">No visitor data yet. Add the tracking snippet to your pages.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="loading-row">No visitor data yet.</td></tr>';
         return;
       }
       let html = '';
@@ -2196,6 +2225,7 @@
         html += `<tr>
           <td>${escapeHtml(page || 'index')}</td>
           <td>${data.today}</td>
+          <td>${data.week}</td>
           <td>${data.allTime}</td>
         </tr>`;
       });
@@ -2374,6 +2404,34 @@
     } catch(e) { tbody.innerHTML = '<tr><td colspan="6" class="loading-row">Error: ' + escapeHtml(e.message) + '</td></tr>'; }
   }
   window.loadDripAll = loadDripAll;
+
+  // Saves per-school vote totals about once a week, when an admin opens this page.
+  // dripordrown.html scores them with the live ranking code to show State Score movers.
+  // ponytail: runs on admin visits; a scheduled function is the upgrade if a week gets missed.
+  async function saveDripStateSnapshot() {
+    try {
+      const latest = await getDocs(query(collection(db, 'drip_state_snapshots'), orderBy('takenAt','desc'), limit(1)));
+      if (!latest.empty && latest.docs[0].data().takenAt > Date.now() - 6*24*60*60*1000) return;
+      const snap = await getDocs(query(collection(db, 'drip_submissions'), where('approved','==',true)));
+      const schools = new Map();
+      snap.forEach(d => {
+        const s = d.data();
+        // Same fallback as normalizeSchool() in dripordrown.html, for older submissions
+        const key = s.schoolKey || String(s.teamName || '').toLowerCase()
+          .replace(/\s+(high\s+school|h\.?\s*s\.?)\s*$/i, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        const row = schools.get(key) || { state: '', latest: -1, drip: 0, drown: 0 };
+        row.drip += s.dripVotes || 0;
+        row.drown += s.drownVotes || 0;
+        if ((s.submittedAt || 0) > row.latest) { row.latest = s.submittedAt || 0; row.state = s.state || ''; }
+        schools.set(key, row);
+      });
+      const now = new Date();
+      await setDoc(doc(db, 'drip_state_snapshots', now.toISOString().slice(0,10)), {
+        takenAt: now.getTime(),
+        schools: [...schools.values()].map(({ state, drip, drown }) => ({ state, drip, drown })),
+      });
+    } catch(e) { console.error('state snapshot error', e); }
+  }
 
   // ── DRIP OR DROWN — VERSUS OF THE WEEK ────────────────────
   // Converts a Central wall-clock time to the real instant, across daylight saving.
