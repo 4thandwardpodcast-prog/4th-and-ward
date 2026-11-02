@@ -87,13 +87,28 @@
     .vs-side .vote-btn { width: 100%; }
     .vs-bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: rgba(255,255,255,0.18); margin-top: 20px; }
     .vs-bar-a { background: var(--gold); transition: width 0.3s ease; }
-    .vs-foot { display: flex; justify-content: center; margin-top: 16px; }
+    .vs-foot { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 16px; }
     @media (max-width: 600px) {
       .versus-section { padding: 20px 14px; }
       .vs-grid { gap: 6px; }
       .vs-badge { font-size: 16px; }
       .vs-school { font-size: 16px; }
     }
+
+    /* FREE PLAY */
+    .fp-wrap { max-width: 760px; margin: 0 auto; }
+    .fp-streak { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--gold); }
+    .fp-tagbar { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; }
+    .fp-tagbar-q { font-size: 13px; font-weight: 700; margin-bottom: 8px; overflow-wrap: anywhere; }
+    .fp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .fp-chip { background: transparent; border: 1px solid var(--border); color: var(--white); border-radius: 999px; padding: 7px 12px; font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer; }
+    .fp-chip:hover { border-color: var(--gold); color: var(--gold); }
+    .fp-photo-btn { display: block; width: 100%; padding: 0; background: none; border: 0; cursor: pointer; }
+    .fp-tags { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+    .fp-leaders { margin-top: 40px; }
+    .fp-leader { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .fp-leader-name { font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+    .fp-leader-rec { color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
     /* SPOTLIGHT */
     .spotlight-section { background: linear-gradient(180deg, rgba(245,197,24,0.04) 0%, transparent 100%); border: 1px solid rgba(245,197,24,0.2); border-radius: 12px; padding: 32px; margin-bottom: 48px; }
@@ -383,6 +398,7 @@
 
   <div class="tab-bar">
     <button class="tab-btn active" data-tab="vote">Vote</button>
+    <button class="tab-btn" data-tab="play">Free Play</button>
     <button class="tab-btn" data-tab="schools">Schools</button>
     <button class="tab-btn" data-tab="submit">Submit</button>
     <button class="tab-btn" data-tab="top">Top Drips</button>
@@ -440,6 +456,19 @@
     </div>
 
     <!-- SUBMIT TAB -->
+    <div id="tab-play" style="display:none;">
+      <div class="fp-wrap">
+        <div class="section-head">
+          <h2>&#9876;&#65039; FREE <span class="accent">PLAY</span></h2>
+          <span class="fp-streak" id="fp-streak"></span>
+        </div>
+        <p class="section-sub">Two uniforms. Pick the one that drips harder. Play as long as you want.</p>
+        <div id="fp-tagbar"></div>
+        <div id="fp-round"></div>
+        <div id="fp-leaders" class="fp-leaders"></div>
+      </div>
+    </div>
+
     <div id="tab-submit" style="display:none;">
       <div class="submit-form-card">
         <h2>Submit a Uniform</h2>
@@ -626,6 +655,7 @@
     import { getFirestore, collection, addDoc, getDocs,
              doc, getDoc, writeBatch, query, where,
              orderBy, limit, increment, Timestamp }        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { pickPair, pairKey }                           from '/js/drip-freeplay.js';
     import { getStorage, ref as sref, uploadBytes,
              getDownloadURL }                              from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
@@ -802,7 +832,7 @@
     function switchTab(tab, opts) {
       opts = opts || {};
       currentTab = tab;
-      ['vote','submit','schools','top'].forEach(t => {
+      ['vote','play','submit','schools','top'].forEach(t => {
         const el = document.getElementById('tab-'+t);
         if (el) el.style.display = (t === tab) ? 'block' : 'none';
       });
@@ -811,6 +841,7 @@
       });
       if (tab === 'top')     renderHallOfFame();
       if (tab === 'schools') renderSchools();
+      if (tab === 'play')    openFreePlay();
       if (!opts.noScroll) window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
@@ -924,7 +955,10 @@
           ${versusSideHtml('b', b, isOpen, winner)}
         </div>
         <div class="vs-bar"><div class="vs-bar-a" style="width:${total ? aVotes/total*100 : 50}%"></div></div>
-        <div class="vs-foot"><button class="share-mini" data-action="versus-share">&#128279; Rally your school</button></div>
+        <div class="vs-foot">
+          <button class="share-mini" data-action="versus-share">&#128279; Rally your school</button>
+          <button class="share-mini" data-action="goto-play">&#9876;&#65039; Keep playing: Free Play</button>
+        </div>
       </div>`;
 
       if (isOpen) {
@@ -973,6 +1007,190 @@
       const url = `${location.origin}/dripordrown`;
       shareLink(`${a.teamName} vs ${b.teamName} — Versus of the Week`,
         `${a.teamName} vs ${b.teamName}: who drips harder? 🔥 Vote: ${url}`, url);
+    }
+
+    // ── FREE PLAY ────────────────────────────────────────
+    // Endless head-to-heads. Results are a separate Versus record, so Drip % stays
+    // a pure yes/no score (similar-score pairs would drag it toward 50% otherwise).
+    const FP_TAGS = [
+      { key: 'cleanHelmet',  name: 'Clean helmet',  ask: 'Clean helmet',        on: 'winner' },
+      { key: 'classicLook',  name: 'Classic look',  ask: 'Classic look',        on: 'winner' },
+      { key: 'greatColors',  name: 'Great colors',  ask: 'Great colors',        on: 'winner' },
+      { key: 'boldDesign',   name: 'Bold design',   ask: 'Bold design',         on: 'winner' },
+      { key: 'busyDesign',   name: 'Busy design',   ask: 'Other one too busy',  on: 'loser'  },
+      { key: 'weirdSleeves', name: 'Weird sleeves', ask: 'Other one’s weird sleeves', on: 'loser' },
+    ];
+    let fpPlayed = null;   // Set of pair keys this visitor has played
+    let fpPair = null;
+    let fpNext = null;     // next pair, chosen early so its photos are already loaded
+    let fpLast = null;     // last round, until it's tagged or replaced
+
+    async function openFreePlay() {
+      if (!fpPlayed) {
+        fpPlayed = new Set();
+        try {
+          const snap = await getDocs(query(collection(db,'drip_freeplay'), where('visitorId','==',visitorId)));
+          snap.forEach(d => fpPlayed.add(pairKey(d.data().winnerId, d.data().loserId)));
+        } catch(e) { console.error('load plays error', e); }
+      }
+      if (!fpPair) fpAdvance();
+      renderFreePlay();
+    }
+
+    // Versus of the Week schools sit out while their matchup is open
+    function fpExcludedSchools() {
+      const out = new Set();
+      if (versus && Date.now() < versus.locksAt.toMillis()) {
+        for (const id of [versus.aId, versus.bId]) {
+          const s = window._submissions.find(x => x.id === id);
+          if (s) out.add(s.schoolKey);
+        }
+      }
+      return out;
+    }
+
+    function fpAdvance() {
+      const excludeSchools = fpExcludedSchools();
+      fpPair = fpNext && !fpPlayed.has(pairKey(fpNext[0].id, fpNext[1].id))
+        ? fpNext
+        : pickPair(window._submissions, { played: fpPlayed, excludeSchools, avoidIds: new Set(fpPair ? fpPair.map(s => s.id) : []) });
+      fpNext = null;
+      if (!fpPair) return;
+      fpNext = pickPair(window._submissions, {
+        played: new Set([...fpPlayed, pairKey(fpPair[0].id, fpPair[1].id)]),
+        excludeSchools,
+        avoidIds: new Set(fpPair.map(s => s.id))
+      });
+      if (fpNext) fpNext.forEach(s => { new Image().src = s.photoUrl || ''; });
+    }
+
+    function fpStreak() {
+      try { return JSON.parse(localStorage.getItem('4ward_fp_streak')) || {}; }
+      catch { return {}; }
+    }
+    function fpDayKey(offsetDays) {
+      const d = new Date(Date.now() + (offsetDays||0)*24*60*60*1000);
+      return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+    }
+    // Days played in a row, kept per browser: a matchup has no right answer to streak on.
+    function fpBumpStreak() {
+      const st = fpStreak();
+      const today = fpDayKey(0);
+      if (st.day === today) st.rounds = (st.rounds||0) + 1;
+      else {
+        st.days = st.day === fpDayKey(-1) ? (st.days||0) + 1 : 1;
+        st.rounds = 1;
+        st.day = today;
+      }
+      try { localStorage.setItem('4ward_fp_streak', JSON.stringify(st)); } catch {}
+    }
+
+    function fpTopTags(sub) {
+      const counts = sub.tagCounts || {};
+      return FP_TAGS.filter(t => counts[t.key] > 0)
+        .sort((a,b) => counts[b.key] - counts[a.key])
+        .slice(0, 2)
+        .map(t => `${t.name} ${counts[t.key]}`).join(' &middot; ');
+    }
+
+    function fpSideHtml(sub) {
+      const total = (sub.dripVotes||0) + (sub.drownVotes||0);
+      const tags = fpTopTags(sub);
+      return `<div class="vs-side">
+        <button class="fp-photo-btn" data-action="fp-pick" data-id="${escapeHtml(sub.id)}" aria-label="Pick ${escapeHtml(sub.teamName||'')}">
+          <img class="vs-photo" src="${escapeHtml(sub.photoUrl||'')}" alt="${escapeHtml(sub.teamName||'')} uniform">
+        </button>
+        <div class="vs-school">${escapeHtml(sub.teamName||'')}</div>
+        <div class="vs-loc">${escapeHtml([sub.city, sub.state].filter(Boolean).join(', '))}</div>
+        <div class="vs-count">${dripScore(sub.dripVotes, sub.drownVotes)}% drip &middot; Versus ${sub.versusWins||0}&ndash;${sub.versusLosses||0}</div>
+        ${tags ? `<div class="fp-tags">${tags}</div>` : ''}
+        <button class="vote-btn drip" data-action="fp-pick" data-id="${escapeHtml(sub.id)}">Drips harder</button>
+      </div>`;
+    }
+
+    function renderFreePlay() {
+      const st = fpStreak();
+      const isCurrent = st.day === fpDayKey(0) || st.day === fpDayKey(-1);
+      document.getElementById('fp-streak').innerHTML = isCurrent && st.days
+        ? `&#128293; ${st.days}-day streak${st.day === fpDayKey(0) ? ` &middot; ${st.rounds} today` : ''}` : '';
+
+      const bar = document.getElementById('fp-tagbar');
+      bar.innerHTML = fpLast ? `<div class="fp-tagbar">
+        <div class="fp-tagbar-q">Why ${escapeHtml(fpLast.winner.teamName||'')}? <span style="color:var(--muted);font-weight:500;">Optional</span></div>
+        <div class="fp-chips">${FP_TAGS.map(t => `<button class="fp-chip" data-action="fp-tag" data-tag="${t.key}">${escapeHtml(t.ask)}</button>`).join('')}</div>
+      </div>` : '';
+
+      document.getElementById('fp-round').innerHTML = fpPair
+        ? `<div class="versus-section"><div class="vs-grid">
+            ${fpSideHtml(fpPair[0])}
+            <div class="vs-badge">VS</div>
+            ${fpSideHtml(fpPair[1])}
+          </div></div>`
+        : `<div class="empty-state">You've played every matchup available right now. Check back when new uniforms drop.</div>`;
+
+      const leaders = window._submissions
+        .filter(s => (s.versusWins||0) + (s.versusLosses||0) >= 10)
+        .map(s => ({ s, lb: wilsonLowerBound(s.versusWins||0, (s.versusWins||0) + (s.versusLosses||0)) }))
+        .sort((x,y) => y.lb - x.lb)
+        .slice(0, 5);
+      document.getElementById('fp-leaders').innerHTML = leaders.length
+        ? `<div class="section-head"><h2>&#127942; VERSUS <span class="accent">LEADERS</span></h2></div>` +
+          leaders.map(({s}) => `<div class="fp-leader">
+            <span class="fp-leader-name">${escapeHtml(s.teamName||'')}</span>
+            <span class="fp-leader-rec">${s.versusWins||0}&ndash;${s.versusLosses||0}</span>
+          </div>`).join('')
+        : '';
+    }
+
+    function freePlayPick(winnerId) {
+      if (!fpPair) return;
+      const winner = fpPair.find(s => s.id === winnerId);
+      const loser  = fpPair.find(s => s.id !== winnerId);
+      if (!winner) return;
+      const key = pairKey(winner.id, loser.id);
+      const playId = `${key}_${visitorId}`;
+
+      fpPlayed.add(key);
+      winner.versusWins = (winner.versusWins||0) + 1;
+      loser.versusLosses = (loser.versusLosses||0) + 1;
+      fpBumpStreak();
+
+      const batch = writeBatch(db);
+      batch.set(doc(db,'drip_freeplay',playId), { winnerId: winner.id, loserId: loser.id, visitorId, timestamp: Date.now() });
+      batch.update(doc(db,'drip_submissions',winner.id), { versusWins: increment(1), lastPlayId: playId });
+      batch.update(doc(db,'drip_submissions',loser.id), { versusLosses: increment(1), lastPlayId: playId });
+      const round = { winner, loser, playId };
+      round.saved = batch.commit().then(() => true).catch(e => {
+        // The next pair is already up, so just undo this round's tally
+        console.error('free play error', e);
+        fpPlayed.delete(key);
+        winner.versusWins -= 1;
+        loser.versusLosses -= 1;
+        if (fpLast === round) fpLast = null;
+        renderFreePlay();
+        toast('That pick didn’t save. Check your connection.', 'error');
+        return false;
+      });
+      fpLast = round;
+      fpAdvance();
+      renderFreePlay();
+    }
+
+    async function freePlayTag(tagKey) {
+      const round = fpLast;
+      const tag = FP_TAGS.find(t => t.key === tagKey);
+      if (!round || !tag) return;
+      fpLast = null;
+      renderFreePlay();
+      if (!await round.saved) return;
+      const sub = tag.on === 'winner' ? round.winner : round.loser;
+      try {
+        const batch = writeBatch(db);
+        batch.set(doc(db,'drip_tags',round.playId), { subId: sub.id, tag: tag.key, visitorId, timestamp: Date.now() });
+        batch.update(doc(db,'drip_submissions',sub.id), { [`tagCounts.${tag.key}`]: increment(1), lastTagId: round.playId });
+        await batch.commit();
+        sub.tagCounts = { ...(sub.tagCounts||{}), [tag.key]: (sub.tagCounts?.[tag.key]||0) + 1 };
+      } catch(e) { console.error('tag error', e); }
     }
 
     async function loadMyVotes() {
@@ -1980,7 +2198,13 @@
       if (!actionEl) return;
       const action = actionEl.dataset.action;
       const id = actionEl.dataset.id;
-      if (action === 'versus-vote') {
+      if (action === 'fp-pick') {
+        freePlayPick(id);
+      } else if (action === 'fp-tag') {
+        freePlayTag(actionEl.dataset.tag);
+      } else if (action === 'goto-play') {
+        switchTab('play');
+      } else if (action === 'versus-vote') {
         versusVote(actionEl.dataset.vote);
       } else if (action === 'versus-share') {
         shareVersus();
@@ -2066,6 +2290,7 @@
       // ?school= or ?state= imply the vote tab (filtered feed).
       if (pendingTab === 'schools') switchTab('schools', { noScroll: true });
       else if (pendingTab === 'top') switchTab('top', { noScroll: true });
+      else if (pendingTab === 'play') switchTab('play', { noScroll: true });
       else if (pendingTab === 'submit') switchTab('submit', { noScroll: true });
       if (pendingScrollId) {
         // Wait one frame for the cards to be in the DOM

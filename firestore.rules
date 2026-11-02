@@ -87,6 +87,41 @@ service cloud.firestore {
     function dripVotePath(id) {
       return /databases/$(database)/documents/drip_votes/$(id + '_' + request.resource.data.lastVoterId);
     }
+    // Free-Play: a round adds one win and one loss, separate from Drip %, in the
+    // same batch as a new drip_freeplay doc. A visitor plays each pair once.
+    function freePlayPath() {
+      return /databases/$(database)/documents/drip_freeplay/$(request.resource.data.lastPlayId);
+    }
+    function isFreePlayResult(id) {
+      return resource.data.approved == true
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['versusWins','versusLosses','lastPlayId'])
+        && !exists(freePlayPath())
+        && existsAfter(freePlayPath())
+        && (
+          (getAfter(freePlayPath()).data.winnerId == id
+            && request.resource.data.versusWins == resource.data.get('versusWins', 0) + 1
+            && request.resource.data.get('versusLosses', 0) == resource.data.get('versusLosses', 0))
+          || (getAfter(freePlayPath()).data.loserId == id
+            && request.resource.data.versusLosses == resource.data.get('versusLosses', 0) + 1
+            && request.resource.data.get('versusWins', 0) == resource.data.get('versusWins', 0))
+        );
+    }
+    // Free-Play tags: one +1 per round, named by the new drip_tags doc in the same batch.
+    function freePlayTagPath() {
+      return /databases/$(database)/documents/drip_tags/$(request.resource.data.lastTagId);
+    }
+    function isFreePlayTag(id) {
+      return resource.data.approved == true
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['tagCounts','lastTagId'])
+        && !exists(freePlayTagPath())
+        && existsAfter(freePlayTagPath())
+        && getAfter(freePlayTagPath()).data.subId == id
+        && request.resource.data.tagCounts.diff(resource.data.get('tagCounts', {})).affectedKeys()
+             .hasOnly([getAfter(freePlayTagPath()).data.tag])
+        && request.resource.data.tagCounts[getAfter(freePlayTagPath()).data.tag]
+             == resource.data.get('tagCounts', {}).get(getAfter(freePlayTagPath()).data.tag, 0) + 1;
+    }
     match /drip_submissions/{id} {
       allow read: if true;
       allow create: if request.resource.data.keys().hasOnly([
@@ -98,7 +133,7 @@ service cloud.firestore {
                     && request.resource.data.drownVotes == 0
                     && request.resource.data.featuredThisWeek == false
                     && request.resource.data.hostTake == '';
-      allow update: if isAdmin() || (
+      allow update: if isAdmin() || isFreePlayResult(id) || isFreePlayTag(id) || (
                       resource.data.approved == true
                       && request.resource.data.diff(resource.data).affectedKeys()
                            .hasOnly(['dripVotes','drownVotes','lastVoterId'])
@@ -120,6 +155,30 @@ service cloud.firestore {
                     && id == request.resource.data.submissionId + '_' + request.resource.data.visitorId
                     && request.resource.data.vote in ['drip','drown']
                     && getAfter(/databases/$(database)/documents/drip_submissions/$(request.resource.data.submissionId)).data.lastVoterId == request.resource.data.visitorId;
+      allow update, delete: if false;
+    }
+
+    match /drip_freeplay/{playId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['winnerId','loserId','visitorId','timestamp'])
+                    && request.resource.data.winnerId != request.resource.data.loserId
+                    && playId == (request.resource.data.winnerId < request.resource.data.loserId
+                         ? request.resource.data.winnerId + '__' + request.resource.data.loserId
+                         : request.resource.data.loserId + '__' + request.resource.data.winnerId)
+                       + '_' + request.resource.data.visitorId
+                    && getAfter(/databases/$(database)/documents/drip_submissions/$(request.resource.data.winnerId)).data.lastPlayId == playId
+                    && getAfter(/databases/$(database)/documents/drip_submissions/$(request.resource.data.loserId)).data.lastPlayId == playId;
+      allow update, delete: if false;
+    }
+    match /drip_tags/{playId} {
+      allow read: if isAdmin();
+      allow create: if request.resource.data.keys().hasOnly(['subId','tag','visitorId','timestamp'])
+                    && request.resource.data.tag in ['cleanHelmet','classicLook','greatColors','boldDesign','busyDesign','weirdSleeves']
+                    && get(/databases/$(database)/documents/drip_freeplay/$(playId)).data.visitorId == request.resource.data.visitorId
+                    && request.resource.data.subId in [
+                         get(/databases/$(database)/documents/drip_freeplay/$(playId)).data.winnerId,
+                         get(/databases/$(database)/documents/drip_freeplay/$(playId)).data.loserId]
+                    && getAfter(/databases/$(database)/documents/drip_submissions/$(request.resource.data.subId)).data.lastTagId == playId;
       allow update, delete: if false;
     }
 
