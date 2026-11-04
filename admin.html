@@ -1339,7 +1339,6 @@
       document.getElementById('dashboard').style.display    = 'block';
       document.getElementById('dash-user-email').textContent = user.email;
       initDashboard();
-      saveDripStateSnapshot();
     } else if (user) {
       fbSignOut(auth);
       document.getElementById('login-error').style.display = 'block';
@@ -2404,34 +2403,6 @@
     } catch(e) { tbody.innerHTML = '<tr><td colspan="6" class="loading-row">Error: ' + escapeHtml(e.message) + '</td></tr>'; }
   }
   window.loadDripAll = loadDripAll;
-
-  // Saves per-school vote totals about once a week, when an admin opens this page.
-  // dripordrown.html scores them with the live ranking code to show State Score movers.
-  // ponytail: runs on admin visits; a scheduled function is the upgrade if a week gets missed.
-  async function saveDripStateSnapshot() {
-    try {
-      const latest = await getDocs(query(collection(db, 'drip_state_snapshots'), orderBy('takenAt','desc'), limit(1)));
-      if (!latest.empty && latest.docs[0].data().takenAt > Date.now() - 6*24*60*60*1000) return;
-      const snap = await getDocs(query(collection(db, 'drip_submissions'), where('approved','==',true)));
-      const schools = new Map();
-      snap.forEach(d => {
-        const s = d.data();
-        // Same fallback as normalizeSchool() in dripordrown.html, for older submissions
-        const key = s.schoolKey || String(s.teamName || '').toLowerCase()
-          .replace(/\s+(high\s+school|h\.?\s*s\.?)\s*$/i, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-        const row = schools.get(key) || { state: '', latest: -1, drip: 0, drown: 0 };
-        row.drip += s.dripVotes || 0;
-        row.drown += s.drownVotes || 0;
-        if ((s.submittedAt || 0) > row.latest) { row.latest = s.submittedAt || 0; row.state = s.state || ''; }
-        schools.set(key, row);
-      });
-      const now = new Date();
-      await setDoc(doc(db, 'drip_state_snapshots', now.toISOString().slice(0,10)), {
-        takenAt: now.getTime(),
-        schools: [...schools.values()].map(({ state, drip, drown }) => ({ state, drip, drown })),
-      });
-    } catch(e) { console.error('state snapshot error', e); }
-  }
 
   // ── DRIP OR DROWN — VERSUS OF THE WEEK ────────────────────
   // Converts a Central wall-clock time to the real instant, across daylight saving.

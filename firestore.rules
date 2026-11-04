@@ -181,10 +181,10 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // Weekly state score history, saved by the admin page.
+    // Weekly state score history, written only by snapshotDripStates.
     match /drip_state_snapshots/{id} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if false;
     }
     match /drip_freeplay/{playId} {
       allow read: if true;

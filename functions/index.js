@@ -5,6 +5,7 @@
  */
 
 const { onDocumentCreated, onDocumentWritten } = require('firebase-functions/v2/firestore');
+const { onSchedule }        = require('firebase-functions/v2/scheduler');
 const { initializeApp }     = require('firebase-admin/app');
 const { getFirestore }      = require('firebase-admin/firestore');
 const Anthropic             = require('@anthropic-ai/sdk');
@@ -827,5 +828,33 @@ exports.awardProfileClaim = onDocumentWritten(
     } catch (err) {
       console.warn(`[jj-claim] failed to stamp ${prospectId}:`, err.message);
     }
+  }
+);
+
+// ── DRIP OR DROWN: WEEKLY STATE SCORE SNAPSHOT ───────────────
+// Saves per-school vote totals every Sunday; dripordrown.html scores them with
+// the same code as the live rankings and shows who moved since.
+exports.snapshotDripStates = onSchedule(
+  { schedule: '5 0 * * 0', timeZone: 'America/Chicago', timeoutSeconds: 60, memory: '256MiB' },
+  async () => {
+    const snap = await db.collection('drip_submissions').where('approved', '==', true)
+      .select('schoolKey', 'teamName', 'state', 'submittedAt', 'dripVotes', 'drownVotes').get();
+    const schools = new Map();
+    snap.forEach(d => {
+      const s = d.data();
+      // Same fallback as normalizeSchool() in dripordrown.html, for older submissions
+      const key = s.schoolKey || String(s.teamName || '').toLowerCase()
+        .replace(/\s+(high\s+school|h\.?\s*s\.?)\s*$/i, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      const row = schools.get(key) || { state: '', latest: -1, drip: 0, drown: 0 };
+      row.drip += s.dripVotes || 0;
+      row.drown += s.drownVotes || 0;
+      if ((s.submittedAt || 0) > row.latest) { row.latest = s.submittedAt || 0; row.state = s.state || ''; }
+      schools.set(key, row);
+    });
+    const now = new Date();
+    await db.collection('drip_state_snapshots').doc(now.toISOString().slice(0, 10)).set({
+      takenAt: now.getTime(),
+      schools: [...schools.values()].map(({ state, drip, drown }) => ({ state, drip, drown })),
+    });
   }
 );
